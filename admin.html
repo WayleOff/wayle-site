@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Espace admin – Wayle</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#150E22">
+<style>
+:root{--bg:#150E22;--panel:#201733;--panel2:#2A1F42;--line:#3A2D56;--ink:#F3EFF8;--mid:#B3A8C7;--accent:#FF7A4D;--viol:#B9A2FF;--ok:#5ED08F;--err:#FF8A75;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--viol)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--viol);outline-offset:2px}
+.app{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:100vh}
+aside.side{background:#100A1C;border-right:1px solid var(--line);padding:1.2rem .9rem;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{font:800 1.5rem/1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.03em;margin:.2rem .5rem 1.2rem}
+.brand b{color:var(--accent)}
+.brand small{display:block;font:500 .72rem/1.2 system-ui;color:var(--mid);letter-spacing:.06em;text-transform:uppercase;margin-top:.35rem}
+.side nav a{display:flex;align-items:center;gap:.6rem;padding:.6rem .7rem;border-radius:10px;color:var(--mid);text-decoration:none;font-weight:500}
+.side nav a:hover{background:var(--panel);color:var(--ink)}
+.side nav a[aria-current="page"]{background:var(--panel2);color:var(--ink)}
+.side .ext{margin-top:1.2rem;border-top:1px solid var(--line);padding-top:.9rem}
+.side .ext a{font-size:.9rem}
+main{padding:1.6rem clamp(1rem,3vw,2.5rem) 5rem;max-width:1100px;width:100%}
+h1{font:800 1.9rem/1.15 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.02em;margin:0 0 .35rem}
+h2{font-size:1.1rem;margin:1.8rem 0 .7rem}
+.sub{color:var(--mid);margin:0 0 1.4rem;max-width:44rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.1rem 1.2rem;margin-bottom:1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.9rem}
+.tile{display:block;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1rem 1.1rem;color:var(--ink);text-decoration:none}
+.tile:hover{border-color:var(--viol);background:var(--panel2)}
+.tile b{display:block;margin-bottom:.15rem}.tile span{color:var(--mid);font-size:.9rem}
+.btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--ink);color:#150E22;border:0;border-radius:999px;padding:.55rem 1.1rem;font-weight:600;cursor:pointer;text-decoration:none}
+.btn:hover{opacity:.9}.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}.btn.ghost:hover{border-color:var(--ink)}
+.btn.sm{padding:.32rem .75rem;font-size:.85rem}
+.btn.danger{background:none;color:var(--err);border:1px solid #5a3030}
+.row{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}
+label.f{display:grid;gap:.3rem;font-weight:600;font-size:.88rem;color:var(--mid)}
+input[type=text],input[type=url],select,textarea{width:100%;background:#150E22;border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem;color:var(--ink)}
+textarea{min-height:5.5rem;resize:vertical;line-height:1.45}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--viol)}
+.hint{color:var(--mid);font-size:.82rem;font-weight:400}
+.badge{display:inline-block;font-size:.72rem;font-weight:700;padding:.12rem .5rem;border-radius:999px;background:var(--panel2);color:var(--mid)}
+.badge.on{background:#1d4a33;color:var(--ok)}.badge.mod{background:#4a3a1d;color:#FFC36B}
+.bar{position:sticky;top:0;z-index:5;display:flex;gap:.7rem;align-items:center;justify-content:space-between;background:rgba(21,14,34,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:.7rem 0;margin:0 0 1rem}
+.toast{position:fixed;left:50%;bottom:1.4rem;transform:translateX(-50%);z-index:50;background:#fff;color:#150E22;padding:.7rem 1.2rem;border-radius:999px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.toast.err{background:var(--err)}
+.colors{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem}
+.colorf{display:grid;gap:.4rem}
+.colorf .row input[type=color]{width:3rem;height:2.4rem;padding:0;border:1px solid var(--line);border-radius:10px;background:none;cursor:pointer}
+.prev{height:170px;border-radius:16px;border:1px solid var(--line);display:flex;align-items:flex-end;padding:1rem;gap:.7rem;margin-top:1rem}
+.prev .b1{background:#fff;color:#1E1038;border-radius:999px;padding:.5rem 1rem;font-weight:700}
+.prev .b2{border:1.5px solid #fff;color:#fff;border-radius:999px;padding:.5rem 1rem;font-weight:600}
+.fav{width:64px;height:64px;border-radius:14px;border:1px solid var(--line);background:#fff;object-fit:contain}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:.65rem .5rem;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--mid);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em}
+.txt-item{padding:.8rem 0;border-bottom:1px solid var(--line)}
+.txt-item .k{font-size:.75rem;color:var(--mid);font-family:ui-monospace,monospace}
+.txt-item textarea{min-height:2.6rem;margin-top:.3rem}
+.sec-t{margin:1.6rem 0 .2rem;font-weight:700;color:var(--viol)}
+.blk{background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-bottom:.8rem}
+.blk>.hd{display:flex;gap:.5rem;align-items:center;justify-content:space-between;padding:.6rem .9rem;border-bottom:1px solid var(--line)}
+.blk>.hd b{font-size:.92rem}.blk>.bd{padding:.9rem;display:grid;gap:.8rem}
+.mini{display:flex;gap:.25rem}
+.mini button{background:none;border:1px solid var(--line);border-radius:8px;width:2rem;height:2rem;cursor:pointer;color:var(--mid)}
+.mini button:hover:not(:disabled){color:var(--ink);border-color:var(--ink)}.mini button:disabled{opacity:.3;cursor:default}
+.addbar{display:flex;gap:.5rem;flex-wrap:wrap;margin:.4rem 0 1rem}
+.item{border:1px dashed var(--line);border-radius:12px;padding:.8rem;display:grid;gap:.6rem}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem}
+.thumb{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid}
+.thumb img{width:100%;aspect-ratio:1;object-fit:cover;background:#fff2}
+.thumb .t{padding:.5rem .6rem;font-size:.8rem;color:var(--mid);display:grid;gap:.4rem}
+.pick{cursor:pointer}.pick:hover{border-color:var(--viol)}
+dialog{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:18px;max-width:760px;width:calc(100% - 2rem);padding:1.2rem}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+.empty{color:var(--mid);padding:1.5rem;text-align:center;border:1px dashed var(--line);border-radius:14px}
+.warn{background:#3a2a14;border:1px solid #6a4b1d;color:#FFD9A0;border-radius:12px;padding:.8rem 1rem;margin-bottom:1rem}
+@media (max-width:820px){.app{grid-template-columns:1fr}aside.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.side nav{display:flex;flex-wrap:wrap;gap:.2rem}.side .ext{display:none}}
+</style></head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand">wayle<b>.</b><small>Espace admin</small></div>
+  <nav id="nav" aria-label="Sections">
+    <a href="#accueil">Accueil</a>
+    <a href="#apparence">Apparence</a>
+    <a href="#textes">Textes du site</a>
+    <a href="#pages">Pages</a>
+    <a href="#medias">Images</a>
+    <a href="#sauvegarde">Sauvegarde</a>
+  </nav>
+  <div class="ext nav-ext"><a href="/" target="_blank" rel="noopener">Voir le site ↗</a><br><a href="/gestion">Gestion de l’entreprise</a></div>
+</aside>
+<main id="main"><p class="sub">Chargement…</p></main>
+</div>
+<dialog id="dlg"></dialog>
+<script>
+(function(){
+"use strict";
+var $=function(s,r){return(r||document).querySelector(s)},$$=function(s,r){return[].slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")};
+var norm=function(s){return String(s||"").replace(/\s+/g," ").trim()};
+var DEF={primary:"#E8501E",secondary:"#6A2BD0",base:"#1E1038"};
+var S={cfg:{},content:{items:{}},pages:{},media:[],dirty:false,edit:null,texts:null,textPage:"/",tSearch:""};
+
+/* ---------- API ---------- */
+function api(m,qs,b){
+  var o={method:m,credentials:"same-origin",headers:{"X-Wayle":"1"}};
+  if(b!==undefined){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(b)}
+  return fetch("/api/admin?"+qs,o).then(function(r){
+    if(!r.ok){var e=new Error("http "+r.status);e.status=r.status;throw e}
+    return r.json();
+  });
+}
+function toast(t,err){var d=document.createElement("div");d.className="toast"+(err?" err":"");d.setAttribute("role","status");d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.remove()},err?5000:2600)}
+function fail(e){toast(e&&e.status===401?"Session expirée : rechargez la page.":e&&e.status===413?"Fichier trop lourd.":"Erreur d’enregistrement ("+(e&&e.message||"?")+")",true)}
+function setDirty(v){S.dirty=!!v;var b=$("#savebtn");if(b)b.disabled=!v;var s=$("#dirty");if(s)s.textContent=v?"Modifications non enregistrées":""}
+window.addEventListener("beforeunload",function(e){if(S.dirty){e.preventDefault();e.returnValue=""}});
+
+/* ---------- chargement ---------- */
+function loadAll(){
+  return Promise.all([api("GET","c=s_config&id=main"),api("GET","c=s_content&id=main"),api("GET","c=s_pages"),api("GET","c=s_media")]).then(function(r){
+    S.cfg=r[0].data||{};S.content=r[1].data||{items:{}};if(!S.content.items)S.content.items={};
+    S.pages={};r[2].forEach(function(p){S.pages[p.id]=p.data});
+    S.media=r[3].map(function(m){return{id:m.id,d:m.data}}).sort(function(a,b){return(b.d.at||0)-(a.d.at||0)});
+  });
+}
+
+/* ---------- navigation ---------- */
+var VIEWS={accueil:vHome,apparence:vLook,textes:vTexts,pages:vPages,medias:vMedia,sauvegarde:vBackup};
+function route(){
+  if(S.dirty&&!confirm("Vous avez des modifications non enregistrées. Quitter quand même ?")){history.replaceState(null,"",S.hash||"#accueil");return}
+  var h=(location.hash||"#accueil").slice(1),seg=h.split("/"),v=seg[0];
+  if(!VIEWS[v]){v="accueil";seg=[v]}
+  S.hash="#"+h;setDirty(false);
+  $$("#nav a").forEach(function(a){if(a.getAttribute("href")==="#"+v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  VIEWS[v](seg.slice(1));window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",route);
+function main(h){$("#main").innerHTML=h}
+function head(title,sub,save){
+  return '<div class="bar"><div><h1>'+title+'</h1></div><div class="row"><span id="dirty" class="hint"></span>'+(save?'<button class="btn" id="savebtn" type="button" disabled>Enregistrer</button>':'')+'</div></div>'+(sub?'<p class="sub">'+sub+'</p>':'');
+}
+document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="s"){var b=$("#savebtn");if(b){e.preventDefault();if(!b.disabled)b.click()}}});
+
+/* ---------- Accueil ---------- */
+function vHome(){
+  var nm=Object.keys(S.content.items).length,np=Object.keys(S.pages).length,pub=Object.keys(S.pages).filter(function(k){return S.pages[k].published}).length;
+  main(head("Bonjour Jonas",'Ici, vous modifiez votre site vous-même : couleurs, textes, pages, images. Les changements apparaissent sur le site en quelques secondes.')
+   +'<div class="grid">'
+   +'<a class="tile" href="#apparence"><b>Apparence</b><span>Couleurs et favicon</span></a>'
+   +'<a class="tile" href="#textes"><b>Textes du site</b><span>'+nm+' texte'+(nm>1?"s":"")+' personnalisé'+(nm>1?"s":"")+'</span></a>'
+   +'<a class="tile" href="#pages"><b>Pages</b><span>'+np+' page'+(np>1?"s":"")+' créée'+(np>1?"s":"")+', '+pub+' publiée'+(pub>1?"s":"")+'</span></a>'
+   +'<a class="tile" href="#medias"><b>Images</b><span>'+S.media.length+' image'+(S.media.length>1?"s":"")+'</span></a>'
+   +'</div><h2>Vos autres espaces</h2><div class="grid">'
+   +'<a class="tile" href="/gestion"><b>Gestion de l’entreprise</b><span>Clients, projets, prospection, documents</span></a>'
+   +'<a class="tile" href="/admin/espace-client"><b>Espace client (démonstration)</b><span>Ancienne version, accès par code en démonstration. La version sécurisée viendra ensuite.</span></a>'
+   +'<a class="tile" href="/" target="_blank" rel="noopener"><b>Voir le site</b><span>Ouvre wayle.fr dans un nouvel onglet</span></a>'
+   +'</div><h2>Raccourcis</h2><div class="grid">'
+   +'<a class="tile" href="https://calendly.com/waylecorp/appel-decouverte" target="_blank" rel="noopener"><b>Calendly</b><span>Vos rendez-vous d’appel découverte</span></a>'
+   +'<a class="tile" href="https://web3forms.com/" target="_blank" rel="noopener"><b>Formulaire de contact</b><span>Web3Forms : les messages reçus</span></a>'
+   +'<a class="tile" href="https://dash.cloudflare.com/" target="_blank" rel="noopener"><b>Cloudflare</b><span>Domaine, accès, déploiements</span></a>'
+   +'<a class="tile" href="https://github.com/WayleOff/wayle-site" target="_blank" rel="noopener"><b>GitHub</b><span>Les fichiers du site</span></a>'
+   +'<a class="tile" href="https://www.ovh.com/manager/" target="_blank" rel="noopener"><b>OVH</b><span>Nom de domaine et e-mails</span></a>'
+   +'</div>');
+}
+
+/* ---------- Apparence ---------- */
+function hex(h){h=String(h||"").replace("#","");if(!/^[0-9a-f]{6}$/i.test(h))return null;return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+function mixc(a,b,t){return[0,1,2].map(function(i){return Math.round(a[i]+(b[i]-a[i])*t)})}
+function rgba(c,a){return"rgba("+c.join(",")+","+a+")"}
+function gradient(p,s,b){var W=[255,255,255],K=[0,0,0];
+  return"radial-gradient(60% 50% at 80% 6%,"+rgba(mixc(s,K,.12),.9)+",transparent 70%),radial-gradient(75% 60% at 22% 30%,"+rgba(p,.72)+",transparent 68%),radial-gradient(55% 45% at 88% 48%,"+rgba(mixc(p,K,.08),.5)+",transparent 70%),radial-gradient(85% 55% at 45% 102%,"+rgba(s,.95)+",transparent 70%),radial-gradient(50% 40% at 4% 96%,"+rgba(mixc(p,W,.3),.55)+",transparent 70%),rgb("+b.join(",")+")"}
+var COLS=[["primary","Couleur principale","Accents orange du site, dégradé du fond"],["secondary","Couleur secondaire","Accents violets, dégradé du fond"],["base","Fond du site","Teinte sombre derrière le dégradé"]];
+function vLook(){
+  var col=Object.assign({},DEF,S.cfg.colors||{}),fav=S.cfg.favicon;
+  main(head("Apparence","Choisissez les couleurs du site et l’icône de l’onglet (favicon).",true)
+   +'<div class="card"><h2 style="margin-top:0">Couleurs</h2><div class="colors">'+COLS.map(function(c){return'<div class="colorf"><label class="f" for="c-'+c[0]+'">'+c[1]+'<span class="hint">'+c[2]+'</span></label><div class="row"><input type="color" id="c-'+c[0]+'" data-c="'+c[0]+'" value="'+esc(col[c[0]])+'"><input type="text" data-ch="'+c[0]+'" value="'+esc(col[c[0]])+'" maxlength="7" style="width:7rem" aria-label="Code '+c[1]+'"></div></div>'}).join("")
+   +'</div><div class="prev" id="prev"><span class="b1">Bouton principal</span><span class="b2">Bouton contour</span></div>'
+   +'<div class="row" style="margin-top:.9rem"><button class="btn ghost sm" id="rstcol" type="button">Rétablir les couleurs d’origine</button></div></div>'
+   +'<div class="card"><h2 style="margin-top:0">Favicon</h2><p class="hint" style="margin-top:0">La petite icône dans l’onglet du navigateur. Une image carrée (PNG ou JPG, au moins 128 px) donne le meilleur résultat.</p><div class="row">'
+   +(fav?'<img class="fav" id="favimg" src="/api/media?id='+esc(fav)+'" alt="Favicon actuel">':'<div class="fav" id="favimg" style="display:grid;place-items:center;color:#666;font-size:.75rem">aucun</div>')
+   +'<label class="btn ghost sm" style="cursor:pointer">Choisir une image<input type="file" id="favfile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label>'+(fav?'<button class="btn danger sm" id="favrm" type="button">Retirer</button>':'')+'</div></div>');
+  function prev(){var p=hex($("#c-primary").value),s=hex($("#c-secondary").value),b=hex($("#c-base").value);if(p&&s&&b)$("#prev").style.background=gradient(p,s,b)}
+  prev();
+  $$("[data-c]").forEach(function(i){i.addEventListener("input",function(){$('[data-ch="'+i.dataset.c+'"]').value=i.value;S.cfg.colors=Object.assign({},S.cfg.colors||{});S.cfg.colors[i.dataset.c]=i.value;prev();setDirty(true)})});
+  $$("[data-ch]").forEach(function(i){i.addEventListener("input",function(){var v=i.value.trim();if(v[0]!=="#")v="#"+v;if(hex(v)){$('[data-c="'+i.dataset.ch+'"]').value=v;S.cfg.colors=Object.assign({},S.cfg.colors||{});S.cfg.colors[i.dataset.ch]=v;prev();setDirty(true)}})});
+  $("#rstcol").onclick=function(){S.cfg.colors={};vLook();setDirty(true)};
+  $("#favfile").onchange=function(e){var f=e.target.files[0];if(!f)return;
+    imgToBlob(f,256,true,"image/png").then(function(r){return saveMedia(r,"Favicon")}).then(function(id){S.cfg.favicon=id;return api("PUT","c=s_config&id=main",S.cfg)}).then(function(){toast("Favicon enregistré");vLook()}).catch(fail)};
+  var rm=$("#favrm");if(rm)rm.onclick=function(){S.cfg.favicon=null;api("PUT","c=s_config&id=main",S.cfg).then(function(){toast("Favicon retiré");vLook()}).catch(fail)};
+  $("#savebtn").onclick=function(){var c=S.cfg.colors||{},o={};Object.keys(c).forEach(function(k){if(hex(c[k])&&c[k].toUpperCase()!==DEF[k].toUpperCase())o[k]=c[k]});S.cfg.colors=o;
+    api("PUT","c=s_config&id=main",S.cfg).then(function(){setDirty(false);toast("Couleurs enregistrées. Visible sur le site dans quelques secondes.")}).catch(fail)};
+}
+
+/* ---------- images ---------- */
+function imgToBlob(file,max,square,type){
+  return new Promise(function(res,rej){
+    var u=URL.createObjectURL(file),im=new Image();
+    im.onload=function(){
+      var w=im.naturalWidth,h=im.naturalHeight,sx=0,sy=0,sw=w,sh=h,cw,ch;
+      if(square){var m=Math.min(w,h);sx=(w-m)/2;sy=(h-m)/2;sw=sh=m;cw=ch=Math.min(max,m)}
+      else{var k=Math.min(1,max/Math.max(w,h));cw=Math.round(w*k);ch=Math.round(h*k)}
+      var cv=document.createElement("canvas");cv.width=cw;cv.height=ch;var x=cv.getContext("2d");x.drawImage(im,sx,sy,sw,sh,0,0,cw,ch);URL.revokeObjectURL(u);
+      var q=.86,t=type||(file.type==="image/png"?"image/png":"image/webp");
+      (function go(){cv.toBlob(function(b){
+        if(!b){rej(new Error("image"));return}
+        if(b.size>1000000&&q>.4&&t!=="image/png"){q-=.14;go();return}
+        if(b.size>1000000&&t==="image/png"){t="image/webp";q=.8;go();return}
+        res({blob:b,w:cw,h:ch,type:b.type||t,name:file.name});
+      },t,q)})();
+    };
+    im.onerror=function(){rej(new Error("Image illisible"))};im.src=u;
+  });
+}
+function blobToB64(b){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(",")[1])};r.onerror=rej;r.readAsDataURL(b)})}
+function newId(p){var a=new Uint8Array(8);crypto.getRandomValues(a);return p+[].map.call(a,function(x){return x.toString(36).padStart(2,"0")}).join("").slice(0,12)}
+function saveMedia(r,name){
+  return blobToB64(r.blob).then(function(b64){
+    var id=newId("m"),d={name:name||r.name||"image",type:r.type,w:r.w,h:r.h,size:r.blob.size,at:Date.now(),data:b64};
+    return api("PUT","c=s_media&id="+id,d).then(function(){var m=Object.assign({},d);delete m.data;S.media.unshift({id:id,d:m});return id});
+  });
+}
+function uploadFiles(files){
+  var list=[].slice.call(files);var p=Promise.resolve();var ids=[];
+  list.forEach(function(f){p=p.then(function(){return imgToBlob(f,1600,false).then(function(r){return saveMedia(r,f.name)}).then(function(id){ids.push(id)})})});
+  return p.then(function(){return ids});
+}
+
+/* ---------- Textes ---------- */
+var TP=[["Accueil","/"],["Artistes","/artistes"],["Entreprises","/entreprises"],["Commerces","/commerces"],["Mentions légales","/mentions-legales"]];
+function vTexts(){
+  main(head("Textes du site","Modifiez n’importe quel texte des pages existantes. Laissez un champ tel quel pour garder le texte d’origine.",true)
+   +'<div class="row" style="margin-bottom:1rem"><label class="f" style="min-width:220px">Page<select id="tp">'+TP.map(function(p){return'<option value="'+p[1]+'"'+(p[1]===S.textPage?" selected":"")+'>'+p[0]+'</option>'}).join("")+'</select></label>'
+   +'<label class="f" style="flex:1;min-width:220px">Rechercher<input type="text" id="ts" placeholder="Un mot du texte…" value="'+esc(S.tSearch)+'"></label></div><div id="tl"><p class="sub">Chargement des textes…</p></div>');
+  $("#tp").onchange=function(){S.textPage=this.value;loadTexts()};
+  $("#ts").oninput=function(){S.tSearch=this.value;renderTexts()};
+  $("#savebtn").onclick=saveTexts;
+  loadTexts();
+}
+function loadTexts(){
+  S.texts=null;
+  $("#tl").innerHTML='<p class="sub">Chargement des textes…</p>';
+  fetch(S.textPage,{credentials:"same-origin"}).then(function(r){return r.text()}).then(function(t){
+    var d=new DOMParser().parseFromString(t,"text/html"),seen={},out=[];
+    $$("[data-k]",d).forEach(function(el){var k=el.getAttribute("data-k");if(seen[k])return;seen[k]=1;
+      var sec=el.closest("section"),hd=el.closest("header"),ft=el.closest("footer"),lab=sec?(sec.id?"Section « "+sec.id+" »":((sec.querySelector("h2")||{}).textContent||"Section")):hd?"En-tête":ft?"Pied de page":"Haut de page";
+      var h2=sec&&sec.querySelector("h2");if(h2)lab=norm(h2.textContent).slice(0,60);
+      out.push({k:k,d:norm(el.textContent),sec:lab})});
+    S.texts=out;renderTexts();
+  }).catch(function(){$("#tl").innerHTML='<div class="empty">Impossible de charger cette page.</div>'});
+}
+function renderTexts(){
+  if(!S.texts)return;var q=norm(S.tSearch).toLowerCase(),last=null,h="",n=0;
+  S.texts.forEach(function(t){
+    var e=S.content.items[t.k],cur=e&&e.d===t.d?e.v:t.d,stale=e&&e.d!==t.d;
+    if(q&&(cur+" "+t.d).toLowerCase().indexOf(q)<0)return;n++;
+    if(t.sec!==last){h+='<div class="sec-t">'+esc(t.sec)+'</div>';last=t.sec}
+    h+='<div class="txt-item"><div class="row" style="justify-content:space-between"><span class="k">'+esc(t.k)+'</span><span>'+(e&&!stale&&e.v!==t.d?'<span class="badge mod">modifié</span> <button class="btn ghost sm" data-r="'+esc(t.k)+'" type="button">Rétablir</button>':stale?'<span class="badge">ancienne version écartée</span>':'')+'</span></div>'
+     +'<textarea data-t="'+esc(t.k)+'" rows="'+Math.max(1,Math.min(6,Math.ceil(cur.length/90)))+'">'+esc(cur)+'</textarea></div>';
+  });
+  $("#tl").innerHTML=h||'<div class="empty">Aucun texte ne correspond.</div>';
+  $$("[data-t]").forEach(function(a){a.addEventListener("input",function(){
+    var t=S.texts.filter(function(x){return x.k===a.dataset.t})[0],v=norm(a.value);
+    if(v===t.d||!v)delete S.content.items[t.k];else S.content.items[t.k]={v:v,d:t.d};setDirty(true)})});
+  $$("[data-r]").forEach(function(b){b.onclick=function(){delete S.content.items[b.dataset.r];setDirty(true);renderTexts()}});
+}
+function saveTexts(){
+  api("PUT","c=s_content&id=main",{items:S.content.items,v:1}).then(function(){setDirty(false);toast("Textes enregistrés. Visibles dans quelques secondes.");renderTexts()}).catch(fail);
+}
+
+/* ---------- Pages ---------- */
+function slugify(t){return String(t).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60)||"page"}
+function vPages(arg){
+  if(arg[0]){return editPage(arg[0])}
+  var ks=Object.keys(S.pages).sort(function(a,b){return(S.pages[a].order||0)-(S.pages[b].order||0)});
+  main(head("Pages","Créez des pages (offres, services, portfolio…) assemblées avec des blocs. Elles s’affichent à l’adresse /p/nom-de-la-page.")
+   +'<div class="row" style="margin-bottom:1rem"><button class="btn" id="newp" type="button">+ Nouvelle page</button></div>'
+   +(ks.length?'<div class="card" style="padding:.4rem 1rem"><table><thead><tr><th>Titre</th><th>Adresse</th><th>État</th><th></th></tr></thead><tbody>'+ks.map(function(k){var p=S.pages[k];
+     return'<tr><td><b>'+esc(p.title)+'</b></td><td class="hint">/p/'+esc(k)+'</td><td>'+(p.published?'<span class="badge on">publiée</span>':'<span class="badge">brouillon</span>')+(p.nav?' <span class="badge">menu</span>':'')+'</td><td><div class="row" style="justify-content:flex-end"><a class="btn ghost sm" href="#pages/'+esc(k)+'">Modifier</a><a class="btn ghost sm" target="_blank" rel="noopener" href="/p/'+esc(k)+(p.published?'':'?preview=1')+'">Voir</a><button class="btn danger sm" data-del="'+esc(k)+'" type="button">Supprimer</button></div></td></tr>'}).join("")+'</tbody></table></div>'
+    :'<div class="empty">Aucune page pour l’instant. Cliquez sur « Nouvelle page ».</div>'));
+  $("#newp").onclick=function(){
+    var t=prompt("Titre de la page (ex. Nos tarifs, Photographie…)");if(!t||!t.trim())return;
+    var base=slugify(t),s=base,i=2;while(S.pages[s])s=base+"-"+i++;
+    S.pages[s]={title:t.trim(),desc:"",published:false,nav:false,navLabel:"",noindex:false,order:Object.keys(S.pages).length+1,blocks:[{t:"text",text:""}],updated:Date.now()};
+    api("PUT","c=s_pages&id="+s,S.pages[s]).then(function(){location.hash="#pages/"+s}).catch(function(e){delete S.pages[s];fail(e)});
+  };
+  $$("[data-del]").forEach(function(b){b.onclick=function(){var k=b.dataset.del;if(!confirm("Supprimer la page « "+S.pages[k].title+" » ? Cette action est définitive."))return;
+    api("DELETE","c=s_pages&id="+k).then(function(){delete S.pages[k];toast("Page supprimée");vPages([])}).catch(fail)}});
+}
+var BT={
+  title:{n:"Titre",init:function(){return{t:"title",text:"",level:"h2"}}},
+  text:{n:"Texte",init:function(){return{t:"text",text:""}}},
+  image:{n:"Image",init:function(){return{t:"image",media:"",alt:"",caption:"",size:"full"}}},
+  video:{n:"Vidéo",init:function(){return{t:"video",url:""}}},
+  button:{n:"Bouton",init:function(){return{t:"button",label:"Demander un devis",url:"/#contact",style:"plain"}}},
+  cards:{n:"Cartes (offres, services)",init:function(){return{t:"cards",items:[{title:"Offre 1",text:"",price:"",lines:"",link:"",linkLabel:""}]}}},
+  faq:{n:"Questions fréquentes",init:function(){return{t:"faq",items:[{q:"",a:""}]}}},
+  space:{n:"Espace vide",init:function(){return{t:"space",size:"m"}}}
+};
+function sel(opts,cur,attrs){return'<select '+attrs+'>'+Object.keys(opts).map(function(k){return'<option value="'+k+'"'+(k===cur?" selected":"")+'>'+opts[k]+'</option>'}).join("")+'</select>'}
+function blockForm(b,i){
+  var F=function(l,f,type,hint){return'<label class="f">'+l+(type==="area"?'<textarea data-b="'+i+'" data-f="'+f+'">'+esc(b[f])+'</textarea>':'<input type="text" data-b="'+i+'" data-f="'+f+'" value="'+esc(b[f])+'">')+(hint?'<span class="hint">'+hint+'</span>':'')+'</label>'};
+  switch(b.t){
+    case"title":return F("Titre","text")+'<label class="f">Taille'+sel({h2:"Grand titre",h3:"Sous-titre"},b.level,'data-b="'+i+'" data-f="level"')+'</label>';
+    case"text":return F("Texte","text","area","Une ligne vide sépare les paragraphes. **gras**, [texte du lien](https://…). Les lignes qui commencent par « - » forment une liste.");
+    case"image":{var m=S.media.filter(function(x){return x.id===b.media})[0];
+      return'<div class="row">'+(m?'<img class="fav" style="width:110px;height:80px;object-fit:cover" src="/api/media?id='+esc(m.id)+'" alt="">':'<div class="fav" style="width:110px;height:80px;display:grid;place-items:center;color:#666;font-size:.75rem">aucune</div>')+'<button class="btn ghost sm" data-pick="'+i+'" type="button">'+(m?"Changer l’image":"Choisir une image")+'</button></div>'
+       +F("Texte alternatif (description pour l’accessibilité et Google)","alt")+F("Légende (facultatif)","caption")+'<label class="f">Largeur'+sel({full:"Pleine largeur",medium:"Moyenne"},b.size,'data-b="'+i+'" data-f="size"')+'</label>'}
+    case"video":return F("Lien de la vidéo","url","text","YouTube, Vimeo, ou lien direct vers un fichier .mp4 (https).");
+    case"button":return F("Texte du bouton","label")+F("Lien","url","text","Ex. /#contact, /p/mon-autre-page, https://…")+'<label class="f">Style'+sel({plain:"Plein",ghost:"Contour"},b.style,'data-b="'+i+'" data-f="style"')+'</label>';
+    case"space":return'<label class="f">Hauteur'+sel({s:"Petit",m:"Moyen",l:"Grand"},b.size,'data-b="'+i+'" data-f="size"')+'</label>';
+    case"faq":return b.items.map(function(it,j){return'<div class="item"><label class="f">Question<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="q" value="'+esc(it.q)+'"></label><label class="f">Réponse<textarea data-b="'+i+'" data-i="'+j+'" data-f="a">'+esc(it.a)+'</textarea></label><div><button class="btn danger sm" data-rmi="'+i+'.'+j+'" type="button">Retirer cette question</button></div></div>'}).join("")+'<div><button class="btn ghost sm" data-addi="'+i+'" type="button">+ Ajouter une question</button></div>';
+    case"cards":return b.items.map(function(it,j){return'<div class="item"><label class="f">Titre<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="title" value="'+esc(it.title)+'"></label><label class="f">Description (facultatif)<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="text" value="'+esc(it.text)+'"></label><label class="f">Prix (facultatif)<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="price" value="'+esc(it.price)+'" placeholder="dès 550 € TTC"></label><label class="f">Détails, une ligne par ligne<textarea data-b="'+i+'" data-i="'+j+'" data-f="lines">'+esc(it.lines)+'</textarea><span class="hint">Pour une ligne à deux colonnes, écrivez « Tournage : 2 h ».</span></label><div class="row"><label class="f" style="flex:1">Lien du bouton (facultatif)<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="link" value="'+esc(it.link)+'"></label><label class="f" style="flex:1">Texte du bouton<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="linkLabel" value="'+esc(it.linkLabel)+'"></label></div><div><button class="btn danger sm" data-rmi="'+i+'.'+j+'" type="button">Retirer cette carte</button></div></div>'}).join("")+(b.items.length<6?'<div><button class="btn ghost sm" data-addi="'+i+'" type="button">+ Ajouter une carte</button></div>':"");
+  }
+  return"";
+}
+function editPage(slug){
+  var p=S.pages[slug];
+  if(!p){main(head("Page introuvable")+'<p><a href="#pages">Retour aux pages</a></p>');return}
+  S.edit={slug:slug,p:JSON.parse(JSON.stringify(p))};var E=S.edit.p;
+  function draw(){
+    var bl=E.blocks.map(function(b,i){return'<div class="blk"><div class="hd"><b>'+(i+1)+'. '+BT[b.t].n+'</b><div class="mini"><button type="button" data-mv="'+i+'.-1" aria-label="Monter"'+(i===0?" disabled":"")+'>↑</button><button type="button" data-mv="'+i+'.1" aria-label="Descendre"'+(i===E.blocks.length-1?" disabled":"")+'>↓</button><button type="button" data-dup="'+i+'" aria-label="Dupliquer">⧉</button><button type="button" data-rm="'+i+'" aria-label="Supprimer">✕</button></div></div><div class="bd">'+blockForm(b,i)+'</div></div>'}).join("");
+    main(head(esc(E.title),'<a href="#pages">← Toutes les pages</a> · Adresse : <b>/p/'+esc(slug)+'</b>',true)
+     +'<div class="card"><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"><label class="f">Titre de la page<input type="text" id="pt" value="'+esc(E.title)+'"></label><label class="f">Description (Google et sous le titre)<input type="text" id="pd" value="'+esc(E.desc)+'" maxlength="200"></label></div>'
+     +'<div class="row" style="margin-top:.9rem"><label class="row"><input type="checkbox" id="pp"'+(E.published?" checked":"")+'> Page publiée</label><label class="row"><input type="checkbox" id="pn"'+(E.nav?" checked":"")+'> Afficher dans le menu</label><label class="row" style="flex:1;min-width:200px">Nom dans le menu <input type="text" id="pl" value="'+esc(E.navLabel)+'" placeholder="'+esc(E.title)+'" style="max-width:240px"></label><label class="row"><input type="checkbox" id="pi"'+(E.noindex?" checked":"")+'> Masquer de Google</label></div></div>'
+     +'<h2>Contenu</h2>'+bl+'<div class="addbar"><span class="hint" style="align-self:center">Ajouter :</span>'+Object.keys(BT).map(function(k){return'<button class="btn ghost sm" type="button" data-add="'+k+'">+ '+BT[k].n+'</button>'}).join("")+'</div>');
+    $("#savebtn").onclick=save;
+    [["pt","title"],["pd","desc"],["pl","navLabel"]].forEach(function(x){$("#"+x[0]).oninput=function(){E[x[1]]=this.value;setDirty(true)}});
+    [["pp","published"],["pn","nav"],["pi","noindex"]].forEach(function(x){$("#"+x[0]).onchange=function(){E[x[1]]=this.checked;setDirty(true)}});
+    $$("[data-b][data-f]").forEach(function(el){var h=function(){var b=E.blocks[+el.dataset.b];if(el.dataset.i!==undefined)b.items[+el.dataset.i][el.dataset.f]=el.value;else b[el.dataset.f]=el.value;setDirty(true)};el.addEventListener(el.tagName==="SELECT"?"change":"input",h)});
+    $$("[data-add]").forEach(function(b){b.onclick=function(){E.blocks.push(BT[b.dataset.add].init());setDirty(true);draw();window.scrollTo(0,document.body.scrollHeight)}});
+    $$("[data-mv]").forEach(function(b){b.onclick=function(){var a=b.dataset.mv.split("."),i=+a[0],d=+a[1];var t=E.blocks[i];E.blocks[i]=E.blocks[i+d];E.blocks[i+d]=t;setDirty(true);draw()}});
+    $$("[data-dup]").forEach(function(b){b.onclick=function(){var i=+b.dataset.dup;E.blocks.splice(i+1,0,JSON.parse(JSON.stringify(E.blocks[i])));setDirty(true);draw()}});
+    $$("[data-rm]").forEach(function(b){b.onclick=function(){if(!confirm("Supprimer ce bloc ?"))return;E.blocks.splice(+b.dataset.rm,1);setDirty(true);draw()}});
+    $$("[data-addi]").forEach(function(b){b.onclick=function(){var bk=E.blocks[+b.dataset.addi];bk.items.push(bk.t==="faq"?{q:"",a:""}:{title:"",text:"",price:"",lines:"",link:"",linkLabel:""});setDirty(true);draw()}});
+    $$("[data-rmi]").forEach(function(b){b.onclick=function(){var a=b.dataset.rmi.split(".");E.blocks[+a[0]].items.splice(+a[1],1);setDirty(true);draw()}});
+    $$("[data-pick]").forEach(function(b){b.onclick=function(){pickMedia(function(id){E.blocks[+b.dataset.pick].media=id;setDirty(true);draw()})}});
+    setDirty(S.dirty);
+  }
+  function save(){
+    if(!E.title.trim()){toast("Donnez un titre à la page.",true);return}
+    E.updated=Date.now();
+    api("PUT","c=s_pages&id="+slug,E).then(function(){S.pages[slug]=JSON.parse(JSON.stringify(E));setDirty(false);toast(E.published?"Page enregistrée et publiée.":"Brouillon enregistré.")}).catch(fail);
+  }
+  draw();
+}
+function pickMedia(cb){
+  var d=$("#dlg");
+  d.innerHTML='<div class="row" style="justify-content:space-between"><h2 style="margin:0">Choisir une image</h2><button class="btn ghost sm" id="dx" type="button">Fermer</button></div><div class="row" style="margin:.8rem 0"><label class="btn sm" style="cursor:pointer">Envoyer une nouvelle image<input type="file" id="dup" accept="image/*" multiple hidden></label></div><div class="thumbs" id="dth"></div>';
+  function fill(){$("#dth").innerHTML=S.media.length?S.media.map(function(m){return'<button type="button" class="thumb pick" data-id="'+esc(m.id)+'" style="padding:0;text-align:left;cursor:pointer"><img src="/api/media?id='+esc(m.id)+'" alt=""><span class="t">'+esc(m.d.name||"image")+'</span></button>'}).join(""):'<div class="empty" style="grid-column:1/-1">Aucune image. Envoyez-en une.</div>';
+    $$(".pick",d).forEach(function(b){b.onclick=function(){d.close();cb(b.dataset.id)}})}
+  fill();$("#dx").onclick=function(){d.close()};
+  $("#dup").onchange=function(e){toast("Envoi en cours…");uploadFiles(e.target.files).then(function(){toast("Image envoyée");fill()}).catch(fail)};
+  d.showModal();
+}
+
+/* ---------- Images ---------- */
+function vMedia(){
+  main(head("Images","Les images que vous envoyez sont réduites automatiquement pour garder le site rapide. Utilisez-les dans vos pages.")
+   +'<div class="row" style="margin-bottom:1rem"><label class="btn" style="cursor:pointer">+ Envoyer des images<input type="file" id="mf" accept="image/*" multiple hidden></label></div>'
+   +'<div class="thumbs">'+(S.media.length?S.media.map(function(m){return'<div class="thumb"><img src="/api/media?id='+esc(m.id)+'" alt=""><div class="t"><span title="'+esc(m.d.name)+'">'+esc((m.d.name||"image").slice(0,26))+'</span><span>'+(m.d.w||"?")+'×'+(m.d.h||"?")+' · '+Math.round((m.d.size||0)/1024)+' Ko</span><div class="row"><button class="btn ghost sm" data-cp="'+esc(m.id)+'" type="button">Copier le lien</button><button class="btn danger sm" data-dm="'+esc(m.id)+'" type="button">Supprimer</button></div></div></div>'}).join(""):'<div class="empty" style="grid-column:1/-1">Aucune image pour l’instant.</div>')+'</div>');
+  $("#mf").onchange=function(e){toast("Envoi en cours…");uploadFiles(e.target.files).then(function(){toast("Images envoyées");vMedia()}).catch(fail)};
+  $$("[data-cp]").forEach(function(b){b.onclick=function(){var u=location.origin+"/api/media?id="+b.dataset.cp;(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(function(){toast("Lien copié")}).catch(function(){prompt("Copiez ce lien :",u)})}});
+  $$("[data-dm]").forEach(function(b){b.onclick=function(){
+    var id=b.dataset.dm,used=[];Object.keys(S.pages).forEach(function(k){if(JSON.stringify(S.pages[k].blocks).indexOf(id)>=0)used.push(S.pages[k].title)});
+    if(S.cfg.favicon===id)used.push("Favicon");
+    if(!confirm(used.length?"Cette image est utilisée ("+used.join(", ")+"). La supprimer quand même ?":"Supprimer cette image ?"))return;
+    api("DELETE","c=s_media&id="+id).then(function(){S.media=S.media.filter(function(m){return m.id!==id});toast("Image supprimée");vMedia()}).catch(fail)}});
+}
+
+/* ---------- Sauvegarde ---------- */
+function vBackup(){
+  main(head("Sauvegarde","Téléchargez une copie de vos réglages, textes et pages (les images ne sont pas incluses), ou restaurez-la.")
+   +'<div class="card"><div class="row"><button class="btn" id="bx" type="button">Télécharger la sauvegarde</button><label class="btn ghost" style="cursor:pointer">Restaurer une sauvegarde<input type="file" id="bi" accept="application/json,.json" hidden></label></div></div>'
+   +'<div class="warn">Restaurer remplace les réglages, les textes et les pages actuels par ceux du fichier.</div>');
+  $("#bx").onclick=function(){
+    var o={v:1,at:new Date().toISOString(),config:S.cfg,content:S.content,pages:S.pages};
+    var b=new Blob([JSON.stringify(o,null,1)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="wayle-site-sauvegarde-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();a.remove();
+  };
+  $("#bi").onchange=function(e){var f=e.target.files[0];if(!f)return;
+    f.text().then(function(t){var o=JSON.parse(t);if(!o||o.v!==1)throw new Error("Fichier non reconnu");
+      if(!confirm("Remplacer les réglages, textes et pages actuels par ceux de cette sauvegarde ?"))return;
+      var p=api("PUT","c=s_config&id=main",o.config||{}).then(function(){return api("PUT","c=s_content&id=main",o.content||{items:{}})});
+      Object.keys(o.pages||{}).forEach(function(k){if(/^[a-z0-9][a-z0-9-]{0,62}$/.test(k))p=p.then(function(){return api("PUT","c=s_pages&id="+k,o.pages[k])})});
+      return p.then(loadAll).then(function(){toast("Sauvegarde restaurée");vBackup()});
+    }).catch(function(err){toast("Impossible de restaurer : "+(err&&err.message||"fichier invalide"),true)})};
+}
+
+/* ---------- démarrage ---------- */
+loadAll().then(route).catch(function(e){
+  main('<h1>Espace admin</h1><div class="warn">'+(e&&(e.status===401||e.status===403)?"Accès refusé. Ouvrez cette page depuis wayle.fr/admin après vous être connecté avec votre e-mail (code reçu par e-mail).":"Impossible de joindre la base de données ("+esc(e&&e.message||"erreur")+"). Vérifiez que la base D1 est bien liée au projet Pages (nom DB) et que les variables ACCESS_* sont renseignées.")+'</div>');
+});
+})();
+</script>
+</body></html>
