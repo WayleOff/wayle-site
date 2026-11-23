@@ -356,6 +356,8 @@ select option{color:#1E1038;background:#fff}
 @media (max-width:520px){.refs figure{flex-basis:78%}}
 @media (prefers-reduced-motion:reduce){.refs{scroll-behavior:auto}.rchip,.ref-nav button{transition:none}}
 </style>
+<style id="cta-bar">.cta-bar{display:none}.rdv{display:inline-block;margin-top:1rem;border:1.5px solid var(--ink);color:var(--ink);padding:.8rem 1.5rem;border-radius:999px;font-weight:600;text-decoration:none}.rdv:hover{background:var(--ink);color:var(--bg)}
+@media (max-width:900px){.cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;gap:.5rem;padding:.6rem .75rem calc(.6rem + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}.cta-bar a{flex:1;text-align:center;padding:.8rem .4rem;border-radius:999px;font-weight:600;font-size:.95rem;text-decoration:none;line-height:1.2}.cta-bar .p{background:var(--btn);color:var(--btn-ink)}.cta-bar .s{border:1.5px solid var(--ink);color:var(--ink)}body{padding-bottom:4.8rem}}</style>
 </head>
 <body>
 <style>
@@ -605,6 +607,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
       <h2 data-k="m.contact.1">Un projet en tête ?</h2>
       <p class="lead" data-k="m.contact.2">Décrivez-nous votre besoin en quelques lignes. Nous vous répondons avec une proposition adaptée.</p>
       <a class="mail" href="mailto:waylecorp@gmail.com" style="font-size:1.25rem;border-bottom-width:3px">waylecorp@gmail.com</a>
+      <p><a class="rdv" href="https://calendly.com/waylecorp/appel-decouverte" target="_blank" rel="noopener">Prendre rendez-vous (appel de 20 min)</a></p>
       <ul>
         <li><a href="tel:+33786858114">07 86 85 81 14</a></li>
         <li><a href="https://www.instagram.com/wayleproduction" rel="noopener">@wayleproduction</a></li>
@@ -996,5 +999,6 @@ Promise.all([claude.use("user"),claude.use("artifact")]).then(function(r){
 })();
 </script>
 
+<div class="cta-bar"><a class="p" href="#contact">Demander un devis</a><a class="s" href="https://calendly.com/waylecorp/appel-decouverte" target="_blank" rel="noopener">Prendre rendez-vous</a></div>
 </body>
 </html>

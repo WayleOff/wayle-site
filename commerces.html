@@ -323,7 +323,9 @@ select option{color:#1E1038;background:#fff}
 .vph-a:hover{background:rgba(20,10,40,.6);opacity:1}
 @media (hover:none){.vph-a{opacity:.7}}
 @media (prefers-reduced-motion:reduce){.vph-a{transition:none}}
-</style></head><body>
+</style><style id="cta-bar">.cta-bar{display:none}.rdv{display:inline-block;margin-top:1rem;border:1.5px solid var(--ink);color:var(--ink);padding:.8rem 1.5rem;border-radius:999px;font-weight:600;text-decoration:none}.rdv:hover{background:var(--ink);color:var(--bg)}
+@media (max-width:900px){.cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;gap:.5rem;padding:.6rem .75rem calc(.6rem + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}.cta-bar a{flex:1;text-align:center;padding:.8rem .4rem;border-radius:999px;font-weight:600;font-size:.95rem;text-decoration:none;line-height:1.2}.cta-bar .p{background:var(--btn);color:var(--btn-ink)}.cta-bar .s{border:1.5px solid var(--ink);color:var(--ink)}body{padding-bottom:4.8rem}}</style>
+</head><body>
 <style>
 html.wt-boot body>*:not(#wt){visibility:hidden}
 html.wt-boot{background:#160b2e}
@@ -630,4 +632,5 @@ if("IntersectionObserver" in window)new IntersectionObserver(function(e){vis=e[0
 setInterval(function(){if(stop||over||!vis||document.hidden)return;go(cur+1)},4800);
 })();
 </script>
+<div class="cta-bar"><a class="p" href="./#contact">Demander un devis</a><a class="s" href="https://calendly.com/waylecorp/appel-decouverte" target="_blank" rel="noopener">Prendre rendez-vous</a></div>
 </body></html>
