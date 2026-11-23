@@ -636,7 +636,8 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 <script>
 (function(){
 // Adresse du service de formulaire (ex. Formspree, Web3Forms). Vide = ouvre l'application e-mail.
-var ENDPOINT="";
+var ENDPOINT="https://api.web3forms.com/submit";
+var KEY="262495e2-6137-4c63-bd49-a92363053f4d";
 var TO="waylecorp@gmail.com";
 var f=document.getElementById("cf"),s=document.getElementById("status"),b=f.querySelector("button");
 function say(t,c){s.textContent=t;s.className=c||""}
@@ -651,8 +652,10 @@ f.addEventListener("submit",function(e){
     location.href="mailto:"+TO+"?subject="+encodeURIComponent("Demande de projet – "+d.type)+"&body="+encodeURIComponent(body);
     say("Votre application e-mail s’ouvre : il ne reste qu’à envoyer le message.","ok");return}
   b.disabled=true;say("Envoi en cours…");
-  fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(d)})
-  .then(function(r){if(!r.ok)throw 0;f.reset();say("Merci ! Votre demande est bien envoyée. Nous vous répondons rapidement.","ok")})
+  var payload={access_key:KEY,subject:"Demande de projet – "+d.type+" ("+d.nom+")",from_name:"Site Wayle",name:d.nom,email:d.email,replyto:d.email,telephone:d.tel||"—",rappel:d.rappel||"—",type_de_projet:d.type,message:d.message};
+  fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload)})
+  .then(function(r){return r.json().then(function(j){if(!r.ok||!j.success)throw 0;return j})})
+  .then(function(){f.reset();say("Merci ! Votre demande est bien envoyée. Nous vous répondons rapidement.","ok")})
   .catch(function(){say("L’envoi a échoué. Écrivez-nous directement à "+TO+".","err")})
   .finally(function(){b.disabled=false});
 });
