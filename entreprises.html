@@ -291,7 +291,47 @@ select option{color:#1E1038;background:#fff}
 .offers>article{min-width:0}.offers li{gap:.8rem}.offers li span{text-align:right;min-width:0}.offers li b{flex:none}
 @media (min-width:901px){.offers:not(.duo){grid-template-columns:repeat(3,minmax(0,1fr))}}
 .offers li{flex-wrap:wrap}.offers li span{white-space:normal;flex:1 1 8rem;overflow-wrap:anywhere}
-</style><style id="cta-bar">.cta-bar{display:none}.rdv{display:inline-block;margin-top:1rem;border:1.5px solid var(--ink);color:var(--ink);padding:.8rem 1.5rem;border-radius:999px;font-weight:600;text-decoration:none}.rdv:hover{background:var(--ink);color:var(--bg)}
+
+/* sur mesure + configurateur */
+.offers article.custom{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:2rem;flex-wrap:wrap}
+.offers article.custom p{max-width:38rem;margin:0}
+.custom-cta{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.custom-cta .price{margin:0 .6rem 0 0}
+.custom-cta .btn.ghost{margin-left:0}
+.conf{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:2.5rem;align-items:start}
+.conf fieldset{border:0;margin:0 0 2rem;padding:0}
+.conf legend{font:800 1.25rem "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.02em;padding:0;margin-bottom:.9rem}
+.pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem}
+.pick label{display:block;cursor:pointer}
+.pick input{position:absolute;opacity:0;width:1px;height:1px}
+.pick span{display:block;height:100%;padding:.9rem 1rem;border:1.5px solid var(--line);border-radius:18px;background:var(--surface);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.pick b{display:block;font-size:1.05rem}
+.pick em{display:block;font-style:normal;color:var(--mid);font-size:.9rem}
+.pick input:checked+span{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.pick input:focus-visible+span{outline:3px solid var(--violet);outline-offset:3px}
+.cf-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.8rem 0;border-bottom:1px solid var(--line)}
+.cf-row:first-child{border-top:1px solid var(--line)}
+.cf-row b{display:block;font-weight:600}
+.cf-row small{display:block;color:var(--mid);font-size:.88rem}
+.stp{display:flex;align-items:center;gap:.5rem;flex:none}
+.stp button{width:2.3rem;height:2.3rem;border-radius:50%;border:1.5px solid var(--ink);background:none;color:var(--ink);font:600 1.2rem/1 inherit;cursor:pointer}
+.stp button:hover:not(:disabled){background:var(--ink);color:var(--bg)}
+.stp button:disabled{opacity:.35;cursor:not-allowed}
+.stp output{min-width:1.6rem;text-align:center;font-weight:600}
+.cf-row label.chk{display:flex;justify-content:space-between;align-items:center;gap:1rem;width:100%;cursor:pointer}
+.cf-row input[type=checkbox]{width:1.35rem;height:1.35rem;flex:none;accent-color:var(--violet)}
+.conf-sum{position:sticky;top:6rem;background:var(--surface);border:1px solid rgba(255,255,255,.2);border-radius:24px;padding:1.5rem;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.conf-sum h3{font-size:1.35rem;margin-bottom:.8rem}
+.conf-sum ul{list-style:none;margin:0 0 1rem;padding:0}
+.conf-sum li{display:flex;justify-content:space-between;gap:1rem;padding:.4rem 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.conf-sum li span:last-child{white-space:nowrap;font-weight:600}
+.conf-total{margin:1rem 0 1.2rem}
+.conf-total small{display:block;color:var(--mid);font-size:.85rem}
+.conf-total strong{display:block;font:800 clamp(2.2rem,5vw,3rem)/1.1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.03em}
+.conf-sum .fine{margin:.9rem 0 0;font-size:.85rem;color:var(--mid)}
+@media (max-width:900px){.conf{grid-template-columns:1fr}.conf-sum{position:static}.pick{grid-template-columns:1fr}}
+@media (min-width:901px) and (max-width:1100px){.pick{grid-template-columns:1fr}}
+</style><script src="perso.js"></script><style id="cta-bar">.cta-bar{display:none}.rdv{display:inline-block;margin-top:1rem;border:1.5px solid var(--ink);color:var(--ink);padding:.8rem 1.5rem;border-radius:999px;font-weight:600;text-decoration:none}.rdv:hover{background:var(--ink);color:var(--bg)}
 @media (max-width:900px){.cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;gap:.5rem;padding:.6rem .75rem calc(.6rem + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}.cta-bar a{flex:1;text-align:center;padding:.8rem .4rem;border-radius:999px;font-weight:600;font-size:.95rem;text-decoration:none;line-height:1.2}.cta-bar .p{background:var(--btn);color:var(--btn-ink)}.cta-bar .s{border:1.5px solid var(--ink);color:var(--ink)}body{padding-bottom:4.8rem}}</style>
 </head><body>
 <style>
@@ -383,9 +423,35 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 <section id="formules"><div>
   <h2 data-k="e.formules.1">Les formules</h2>
   <p class="lead" data-k="e.formules.2">Un tarif de départ pour chaque formule. Le prix final dépend de votre projet.</p>
-  <div class="offers"><article><h3 data-k="e.formules.40">Business</h3><p data-k="e.formules.41">Pour présenter votre activité ou un produit.</p><div class="price"><small data-k="e.formules.42">dès</small> 550 € <small data-k="e.formules.43">TTC</small></div><ul><li><b data-k="e.formules.44">Rendez-vous</b><span data-k="e.formules.45">Sur place possible avant le tournage</span></li><li><b data-k="e.formules.46">Tournage</b><span data-k="e.formules.47">2 h chez vous</span></li><li><b data-k="e.formules.48">Vidéo</b><span data-k="e.formules.49">1 vidéo de 1 min, horizontale ou verticale (les deux : +50 €)</span></li><li><b data-k="e.formules.50">Montage</b><span data-k="e.formules.51">Logo, sous-titres, musique libre de droits</span></li><li><b data-k="e.formules.52">Révisions</b><span data-k="e.formules.53">2</span></li><li><b data-k="e.formules.54">Livraison</b><span data-k="e.formules.55">Sous 7 jours</span></li></ul></article><article><h3 data-k="e.formules.56">Business +</h3><p data-k="e.formules.57">Une version plus complète, pour aller plus loin.</p><div class="price"><small data-k="e.formules.58">dès</small> 750 € <small data-k="e.formules.59">TTC</small></div><ul><li><b data-k="e.formules.60">Brief</b><span data-k="e.formules.61">30 min par téléphone</span></li><li><b data-k="e.formules.62">Rendez-vous</b><span data-k="e.formules.63">Sur place avant le tournage, si besoin</span></li><li><b data-k="e.formules.64">Tournage</b><span data-k="e.formules.65">3 h chez vous</span></li><li><b data-k="e.formules.66">Vidéo</b><span data-k="e.formules.67">Jusqu’à 2 min, format au choix</span></li><li><b data-k="e.formules.68">Réseaux</b><span data-k="e.formules.69">2 contenus verticaux de 30 s</span></li><li><b data-k="e.formules.70">Montage</b><span data-k="e.formules.71">Identité visuelle, sous-titres, musique libre de droits</span></li><li><b data-k="e.formules.72">Voix off</b><span data-k="e.formules.73">En option : +150 €</span></li><li><b data-k="e.formules.74">Révisions</b><span data-k="e.formules.75">3</span></li><li><b data-k="e.formules.76">Livraison</b><span data-k="e.formules.77">Sous 10 jours</span></li></ul></article><article><h3 data-k="e.formules.78">Business 360</h3><p data-k="e.formules.79">La formule premium : une communication vidéo complète autour de votre activité.</p><div class="price"><small data-k="e.formules.80">dès</small> 1 250 € <small data-k="e.formules.81">TTC</small></div><ul><li><b data-k="e.formules.82">Brief</b><span data-k="e.formules.83">1 h de cadrage de votre stratégie</span></li><li><b data-k="e.formules.84">Repérage</b><span data-k="e.formules.85">Visite sur place avant le tournage</span></li><li><b data-k="e.formules.86">Tournage</b><span data-k="e.formules.87">Une demi-journée (jusqu’à 5 h)</span></li><li><b data-k="e.formules.88">Vidéo</b><span data-k="e.formules.89">Film principal jusqu’à 3 min, format au choix</span></li><li><b data-k="e.formules.90">Réseaux</b><span data-k="e.formules.91">4 contenus verticaux de 30 s</span></li><li><b data-k="e.formules.92">Photo</b><span data-k="e.formules.93">15 photos retouchées de votre activité</span></li><li><b data-k="e.formules.94">Montage</b><span data-k="e.formules.95">Identité visuelle, sous-titres, musique libre de droits</span></li><li><b data-k="e.formules.96">Voix off</b><span data-k="e.formules.97">Incluse</span></li><li><b data-k="e.formules.98">Révisions</b><span data-k="e.formules.99">4</span></li><li><b data-k="e.formules.100">Livraison</b><span data-k="e.formules.101">Sous 14 jours</span></li></ul></article></div>
+  <div class="offers"><article><h3 data-k="e.formules.40">Business</h3><p data-k="e.formules.41">Pour présenter votre activité ou un produit.</p><div class="price"><small data-k="e.formules.42">dès</small> 550 € <small data-k="e.formules.43">TTC</small></div><ul><li><b data-k="e.formules.44">Rendez-vous</b><span data-k="e.formules.45">Sur place possible avant le tournage</span></li><li><b data-k="e.formules.46">Tournage</b><span data-k="e.formules.47">2 h chez vous</span></li><li><b data-k="e.formules.48">Vidéo</b><span data-k="e.formules.49">1 vidéo de 1 min, horizontale ou verticale (les deux : +50 €)</span></li><li><b data-k="e.formules.50">Montage</b><span data-k="e.formules.51">Logo, sous-titres, musique libre de droits</span></li><li><b data-k="e.formules.52">Révisions</b><span data-k="e.formules.53">2</span></li><li><b data-k="e.formules.54">Livraison</b><span data-k="e.formules.55">Sous 7 jours</span></li></ul></article><article><h3 data-k="e.formules.56">Business +</h3><p data-k="e.formules.57">Une version plus complète, pour aller plus loin.</p><div class="price"><small data-k="e.formules.58">dès</small> 750 € <small data-k="e.formules.59">TTC</small></div><ul><li><b data-k="e.formules.60">Brief</b><span data-k="e.formules.61">30 min par téléphone</span></li><li><b data-k="e.formules.62">Rendez-vous</b><span data-k="e.formules.63">Sur place avant le tournage, si besoin</span></li><li><b data-k="e.formules.64">Tournage</b><span data-k="e.formules.65">3 h chez vous</span></li><li><b data-k="e.formules.66">Vidéo</b><span data-k="e.formules.67">Jusqu’à 2 min, format au choix</span></li><li><b data-k="e.formules.68">Réseaux</b><span data-k="e.formules.69">2 contenus verticaux de 30 s</span></li><li><b data-k="e.formules.70">Montage</b><span data-k="e.formules.71">Identité visuelle, sous-titres, musique libre de droits</span></li><li><b data-k="e.formules.72">Voix off</b><span data-k="e.formules.73">En option : +150 €</span></li><li><b data-k="e.formules.74">Révisions</b><span data-k="e.formules.75">3</span></li><li><b data-k="e.formules.76">Livraison</b><span data-k="e.formules.77">Sous 10 jours</span></li></ul></article><article><h3 data-k="e.formules.78">Business 360</h3><p data-k="e.formules.79">La formule premium : une communication vidéo complète autour de votre activité.</p><div class="price"><small data-k="e.formules.80">dès</small> 1 250 € <small data-k="e.formules.81">TTC</small></div><ul><li><b data-k="e.formules.82">Brief</b><span data-k="e.formules.83">1 h de cadrage de votre stratégie</span></li><li><b data-k="e.formules.84">Repérage</b><span data-k="e.formules.85">Visite sur place avant le tournage</span></li><li><b data-k="e.formules.86">Tournage</b><span data-k="e.formules.87">Une demi-journée (jusqu’à 5 h)</span></li><li><b data-k="e.formules.88">Vidéo</b><span data-k="e.formules.89">Film principal jusqu’à 3 min, format au choix</span></li><li><b data-k="e.formules.90">Réseaux</b><span data-k="e.formules.91">4 contenus verticaux de 30 s</span></li><li><b data-k="e.formules.92">Photo</b><span data-k="e.formules.93">15 photos retouchées de votre activité</span></li><li><b data-k="e.formules.94">Montage</b><span data-k="e.formules.95">Identité visuelle, sous-titres, musique libre de droits</span></li><li><b data-k="e.formules.96">Voix off</b><span data-k="e.formules.97">Incluse</span></li><li><b data-k="e.formules.98">Révisions</b><span data-k="e.formules.99">4</span></li><li><b data-k="e.formules.100">Livraison</b><span data-k="e.formules.101">Sous 14 jours</span></li></ul></article><article class="custom"><div><h3 data-k="e.formules.110">Sur mesure</h3><p data-k="e.formules.111">Un projet qui sort du cadre : plusieurs lieux, une série de vidéos, un événement, une campagne complète. Nous construisons la formule avec vous.</p></div><div class="custom-cta"><div class="price">Sur devis</div><a class="btn" href="#configurateur" data-k="e.formules.113">Composer ma formule</a><a class="btn ghost" href="./#contact" data-k="e.formules.114">Parler de mon projet</a></div></article></div>
   <p class="note" data-k="e.formules.13">Tarifs TTC, déplacement à Rouen et alentours compris. Options : voix off (+150 €), formats horizontal et vertical (+50 € sur Business), miniature, sous-titrage dynamique.</p>
 </div></section>
+
+<section id="configurateur"><div>
+  <h2 data-k="e.conf.1">Composez votre vidéo</h2>
+  <p class="lead" data-k="e.conf.2">Partez d’une formule, ajoutez ce dont vous avez besoin : l’estimation se met à jour en direct. Elle est indicative, nous confirmons le devis ensemble.</p>
+  <div class="conf">
+    <div class="conf-form">
+      <fieldset><legend>1. Votre formule de départ</legend>
+        <div class="pick" id="cf-base"></div>
+      </fieldset>
+      <fieldset><legend>2. Vos ajustements</legend>
+        <div id="cf-steps"></div>
+      </fieldset>
+      <fieldset><legend>3. Vos options</legend>
+        <div id="cf-opts"></div>
+      </fieldset>
+    </div>
+    <aside class="conf-sum" aria-live="polite">
+      <h3>Votre estimation</h3>
+      <ul id="cf-list"></ul>
+      <div class="conf-total"><small>Total estimé</small><strong id="cf-total">—</strong><small>TTC, déplacement à Rouen et alentours compris</small></div>
+      <a class="btn" id="cf-send" href="./#contact">Envoyer cette demande</a>
+      <p class="fine">Aucun engagement. Votre sélection est reprise dans le formulaire de contact.</p>
+    </aside>
+  </div>
+</div></section>
+
 
 <section><div>
   <h2 data-k="e.top.5">Comment ça se passe</h2>
@@ -559,5 +625,61 @@ Promise.all([claude.use("user"),claude.use("artifact")]).then(function(r){
 })();
 </script>
 
+<script>
+(function(){
+/* Tarifs du configurateur : modifiables ici (en euros TTC) */
+var BASES=[
+ {id:"biz",n:"Business",p:550,d:"2 h de tournage · 1 min de vidéo · 2 révisions",h:2,m:1,v:0,r:2,photo:0,voice:false},
+ {id:"plus",n:"Business +",p:750,d:"3 h · 2 min · 2 contenus verticaux · 3 révisions",h:3,m:2,v:2,r:3,photo:0,voice:false},
+ {id:"360",n:"Business 360",p:1250,d:"5 h · 3 min · 4 contenus verticaux · 15 photos · voix off",h:5,m:3,v:4,r:4,photo:15,voice:true}
+];
+var STEPS=[
+ {k:"h",l:"Heure de tournage supplémentaire",u:"heure",pu:100,max:6,sub:"Au-delà des heures incluses dans la formule"},
+ {k:"m",l:"Minute de vidéo supplémentaire",u:"minute",pu:50,max:5,sub:"Pour la vidéo principale"},
+ {k:"v",l:"Contenu vertical de 30 s",u:"contenu",pu:25,max:8,sub:"Pour vos réseaux, décliné de votre tournage"},
+ {k:"r",l:"Révision supplémentaire",u:"révision",pu:30,max:3,sub:"Ajustements après le premier montage"},
+ {k:"ph",l:"Pack de 10 photos retouchées",u:"pack",pu:80,max:3,sub:"Activité, équipe, lieux, produits"}
+];
+var OPTS=[
+ {k:"voice",l:"Voix off",pu:150,sub:"Enregistrée et synchronisée sur votre vidéo"},
+ {k:"both",l:"Vidéo principale en horizontal et en vertical",pu:50,sub:"Pour le site et pour les réseaux"},
+ {k:"itw",l:"Interview ou témoignage filmé",pu:120,sub:"Une ou plusieurs personnes, questions préparées"},
+ {k:"fast",l:"Livraison prioritaire (sous 5 jours)",pu:100,sub:"Selon notre planning"}
+];
+var st={base:"biz",n:{},o:{}};
+function eur(x){return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g," ")+" €"}
+function base(){return BASES.filter(function(b){return b.id===st.base})[0]}
+var elB=document.getElementById("cf-base"),elS=document.getElementById("cf-steps"),elO=document.getElementById("cf-opts"),elL=document.getElementById("cf-list"),elT=document.getElementById("cf-total"),elX=document.getElementById("cf-send");
+if(!elB)return;
+elB.innerHTML=BASES.map(function(b,i){return '<label><input type="radio" name="cf-base" value="'+b.id+'"'+(i===0?' checked':'')+'><span><b>'+b.n+'</b><em>dès '+eur(b.p)+'</em><em>'+b.d+'</em></span></label>'}).join("");
+elS.innerHTML=STEPS.map(function(x){return '<div class="cf-row"><div><b>'+x.l+'</b><small>+'+eur(x.pu)+' par '+x.u+' · '+x.sub+'</small></div><div class="stp"><button type="button" data-k="'+x.k+'" data-d="-1" aria-label="Retirer : '+x.l+'">−</button><output id="cf-n-'+x.k+'">0</output><button type="button" data-k="'+x.k+'" data-d="1" aria-label="Ajouter : '+x.l+'">+</button></div></div>'}).join("");
+elO.innerHTML=OPTS.map(function(x){return '<div class="cf-row"><label class="chk"><span><b>'+x.l+'</b><small>+'+eur(x.pu)+' · '+x.sub+'</small></span><input type="checkbox" data-o="'+x.k+'" id="cf-o-'+x.k+'"></label></div>'}).join("");
+function calc(){
+  var b=base(),lines=[],tot=b.p;
+  lines.push([b.n+" (formule de départ)",b.p,b.n+" : "+eur(b.p)]);
+  STEPS.forEach(function(x){var n=st.n[x.k]||0;if(n>0){var c=n*x.pu;tot+=c;var lab=n+" × "+x.l.toLowerCase();lines.push([lab,c,lab+" : +"+eur(c)])}});
+  OPTS.forEach(function(x){if(!st.o[x.k])return;if(x.k==="voice"&&b.voice)return;tot+=x.pu;lines.push([x.l,x.pu,x.l+" : +"+eur(x.pu)])});
+  return {tot:tot,lines:lines,b:b};
+}
+function render(){
+  var r=calc(),b=r.b;
+  /* voix off incluse dans la 360 */
+  var v=document.getElementById("cf-o-voice");
+  if(v){v.disabled=b.voice;if(b.voice){v.checked=true}else{v.checked=!!st.o.voice}
+    v.closest("label").querySelector("small").textContent=b.voice?"Incluse dans Business 360":"+"+eur(150)+" · Enregistrée et synchronisée sur votre vidéo"}
+  var ph=document.getElementById("cf-n-ph");
+  STEPS.forEach(function(x){var n=st.n[x.k]||0;document.getElementById("cf-n-"+x.k).textContent=n;
+    [].forEach.call(elS.querySelectorAll('button[data-k="'+x.k+'"]'),function(bt){bt.disabled=(bt.dataset.d==="-1"&&n<=0)||(bt.dataset.d==="1"&&n>=x.max)})});
+  elL.innerHTML=r.lines.map(function(l,i){return '<li><span>'+l[0]+'</span><span>'+(i===0?eur(l[1]):"+"+eur(l[1]))+'</span></li>'}).join("");
+  elT.textContent=eur(r.tot);
+  var msg="Demande de devis personnalisé (page Entreprises)\n\n"+r.lines.map(function(l){return "• "+l[2]}).join("\n")+"\n\nEstimation indicative : "+eur(r.tot)+" TTC\n\nMon activité et mon projet : ";
+  elX.href="./?devis="+encodeURIComponent(msg)+"#contact";
+}
+elB.addEventListener("change",function(e){if(e.target.name==="cf-base"){st.base=e.target.value;render()}});
+elS.addEventListener("click",function(e){var t=e.target.closest("button[data-k]");if(!t)return;var x=STEPS.filter(function(y){return y.k===t.dataset.k})[0];var n=(st.n[x.k]||0)+(+t.dataset.d);st.n[x.k]=Math.max(0,Math.min(x.max,n));render()});
+elO.addEventListener("change",function(e){var k=e.target.dataset.o;if(k){st.o[k]=e.target.checked;render()}});
+render();
+})();
+</script>
 <div class="cta-bar"><a class="p" href="./#contact">Demander un devis</a><a class="s" href="https://calendly.com/waylecorp/appel-decouverte" target="_blank" rel="noopener">Prendre rendez-vous</a></div>
 </body></html>
