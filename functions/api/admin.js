@@ -3,7 +3,7 @@
 import { verifyAccess, json } from "../_shared/access.js";
 
 const COLLS = ["g_clients", "g_projets", "g_docs", "g_prospects", "g_config", "g_notes", "g_taches",
-  "s_config", "s_content", "s_pages", "s_media"];
+  "s_config", "s_content", "s_pages", "s_media", "c_portal", "c_activity"];
 const MAX_BODY = 200000;
 const MAX_BODY_MEDIA = 1900000; // images du site (≈ 1,4 Mo après encodage)
 

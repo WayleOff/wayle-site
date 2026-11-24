@@ -88,6 +88,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <a href="#textes">Textes du site</a>
     <a href="#pages">Pages</a>
     <a href="#medias">Images</a>
+    <a href="#clients">Espaces clients <span id="nbadge" class="badge mod" hidden></span></a>
     <a href="#sauvegarde">Sauvegarde</a>
   </nav>
   <div class="ext nav-ext"><a href="/" target="_blank" rel="noopener">Voir le site ↗</a><br><a href="/gestion">Gestion de l’entreprise</a></div>
@@ -102,7 +103,7 @@ var $=function(s,r){return(r||document).querySelector(s)},$$=function(s,r){retur
 var esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")};
 var norm=function(s){return String(s||"").replace(/\s+/g," ").trim()};
 var DEF={primary:"#E8501E",secondary:"#6A2BD0",base:"#1E1038"};
-var S={cfg:{},content:{items:{}},pages:{},media:[],dirty:false,edit:null,texts:null,textPage:"/",tSearch:""};
+var S={portals:{},acts:{},cfg:{},content:{items:{}},pages:{},media:[],dirty:false,edit:null,texts:null,textPage:"/",tSearch:""};
 
 /* ---------- API ---------- */
 function api(m,qs,b){
@@ -120,15 +121,16 @@ window.addEventListener("beforeunload",function(e){if(S.dirty){e.preventDefault(
 
 /* ---------- chargement ---------- */
 function loadAll(){
-  return Promise.all([api("GET","c=s_config&id=main"),api("GET","c=s_content&id=main"),api("GET","c=s_pages"),api("GET","c=s_media")]).then(function(r){
+  return Promise.all([api("GET","c=s_config&id=main"),api("GET","c=s_content&id=main"),api("GET","c=s_pages"),api("GET","c=s_media"),api("GET","c=c_portal"),api("GET","c=c_activity")]).then(function(r){
     S.cfg=r[0].data||{};S.content=r[1].data||{items:{}};if(!S.content.items)S.content.items={};
     S.pages={};r[2].forEach(function(p){S.pages[p.id]=p.data});
+    S.portals={};r[4].forEach(function(p){S.portals[p.id]=p.data});S.acts={};r[5].forEach(function(p){S.acts[p.id]=p.data});
     S.media=r[3].map(function(m){return{id:m.id,d:m.data}}).sort(function(a,b){return(b.d.at||0)-(a.d.at||0)});
   });
 }
 
 /* ---------- navigation ---------- */
-var VIEWS={accueil:vHome,apparence:vLook,textes:vTexts,pages:vPages,medias:vMedia,sauvegarde:vBackup};
+var VIEWS={accueil:vHome,apparence:vLook,textes:vTexts,pages:vPages,medias:vMedia,clients:vClients,sauvegarde:vBackup};
 function route(){
   if(S.dirty&&!confirm("Vous avez des modifications non enregistrées. Quitter quand même ?")){history.replaceState(null,"",S.hash||"#accueil");return}
   var h=(location.hash||"#accueil").slice(1),seg=h.split("/"),v=seg[0];
@@ -136,6 +138,7 @@ function route(){
   S.hash="#"+h;setDirty(false);
   $$("#nav a").forEach(function(a){if(a.getAttribute("href")==="#"+v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   VIEWS[v](seg.slice(1));window.scrollTo(0,0);
+  var nb=$("#nbadge");if(nb){var n=totalNew();nb.hidden=!n;nb.textContent=n}
 }
 window.addEventListener("hashchange",route);
 function main(h){$("#main").innerHTML=h}
@@ -155,7 +158,7 @@ function vHome(){
    +'<a class="tile" href="#medias"><b>Images</b><span>'+S.media.length+' image'+(S.media.length>1?"s":"")+'</span></a>'
    +'</div><h2>Vos autres espaces</h2><div class="grid">'
    +'<a class="tile" href="/gestion"><b>Gestion de l’entreprise</b><span>Clients, projets, prospection, documents</span></a>'
-   +'<a class="tile" href="/admin/espace-client"><b>Espace client (démonstration)</b><span>Ancienne version, accès par code en démonstration. La version sécurisée viendra ensuite.</span></a>'
+   +'<a class="tile" href="#clients"><b>Espaces clients</b><span>'+Object.keys(S.portals).length+' espace'+(Object.keys(S.portals).length>1?"s":"")+(totalNew()?' · <b>'+totalNew()+' nouveauté'+(totalNew()>1?"s":"")+'</b>':'')+'</span></a>'
    +'<a class="tile" href="/" target="_blank" rel="noopener"><b>Voir le site</b><span>Ouvre wayle.fr dans un nouvel onglet</span></a>'
    +'</div><h2>Raccourcis</h2><div class="grid">'
    +'<a class="tile" href="https://calendly.com/waylecorp/appel-decouverte" target="_blank" rel="noopener"><b>Calendly</b><span>Vos rendez-vous d’appel découverte</span></a>'
@@ -368,6 +371,116 @@ function vMedia(){
     if(S.cfg.favicon===id)used.push("Favicon");
     if(!confirm(used.length?"Cette image est utilisée ("+used.join(", ")+"). La supprimer quand même ?":"Supprimer cette image ?"))return;
     api("DELETE","c=s_media&id="+id).then(function(){S.media=S.media.filter(function(m){return m.id!==id});toast("Image supprimée");vMedia()}).catch(fail)}});
+}
+
+/* ---------- Espaces clients ---------- */
+var ALPHA="ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+function genCode(){var a=new Uint8Array(10),o="";crypto.getRandomValues(a);for(var i=0;i<10;i++){o+=ALPHA[a[i]%ALPHA.length];if(i===4)o+="-"}return o}
+function sha(s){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)).then(function(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return("0"+x.toString(16)).slice(-2)}).join("")})}
+function codeHash(c){return sha("wayle-client:"+String(c).toUpperCase().replace(/[^A-Z0-9]/g,""))}
+function newCodeFor(excludeId){
+  var c=genCode();return codeHash(c).then(function(h){
+    var clash=Object.keys(S.portals).some(function(k){return k!==excludeId&&S.portals[k].codeHash===h});
+    return clash?newCodeFor(excludeId):{code:c,hash:h}});
+}
+function newActivity(id){var p=S.portals[id],a=S.acts[id];if(!a||!a.events)return 0;return a.events.filter(function(e){return e.at>(p.seenAt||0)}).length}
+function totalNew(){return Object.keys(S.portals).reduce(function(n,k){return n+newActivity(k)},0)}
+function shortDate(){return new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}
+function vClients(arg){
+  if(arg[0])return editClient(arg[0]);
+  var ks=Object.keys(S.portals).sort(function(a,b){return(S.portals[b].created||0)-(S.portals[a].created||0)});
+  main(head("Espaces clients","Chaque client reçoit un lien et un code personnel pour suivre son projet, valider vos versions et vous écrire. Les clients ne voient que leur propre espace.")
+   +'<div class="row" style="margin-bottom:1rem"><button class="btn" id="newc" type="button">+ Nouvel espace client</button><span class="hint">Adresse à donner aux clients : <b>wayle.fr/espace-client</b></span></div>'
+   +(ks.length?'<div class="card" style="padding:.4rem 1rem"><table><thead><tr><th>Client</th><th>Projet</th><th>À traiter</th><th></th></tr></thead><tbody>'+ks.map(function(k){var p=S.portals[k],n=newActivity(k),pend=(p.versions||[]).filter(function(v){var d=((S.acts[k]||{}).decisions||{})[v.id];return !d}).length;
+     return'<tr><td><b>'+esc(p.name)+'</b></td><td class="hint">'+esc(p.project||"—")+'</td><td>'+(n?'<span class="badge mod">'+n+' nouveau'+(n>1?"x":"")+'</span> ':'')+(pend?'<span class="badge">'+pend+' version'+(pend>1?"s":"")+' en attente</span>':'')+'</td><td><div class="row" style="justify-content:flex-end"><a class="btn ghost sm" href="#clients/'+esc(k)+'">Ouvrir</a></div></td></tr>'}).join("")+'</tbody></table></div>'
+    :'<div class="empty">Aucun espace client pour l’instant. Cliquez sur « Nouvel espace client ».</div>'));
+  $("#newc").onclick=function(){
+    api("GET","c=g_clients").then(function(r){return r.map(function(x){return x.data&&x.data.nom}).filter(Boolean).sort()}).catch(function(){return[]}).then(function(names){
+      var d=$("#dlg");
+      d.innerHTML='<h2 style="margin-top:0">Nouvel espace client</h2><label class="f">Nom du client<input type="text" id="nc-n" maxlength="120" list="nc-l" placeholder="Nom ou entreprise"></label><datalist id="nc-l">'+names.map(function(n){return'<option value="'+esc(n)+'">'}).join("")+'</datalist><label class="f" style="margin-top:.7rem">Projet<input type="text" id="nc-p" maxlength="160" placeholder="Ex. Vidéo de présentation"></label><div class="row" style="margin-top:1rem;justify-content:flex-end"><button class="btn ghost" id="nc-x" type="button">Annuler</button><button class="btn" id="nc-ok" type="button">Créer</button></div>';
+      d.showModal();$("#nc-x").onclick=function(){d.close()};
+      $("#nc-ok").onclick=function(){var n=$("#nc-n").value.trim();if(!n){$("#nc-n").focus();return}
+        var id="c"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+        newCodeFor().then(function(c){
+          var p={name:n,project:$("#nc-p").value.trim(),contact:"",codeHash:c.hash,created:Date.now(),seenAt:Date.now(),
+            steps:[{label:"Cadrage et préparation",state:"current",date:""},{label:"Tournage",state:"todo",date:""},{label:"Montage",state:"todo",date:""},{label:"Livraison",state:"todo",date:""}],versions:[],files:[],invoices:[],msgsAdmin:[]};
+          return api("PUT","c=c_portal&id="+id,p).then(function(){S.portals[id]=p;d.close();showCode(id,n,c.code,true)})}).catch(fail)};
+    });
+  };
+}
+function showCode(id,name,code,isNew){
+  var link="https://wayle.fr/espace-client";
+  var msg="Bonjour,\n\nVotre espace client Wayle est prêt : vous y suivez l’avancement du projet, validez les versions et pouvez m’écrire.\n\nLien : "+link+"\nVotre code personnel : "+code+"\n\nÀ bientôt,\nJonas – Wayle Production";
+  var d=$("#dlg");
+  d.innerHTML='<h2 style="margin-top:0">Code de '+esc(name)+'</h2><div class="warn">Ce code ne sera plus jamais affiché : seule son empreinte est conservée. Copiez-le maintenant. Si vous le perdez, générez-en un nouveau.</div><div class="card" style="text-align:center;font:800 1.8rem ui-monospace,monospace;letter-spacing:.08em">'+esc(code)+'</div><label class="f">Message prêt à envoyer<textarea id="sc-m" readonly style="min-height:11rem">'+esc(msg)+'</textarea></label><div class="row" style="margin-top:1rem;justify-content:flex-end"><button class="btn ghost" id="sc-c" type="button">Copier le message</button><button class="btn" id="sc-ok" type="button">J’ai copié le code</button></div>';
+  d.showModal();
+  $("#sc-c").onclick=function(){(navigator.clipboard?navigator.clipboard.writeText(msg):Promise.reject()).then(function(){toast("Message copié")}).catch(function(){$("#sc-m").select();toast("Sélectionné : copiez avec Ctrl+C")})};
+  $("#sc-ok").onclick=function(){d.close();if(isNew)location.hash="#clients/"+id;else vClients([id])};
+}
+function listEd(host,arr,fields,mk,addLabel,onChange){
+  function draw(){
+    host.textContent="";
+    arr.forEach(function(it,i){
+      var r=document.createElement("div");r.className="item";
+      var f=document.createElement("div");f.style.cssText="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.5rem";
+      fields.forEach(function(fd){
+        var w=document.createElement("label");w.className="f";w.textContent=fd.l;
+        var inp;if(fd.opts){inp=document.createElement("select");fd.opts.forEach(function(o){var op=document.createElement("option");op.value=o[0];op.textContent=o[1];inp.appendChild(op)});inp.value=it[fd.k]||fd.opts[0][0]}
+        else if(fd.area){inp=document.createElement("textarea");inp.style.minHeight="3rem";inp.value=it[fd.k]||""}
+        else{inp=document.createElement("input");inp.type="text";inp.value=it[fd.k]||""}
+        if(fd.max)inp.maxLength=fd.max;if(fd.ph)inp.placeholder=fd.ph;
+        inp.addEventListener("input",function(){it[fd.k]=inp.value;onChange()});inp.addEventListener("change",function(){it[fd.k]=inp.value;onChange()});
+        w.appendChild(inp);if(fd.area)w.style.gridColumn="1/-1";f.appendChild(w)});
+      r.appendChild(f);
+      var b=document.createElement("div");b.className="row";
+      [["↑",-1],["↓",1]].forEach(function(m){var x=document.createElement("button");x.type="button";x.className="btn ghost sm";x.textContent=m[0];x.setAttribute("aria-label",m[1]<0?"Monter":"Descendre");x.disabled=(i+m[1]<0||i+m[1]>=arr.length);x.onclick=function(){var t=arr[i];arr[i]=arr[i+m[1]];arr[i+m[1]]=t;onChange();draw()};b.appendChild(x)});
+      var del=document.createElement("button");del.type="button";del.className="btn danger sm";del.textContent="Supprimer";del.onclick=function(){arr.splice(i,1);onChange();draw()};b.appendChild(del);
+      r.appendChild(b);host.appendChild(r);
+    });
+    var add=document.createElement("button");add.type="button";add.className="btn ghost sm";add.textContent=addLabel;add.onclick=function(){arr.push(mk());onChange();draw()};host.appendChild(add);
+  }
+  draw();
+}
+function editClient(id){
+  var P=S.portals[id];if(!P){location.hash="#clients";return}
+  var A=S.acts[id]||{decisions:{},msgs:[],events:[]};
+  P.steps=P.steps||[];P.versions=P.versions||[];P.files=P.files||[];P.invoices=P.invoices||[];P.msgsAdmin=P.msgsAdmin||[];
+  var seenOld=P.seenAt||0;
+  var thread=[].concat((A.msgs||[]).map(function(m){return{f:"c",t:m.text,at:m.at}}),P.msgsAdmin.map(function(m){return{f:"w",t:m.text,at:m.at}})).sort(function(a,b){return a.at-b.at});
+  var evs=(A.events||[]).slice().reverse().slice(0,30);
+  main(head(esc(P.name),'<a href="#clients">← Tous les espaces clients</a>',true)
+   +'<div class="card"><div class="row" style="align-items:flex-end"><label class="f" style="flex:1;min-width:200px">Nom du client<input type="text" id="e-n" maxlength="120" value="'+esc(P.name)+'"></label><label class="f" style="flex:2;min-width:240px">Projet<input type="text" id="e-p" maxlength="160" value="'+esc(P.project||"")+'"></label></div>'
+   +'<div class="row" style="margin-top:.8rem"><button class="btn ghost sm" id="e-code" type="button">Générer un nouveau code</button><button class="btn danger sm" id="e-del" type="button">Supprimer cet espace</button><span class="hint">Le code actuel n’est pas affichable (stocké sous forme d’empreinte). Un nouveau code invalide l’ancien.</span></div></div>'
+   +'<h2>Activité du client</h2><div class="card">'+(evs.length?'<ul style="margin:0;padding-left:1.1rem">'+evs.map(function(e){return'<li'+(e.at>seenOld?' style="font-weight:700"':'')+'>'+esc(new Date(e.at).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))+' — '+esc(e.text)+'</li>'}).join("")+'</ul>':'<span class="hint">Rien pour l’instant.</span>')+'</div>'
+   +'<h2>Messages</h2><div class="card"><div id="th">'+(thread.length?thread.map(function(m){return'<div style="margin:0 0 .6rem;padding:.5rem .8rem;border-radius:12px;border:1px solid var(--line);background:'+(m.f==="c"?'#2a1c40':'transparent')+'"><span class="hint">'+(m.f==="c"?esc(P.name):"Vous")+' · '+esc(new Date(m.at).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))+'</span><div style="white-space:pre-wrap;overflow-wrap:anywhere">'+esc(m.t)+'</div></div>'}).join(""):'<span class="hint">Aucun message.</span>')+'</div><textarea id="e-r" maxlength="1000" placeholder="Répondre au client…" aria-label="Réponse"></textarea><div class="row" style="margin-top:.5rem"><button class="btn sm" id="e-send" type="button">Envoyer la réponse</button><span class="hint">Le client la verra à sa prochaine visite (pas d’e-mail automatique).</span></div></div>'
+   +'<h2>Avancement</h2><div class="card" id="L-steps"></div>'
+   +'<h2>Versions à faire valider</h2><div class="card"><p class="hint" style="margin-top:0">Ajoutez le lien de la vidéo (YouTube non répertorié, Vimeo, Drive…). Le client pourra valider ou demander des modifications.</p><div id="L-vers"></div></div>'
+   +'<div id="decs"></div>'
+   +'<h2>Livrables</h2><div class="card" id="L-files"></div>'
+   +'<h2>Factures</h2><div class="card" id="L-inv"></div>');
+  var chg=function(){setDirty(true)};
+  $("#e-n").oninput=function(){P.name=this.value;chg()};$("#e-p").oninput=function(){P.project=this.value;chg()};
+  listEd($("#L-steps"),P.steps,[{k:"label",l:"Étape",max:120},{k:"state",l:"État",opts:[["todo","À venir"],["current","En cours"],["done","Terminé"]]},{k:"date",l:"Date (texte libre)",max:40,ph:"ex. 12 déc."}],function(){return{label:"",state:"todo",date:""}},"+ Ajouter une étape",chg);
+  listEd($("#L-vers"),P.versions,[{k:"title",l:"Titre",max:160,ph:"ex. Montage V1"},{k:"date",l:"Date",max:40},{k:"url",l:"Lien (https://…)",max:500},{k:"note",l:"Note pour le client",area:1,max:600}],function(){return{id:"v"+Date.now().toString(36)+Math.random().toString(36).slice(2,4),title:"",url:"",note:"",date:shortDate()}},"+ Ajouter une version",chg);
+  listEd($("#L-files"),P.files,[{k:"title",l:"Titre",max:160},{k:"date",l:"Date",max:40},{k:"url",l:"Lien de téléchargement (https://…)",max:500}],function(){return{title:"",date:shortDate(),url:""}},"+ Ajouter un livrable",chg);
+  listEd($("#L-inv"),P.invoices,[{k:"label",l:"Libellé",max:160,ph:"ex. Acompte 30 %"},{k:"amount",l:"Montant",max:40,ph:"ex. 165 €"},{k:"state",l:"État",opts:[["sent","Envoyée"],["due","À régler"],["paid","Payée"]]},{k:"url",l:"Lien (https://…)",max:500}],function(){return{label:"",amount:"",state:"sent",url:""}},"+ Ajouter une facture",chg);
+  var dec=P.versions.filter(function(v){return A.decisions&&A.decisions[v.id]});
+  if(dec.length)$("#decs").innerHTML='<h2>Décisions du client</h2><div class="card">'+dec.map(function(v){var d=A.decisions[v.id];return'<p style="margin:.2rem 0"><b>'+esc(v.title)+'</b> — '+(d.status==="validated"?'<span class="badge on">validée</span>':'<span class="badge mod">modifications demandées</span>')+(d.comment?'<br><span class="hint">« '+esc(d.comment)+' »</span>':'')+'</p>'}).join("")+'<p class="hint">Pour redemander une validation après modification, ajoutez une nouvelle version (V2…).</p></div>';
+  function clean(){P.versions=P.versions.filter(function(v){return v.title.trim()});P.steps=P.steps.filter(function(s){return s.label.trim()});P.files=P.files.filter(function(f){return f.title.trim()});P.invoices=P.invoices.filter(function(f){return f.label.trim()})}
+  function bad(){var u=[].concat(P.versions,P.files,P.invoices).filter(function(x){return x.url&&!/^https?:\/\//i.test(x.url.trim())});return u.length}
+  function persist(msg){clean();if(bad()){toast("Les liens doivent commencer par https://",true);return Promise.reject()}
+    P.versions.forEach(function(v){v.url=(v.url||"").trim()});P.files.forEach(function(v){v.url=(v.url||"").trim()});P.invoices.forEach(function(v){v.url=(v.url||"").trim()});
+    P.name=P.name.trim()||"Client";P.updated=Date.now();
+    return api("PUT","c=c_portal&id="+id,P).then(function(){setDirty(false);if(msg)toast(msg)}).catch(function(e){if(e)fail(e);throw e})}
+  $("#savebtn").onclick=function(){persist("Espace client enregistré").then(function(){editClient(id)}).catch(function(){})};
+  $("#e-send").onclick=function(){var t=$("#e-r").value.trim();if(!t)return;P.msgsAdmin.push({text:t.slice(0,1000),at:Date.now()});
+    persist("Réponse envoyée").then(function(){editClient(id)}).catch(function(){P.msgsAdmin.pop()})};
+  $("#e-code").onclick=function(){if(!confirm("Générer un nouveau code ? L’ancien code cessera immédiatement de fonctionner."))return;
+    newCodeFor(id).then(function(c){P.codeHash=c.hash;return persist().then(function(){showCode(id,P.name,c.code,false)})}).catch(function(){})};
+  $("#e-del").onclick=function(){if(!confirm("Supprimer l’espace de « "+P.name+" » ? Le client perdra l’accès et son historique sera effacé."))return;
+    api("DELETE","c=c_portal&id="+id).then(function(){return api("DELETE","c=c_activity&id="+id).catch(function(){})}).then(function(){delete S.portals[id];delete S.acts[id];toast("Espace supprimé");location.hash="#clients"}).catch(fail)};
+  /* marque l'activité comme vue */
+  if(newActivity(id)){P.seenAt=Date.now();api("PUT","c=c_portal&id="+id,P).catch(function(){})}
 }
 
 /* ---------- Sauvegarde ---------- */
