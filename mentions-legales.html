@@ -4,17 +4,19 @@
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Figtree:wght@400;500;600&display=swap">
 <style>
-:root{--bg:#FAF8FB;--surface:#F0ECF4;--ink:#1F1433;--mid:#5E5472;--line:#DCD5E6;--orange:#E8501E;--violet:#6A2BD0;--mark:#FFE9A8;box-sizing:border-box;color-scheme:light}
-@media (prefers-color-scheme:dark){:root{--bg:#150E22;--surface:#201733;--ink:#F3EFF8;--mid:#B3A8C7;--line:#34284A;--violet:#A98BFF;--mark:#5B4A12;color-scheme:dark}}
+/* thème : Wayle actuel */
+:root{--font-heading:"Bricolage Grotesque","Figtree",system-ui,sans-serif;--font-body:"Figtree",system-ui,sans-serif;--font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--text-base:1.0625rem;--leading:1.65;--container:1100px;--ease:cubic-bezier(.22,.7,.22,1);--radius-pill:999px;--radius-xl:28px;--radius-card:24px;--radius-md:20px;--radius-img:18px;--radius-field:14px;--bg-mesh:radial-gradient(60% 50% at 80% 6%,rgba(96,44,176,.9),transparent 70%),radial-gradient(75% 60% at 22% 30%,rgba(232,80,30,.72),transparent 68%),radial-gradient(55% 45% at 88% 48%,rgba(214,70,40,.5),transparent 70%),radial-gradient(85% 55% at 45% 102%,rgba(106,43,208,.95),transparent 70%),radial-gradient(50% 40% at 4% 96%,rgba(232,140,90,.55),transparent 70%),var(--bg);--color-primary:var(--orange);--color-secondary:var(--violet);--bg:#FAF8FB;--surface:#F0ECF4;--surface-raised:#FFFFFF;--ink:#1F1433;--mid:#5E5472;--muted:#8A809C;--line:#DCD5E6;--orange:#E8501E;--violet:#6A2BD0;--accent:#E8501E;--btn:#1F1433;--btn-ink:#FFFFFF;--link:#6A2BD0;--link-hover:#4F1FA3;--success:#1E7A46;--warning:#9A5B00;--error:#C0341D;--info:#1F5FBF;color-scheme:light}
+:root:not([data-theme="light"]){--bg:#1E1038;--surface:rgba(255,255,255,.08);--surface-raised:rgba(255,255,255,.14);--ink:#FFFFFF;--mid:rgba(255,255,255,.86);--muted:rgba(255,255,255,.6);--line:rgba(255,255,255,.22);--orange:#FF7A4D;--violet:#B9A2FF;--accent:#FF7A4D;--btn:#FFFFFF;--btn-ink:#1E1038;--link:#B9A2FF;--link-hover:#D2C3FF;--success:#8CE8B0;--warning:#FFC857;--error:#FFB4A5;--info:#9CC2FF;color-scheme:dark}
+:root{box-sizing:border-box;--mark:#7A5C12}:root[data-theme="light"]{--mark:#FFE9A8}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 1.0625rem/1.7 "Figtree",system-ui,sans-serif;padding-top:env(safe-area-inset-top,0)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--text-base)/1.7 var(--font-body);padding-top:env(safe-area-inset-top,0)}
 .wrap{max-width:760px;margin:0 auto;padding:0 1.5rem}
 header{display:flex;justify-content:space-between;align-items:center;padding:1.5rem 0}
 .logo{display:block;line-height:0}.logo img{height:2.4rem;width:auto}.logo .d{display:none}
 @media (prefers-color-scheme:dark){.logo .l{display:none}.logo .d{display:block}}
 .back{color:var(--mid);text-decoration:none;font-weight:500}.back:hover{color:var(--ink)}
 :focus-visible{outline:3px solid var(--violet);outline-offset:3px}
-h1,h2{font-family:"Bricolage Grotesque","Figtree",sans-serif;letter-spacing:-.03em;line-height:1.1;margin:0}
+h1,h2{font-family:var(--font-heading);letter-spacing:-.03em;line-height:1.1;margin:0}
 h1{font-size:clamp(2.2rem,6vw,3.4rem);margin:2.5rem 0 .5rem}
 h2{font-size:1.5rem;margin:2.8rem 0 .7rem}
 p,li{color:var(--mid)}p{margin:.6rem 0}
@@ -23,21 +25,20 @@ a{color:var(--ink)}
 dl{margin:.6rem 0;display:grid;grid-template-columns:minmax(0,11rem) 1fr;gap:.5rem 1.5rem}
 dt{font-weight:600}dd{margin:0;color:var(--mid)}
 .todo{background:var(--mark);color:var(--ink);padding:.05em .35em;border-radius:5px}
-.draft{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1rem 1.2rem;margin:1.5rem 0;color:var(--mid);font-size:.95rem}
+.draft{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-field);padding:1rem 1.2rem;margin:1.5rem 0;color:var(--mid);font-size:.95rem}
 footer{padding:3rem 0 2rem;color:var(--mid);font-size:.9rem}
 @media (max-width:560px){dl{grid-template-columns:1fr;gap:.1rem}dd{margin-bottom:.7rem}}
 /* gradient identity */
-:root{--bg:#1E1038;--surface:rgba(255,255,255,.08);--ink:#fff;--mid:rgba(255,255,255,.86);--line:rgba(255,255,255,.22);--violet:#B9A2FF;--mark:#7A5C12;color-scheme:dark}
 .logo .l{display:none}.logo .d{display:block}
 body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
-background:radial-gradient(60% 50% at 80% 6%,rgba(96,44,176,.9),transparent 70%),radial-gradient(75% 60% at 22% 30%,rgba(232,80,30,.72),transparent 68%),radial-gradient(55% 45% at 88% 48%,rgba(214,70,40,.5),transparent 70%),radial-gradient(85% 55% at 45% 102%,rgba(106,43,208,.95),transparent 70%),radial-gradient(50% 40% at 4% 96%,rgba(232,140,90,.55),transparent 70%),#1E1038}
+background:var(--bg-mesh)}
 body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.2;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 /* metallic sheen */
 html::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 background-image:radial-gradient(38% 28% at 72% 18%,rgba(255,255,255,.13),transparent 70%),linear-gradient(112deg,transparent 0 16%,rgba(255,255,255,.11) 23%,rgba(255,255,255,.02) 28%,rgba(20,8,40,.24) 34%,transparent 41%,rgba(255,255,255,.15) 52%,rgba(255,255,255,.03) 57%,transparent 63%,rgba(20,8,40,.22) 72%,rgba(255,255,255,.09) 80%,transparent 90%);
 background-size:100% 100%,150% 100%;background-repeat:no-repeat,repeat-x;
 background-position:0 0,calc(var(--sy,0)*-.05px) 0}
-</style><script src="site.js"></script><script src="perso.js"></script></head><body>
+</style><script src="site.js"></script><script src="perso.js"></script><link rel="stylesheet" href="/theme.css"></head><body>
 <style>
 html.wt-boot body>*:not(#wt){visibility:hidden}
 html.wt-boot{background:#160b2e}

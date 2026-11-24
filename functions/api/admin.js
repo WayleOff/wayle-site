@@ -1,9 +1,11 @@
 // API privée Wayle : Cloudflare Pages Function + base D1.
 // Protégée deux fois : par Cloudflare Access (Zero Trust) et par la vérification du jeton ici.
 import { verifyAccess, json } from "../_shared/access.js";
+import { validate, diffFromDefaults } from "../../theme/tokens/validate.js";
 
 const COLLS = ["g_clients", "g_projets", "g_docs", "g_prospects", "g_config", "g_notes", "g_taches",
-  "s_config", "s_content", "s_pages", "s_media", "c_portal", "c_activity"];
+  "s_config", "s_content", "s_pages", "s_media", "c_portal", "c_activity",
+  "t_themes"]; // thèmes : { theme:{écarts}, label } ; « published » est servi par /theme.css
 const MAX_BODY = 200000;
 const MAX_BODY_MEDIA = 1900000; // images du site (≈ 1,4 Mo après encodage)
 
@@ -49,6 +51,13 @@ export async function onRequest({ request, env }) {
     if (coll === "s_media") {
       if (!/^image\/(png|jpeg|webp|gif)$/.test(String(body.type || "")) || typeof body.data !== "string" || !/^[A-Za-z0-9+/=]+$/.test(body.data))
         return json({ error: "bad_media" }, 400);
+    }
+    if (coll === "t_themes") {
+      // validation stricte côté serveur : rien d'inconnu n'est stocké, donc rien d'inconnu n'arrive dans le CSS public
+      if (method !== "PUT") return json({ error: "method_not_allowed" }, 405);
+      const v = validate(body.theme);
+      if (!v.ok) return json({ error: "invalid_theme", details: v.errors.slice(0, 20) }, 400);
+      body = { theme: diffFromDefaults(v.theme), label: String(body.label || "").slice(0, 60) };
     }
     let data = body;
     if (method === "PATCH") {
