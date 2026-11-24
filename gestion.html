@@ -132,6 +132,8 @@ body>*:not(#print){display:none!important}
 }
 @media (max-width:760px){.g-split{grid-template-columns:minmax(0,1fr)}.g-fg{grid-template-columns:minmax(0,1fr)}.g-ln{grid-template-columns:minmax(0,1fr) 3.6rem 5rem 2rem}}
 .g-sel{font:inherit;font-size:.92rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:.5rem .7rem;width:100%}
+.g-pro{display:grid;gap:.9rem}.g-pi{border:1px solid var(--line);border-radius:14px;padding:1rem;display:grid;gap:.6rem;background:var(--bg)}.g-pi h4{margin:0;font-size:1rem}.g-pi textarea{width:100%;min-height:7.5rem;font:inherit;font-size:.92rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.6rem .8rem;resize:vertical}
+a.g-btn{display:inline-block;text-decoration:none}.g-pi .g-ca{flex-wrap:wrap}.g-tabn{display:inline-block;min-width:1.2rem;margin-left:.35rem;padding:0 .4rem;border-radius:999px;background:var(--violet);color:#fff;font-size:.75rem;line-height:1.3rem;text-align:center}
 </style><script src="/wayle-db.js"></script>
 <meta name="robots" content="noindex,nofollow">
 </head><body>
@@ -204,6 +206,7 @@ document.addEventListener("click",function(e){
 <div class="g-tabs" role="tablist" aria-label="Sections">
 <button role="tab" data-v="dash" aria-selected="true">Tableau de bord</button>
 <button role="tab" data-v="crm" aria-selected="false">CRM</button>
+<button role="tab" data-v="pro" aria-selected="false">Prospection<span class="g-tabn" id="pro-n" hidden></span></button>
 <button role="tab" data-v="pipe" aria-selected="false">Pipeline d’acquisition</button>
 <button role="tab" data-v="cli" aria-selected="false">Clients</button>
 <button role="tab" data-v="prj" aria-selected="false">Projets</button>
@@ -237,6 +240,16 @@ document.addEventListener("click",function(e){
 <div class="g-ca" style="margin-top:.7rem"><button class="g-btn sec sm" id="c-clear" type="button">Effacer les filtres</button></div></div>
 <div class="g-tw"><table class="g-t"><thead><tr><th>Nom</th><th>Secteur</th><th>Ville</th><th>Étape</th><th>Dernier échange</th><th>Relance</th><th>Étiquettes</th><th class="n">Type</th></tr></thead><tbody id="t-crm"></tbody></table></div><p class="g-note" id="n-crm"></p>
 <p class="g-note">Les prospects marqués « à valider » viennent d’une recherche web : ouvre la fiche, vérifie, puis clique « Valider » ou supprime-les.</p></section>
+<section class="g-view" id="v-pro" hidden>
+<div class="g-row"><h2>Prospection</h2><button class="g-btn" data-new="prospects">Nouveau prospect</button></div>
+<div class="g-card" style="margin-bottom:1rem"><h3 style="margin-top:0">Comment ça marche</h3>
+<p class="g-note" style="margin-top:0">Rien n’est envoyé automatiquement. Les messages sont préparés ici ; c’est toi qui valides, copies ou ouvres ta messagerie, puis tu cliques « Marquer comme envoyé » pour programmer la relance.</p>
+<details class="g-det"><summary>Demander une nouvelle recherche ou enrichir des fiches (avec Claude)</summary>
+<p class="g-note">1. Dans « Réglages et docs », clique sur « Exporter » et donne le fichier à Claude (il évite ainsi les doublons).<br>2. Demande par exemple : « Trouve 10 restaurants à Rouen » ou « Enrichis les prospects incomplets ».<br>3. Claude te renvoie un fichier ; importe-le avec « Importer (JSON) » dans « Réglages et docs ».<br>4. Les nouveaux prospects arrivent ici dans « À valider », avec un message d’approche prêt.</p></details></div>
+<div class="g-card" style="margin-bottom:1rem"><h3 style="margin-top:0">Relances du jour <span class="g-pill" id="pro-rel-n">0</span></h3><div class="g-pro" id="pro-rel"></div></div>
+<div class="g-card" style="margin-bottom:1rem"><h3 style="margin-top:0">À valider <span class="g-pill warn" id="pro-val-n">0</span></h3><p class="g-note" style="margin-top:0">Trouvés par recherche web. Vérifie les informations, puis valide ou rejette.</p><div class="g-pro" id="pro-val"></div></div>
+<div class="g-card"><h3 style="margin-top:0">Premiers messages à envoyer <span class="g-pill" id="pro-first-n">0</span></h3><div class="g-pro" id="pro-first"></div><div class="g-ca" style="margin-top:.8rem"><button class="g-btn sec sm" id="pro-more" type="button" hidden>Afficher plus</button></div><p class="g-note" id="pro-first-note"></p></div>
+</section>
 <section class="g-view" id="v-pipe" hidden>
 <div class="g-row"><h2>Pipeline d’acquisition</h2><button class="g-btn" data-new="prospects">Nouveau prospect</button></div>
 <div class="g-kan" id="kan"></div>
@@ -277,6 +290,7 @@ var C={clients:"g_clients",projets:"g_projets",docs:"g_docs",prospects:"g_prospe
 var S={clients:[],projets:[],docs:[],prospects:[],notes:[],taches:[],cfg:{}},db=null,ready={},view="dash",prjF="actifs";
 var STAGES=["Cible","Contacté","Échange ou RDV","Devis envoyé","Gagné","Perdu"];
 var SOURCES=["Instagram","Prospection terrain","Recommandation","Site web","Appel ou message direct","Recherche web","Import de liste","Autre"];
+var CANAL=["E-mail","Instagram","Téléphone","Autre"];
 var SECT=["Artiste","Entreprise","Commerce","Marque","Mariage","Créateur de contenu","Autre"];
 var CTYPE=["Artiste","Créateur de contenu","Entrepreneur","PME (Hôtel)","PME (Commerce de bouche)","PME (Bar)","PME (Restaurant)","PME (Coworking)","Particulier (mariage)","Autre"];
 var ETAT=["Pas commencé","En cours","Vérification requise","En cours de vérification","Terminé"];
@@ -323,7 +337,7 @@ function nextNum(type){var y=new Date().getFullYear(),pre=(type==="Devis"?"DEV":
 
 /* ---------- formulaires génériques ---------- */
 var FIELDS={
-clients:[["nom","Nom","text",1,1],["type","Type","select",CTYPE],["statut","Statut","select",["Prospect","Client","Ancien client"]],["email","Email","email"],["tel","Téléphone","tel"],["siret","SIRET (si entreprise)","text"],["ville","Ville","text"],["site","Site web","url"],["instagram","Instagram (@)","text"],["tags","Étiquettes (séparées par des virgules)","text",0,1],["adresse","Adresse","textarea",0,1],["notes","Notes","textarea",0,1]],
+clients:[["nom","Nom","text",1,1],["type","Type","select",CTYPE],["statut","Statut","select",["Prospect","Client","Ancien client"]],["email","Email","email"],["tel","Téléphone","tel"],["siret","SIRET (si entreprise)","text"],["ville","Ville","text"],["site","Site web","url"],["instagram","Instagram (@)","text"],["canal","Canal d’approche","select",CANAL],["tags","Étiquettes (séparées par des virgules)","text",0,1],["brouillon","Message d’approche préparé","textarea",0,1],["adresse","Adresse","textarea",0,1],["notes","Notes","textarea",0,1]],
 projets:[["nom","Nom du projet","text",1,1],["clientId","Client","client"],["etat","État","select",ETAT],["phase","Phase","select",PHASE],["prio","Priorité","select",PRIO],["prog","Avancement (%)","number"],["debut","Début","date"],["fin","Fin","date"],["budget","Budget (€)","number"],["lien","Lien (rendu, Vimeo, Drive)","url"],["next","Prochaine action","textarea",0,1],["blocage","Dépendance ou blocage","textarea",0,1]],
 prospects:[["nom","Nom ou entreprise","text",1,1],["contact","Contact","text"],["secteur","Secteur","select",SECT],["source","Source","select",SOURCES],["stage","Étape","select",STAGES],["valeur","Valeur estimée (€)","number"],["relance","Prochaine relance","date"],["email","Email","email"],["tel","Téléphone","tel"],["ville","Ville","text"],["site","Site web","url"],["instagram","Instagram (@)","text"],["tags","Étiquettes (séparées par des virgules)","text",0,1],["adresse","Adresse","textarea",0,1],["infos","Informations sur l’activité","textarea",0,1],["notes","Notes","textarea",0,1]]};
 var TITLES={clients:"client",projets:"projet",prospects:"prospect"};
@@ -435,7 +449,63 @@ fill(tb,S.docs.slice().sort(function(a,b){return String(b.date||"").localeCompar
 var b=el("button","g-btn sec sm","Ouvrir");b.type="button";b.onclick=function(){openDoc(d.id)};var pr=el("button","g-btn sec sm","PDF");pr.type="button";pr.onclick=function(){printDoc(d)};var act=el("div","g-ca");act.append(b,pr);
 tr.append(td("nw",el("b","",d.num)),td("",cname(d.clientId)),td("",st),td("n",eur(total(d))),td("nw",dte(d.date)),td("nw",d.type==="Facture"&&d.statut==="Payé"?"Payée "+dte(d.paye):dte(d.echeance)),td("",act));return tr}))}
 function drawSet(){var f=$("f-set");if(f.dataset.done)return;f.dataset.done="1";SET.forEach(function(s){var l=el("label",s[2]==="textarea"?"full":"");l.appendChild(el("span","",s[1]));var e=s[2]==="textarea"?el("textarea"):el("input");if(s[2]!=="textarea")e.type=s[2];e.name=s[0];e.value=cfg(s[0]);e.style.cssText="font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem;width:100%";l.appendChild(e);f.appendChild(l)})}
-function render(){drawDash();drawCrm();drawPipe();drawCli();drawPrj();drawDoc();drawSet()}
+/* ---------- Prospection semi-automatique (rien n'est envoyé automatiquement) ---------- */
+var proMore=8;
+function firstName(p){var c=String(p.contact||"").trim().split(/\s+/)[0]||"";return c&&c.length<20&&!/[@\d]/.test(c)?c:""}
+function msg1(p){if(p.brouillon&&String(p.brouillon).trim())return String(p.brouillon);var id=(p.idees&&p.idees.length?p.idees:ideas(p))[0]||"",fn=firstName(p);
+return "Bonjour"+(fn?" "+fn:"")+",\nJe suis Jonas, vidéaste à Rouen (Wayle Production). J’ai découvert "+p.nom+(id?" et une idée de vidéo m’est venue : « "+id.replace(/[.\s]+$/,"")+" »":"")+". Est-ce que je peux vous montrer un exemple, sans engagement ?\nBelle journée,\nJonas"}
+function msg2(p){var fn=firstName(p),n=p.nbRel||0,h="Bonjour"+(fn?" "+fn:"")+",\n";
+if(p.stage==="Devis envoyé")return h+"Je voulais savoir si vous aviez pu regarder le devis envoyé. Je reste disponible pour l’ajuster (durée, formats, calendrier) et pour caler un tournage dès que vous êtes prêt.\nJonas";
+if(n>=1)return h+"Dernier message de ma part pour ne pas vous déranger : si une vidéo pour "+p.nom+" vous intéresse un jour, vous pouvez me répondre ici ou me joindre au 07 86 85 81 14. Belle continuation !\nJonas";
+return h+"Je me permets de revenir vers vous au sujet de mon précédent message. Je peux vous envoyer deux exemples de vidéos faites pour des activités proches de la vôtre, si cela vous intéresse.\nJonas"}
+function canalOf(p){return p.canal||(p.email?"E-mail":p.instagram?"Instagram":p.tel?"Téléphone":"")}
+function hasContact(p){return !!(p.email||p.instagram||p.tel)}
+function igUrl(p){return "https://www.instagram.com/"+String(p.instagram||"").replace(/^@/,"")+"/"}
+function copyBtn(getText){var b=el("button","g-btn sec sm","Copier le message");b.type="button";b.onclick=function(){var t=getText();if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){b.textContent="Copié";setTimeout(function(){b.textContent="Copier le message"},1800)},function(){b.textContent="Sélectionne le texte"})};return b}
+function openBtns(p,getText,subj){var o=[],c=canalOf(p);
+if(p.email){var a=el("a","g-btn sec sm","Ouvrir l’e-mail");a.onclick=function(){a.href="mailto:"+p.email+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(getText())};a.href="mailto:"+p.email;o.push(a)}
+if(p.instagram){var i=el("a","g-btn sec sm","Ouvrir Instagram");i.href=igUrl(p);i.target="_blank";i.rel="noopener";o.push(i)}
+if(p.tel){var t=el("a","g-btn sec sm","Appeler");t.href="tel:"+String(p.tel).replace(/\s/g,"");o.push(t)}return o}
+function proHead(p,extra){var h=el("div","");var t=el("h4","",p.nom);h.appendChild(t);var m=el("div","g-note");m.style.margin=".15rem 0 0";m.textContent=[p.secteur,p.ville,p.source].filter(Boolean).join(" · ")+(extra?" · "+extra:"");h.appendChild(m);return h}
+function logNote(p,type,text){return save("notes",null,{refType:"prospects",refId:p.id,type:type,date:today(),text:text})}
+function chanType(p){var c=canalOf(p);return c==="E-mail"?"Email":c==="Téléphone"?"Appel":"Message"}
+function proItem(p,mode){var box=el("div","g-pi");var tags=tagsOf(p);
+box.appendChild(proHead(p,mode==="rel"?"Relance prévue le "+dte(p.relance)+" · étape : "+(p.stage||"Cible"):""));
+if(mode==="val"){
+ var d=el("div","g-note");d.style.margin="0";if(p.infos)d.appendChild(el("div","",p.infos));
+ if(p.site){var l=lnk(p.site,p.site);l.style.display="block";d.appendChild(l)}if(p.instagram){var li=lnk("@"+String(p.instagram).replace(/^@/,""),igUrl(p));li.style.display="block";d.appendChild(li)}
+ if(p.email)d.appendChild(el("div","","E-mail : "+p.email));if(p.tel)d.appendChild(el("div","","Tél. : "+p.tel));if(p.adresse)d.appendChild(el("div","",p.adresse));
+ box.appendChild(d);
+ if(p.brouillon){var pv=el("div","g-tpl",p.brouillon);box.appendChild(pv)}
+ var a=el("div","g-ca");var ok=el("button","g-btn sm","Valider");ok.type="button";ok.onclick=function(){ok.disabled=true;upd("prospects",p.id,{tags:tags.filter(function(x){return x!=="à valider"}).join(", ")})};
+ var no=el("button","g-btn sec sm","Rejeter");no.type="button";no.onclick=function(){if(confirm("Supprimer « "+p.nom+" » ?"))del("prospects",p.id)};
+ var fi=el("button","g-btn sec sm","Fiche");fi.type="button";fi.onclick=function(){openFiche("prospects",p.id)};a.append(ok,no,fi);box.appendChild(a);return box}
+var ta=el("textarea");ta.value=mode==="rel"?msg2(p):msg1(p);ta.setAttribute("aria-label","Message pour "+p.nom);box.appendChild(ta);
+if(mode==="first")ta.onchange=function(){upd("prospects",p.id,{brouillon:ta.value})};
+var a2=el("div","g-ca");a2.appendChild(copyBtn(function(){return ta.value}));openBtns(p,function(){return ta.value},mode==="rel"?"Re : une vidéo pour "+p.nom:"Une vidéo pour "+p.nom).forEach(function(x){a2.appendChild(x)});
+if(mode==="first"){var sent=el("button","g-btn sm","Marquer comme envoyé");sent.type="button";sent.onclick=function(){sent.disabled=true;var o={stage:"Contacté",moved:today(),relance:addDays(today(),7),nbRel:0};if(!p.canal&&canalOf(p))o.canal=canalOf(p);if(ta.value!==msg1(p))o.brouillon=ta.value;
+ upd("prospects",p.id,o).then(function(){return logNote(p,chanType(p),"Premier message envoyé ("+(canalOf(p)||"canal non précisé")+").")})};a2.appendChild(sent)}
+else{var n=p.nbRel||0;
+ if(n>=2){var lost=el("button","g-btn sm","Classer perdu");lost.type="button";lost.onclick=function(){lost.disabled=true;upd("prospects",p.id,{stage:"Perdu",moved:today(),relance:""}).then(function(){return logNote(p,"Note","Sans réponse après 2 relances : classé perdu.")})};a2.appendChild(lost)}
+ else{var rl=el("button","g-btn sm","Marquer comme relancé");rl.type="button";rl.onclick=function(){rl.disabled=true;upd("prospects",p.id,{nbRel:n+1,relance:addDays(today(),n===0?7:14)}).then(function(){return logNote(p,chanType(p),"Relance "+(n+1)+" envoyée ("+(canalOf(p)||"canal non précisé")+").")})};a2.appendChild(rl)}
+ var sn=el("button","g-btn sec sm","Reporter de 7 jours");sn.type="button";sn.onclick=function(){sn.disabled=true;upd("prospects",p.id,{relance:addDays(today(),7)})};a2.appendChild(sn)}
+var fc=el("button","g-btn sec sm","Fiche");fc.type="button";fc.onclick=function(){openFiche("prospects",p.id)};a2.appendChild(fc);box.appendChild(a2);return box}
+function drawPro(){var t=today(),act=S.prospects.filter(function(p){return p.stage!=="Gagné"&&p.stage!=="Perdu"});
+var val=act.filter(function(p){return tagsOf(p).indexOf("à valider")>=0}),ok=act.filter(function(p){return tagsOf(p).indexOf("à valider")<0});
+var rel=ok.filter(function(p){return p.relance&&p.relance<=t}).sort(function(a,b){return a.relance.localeCompare(b.relance)});
+var first=ok.filter(function(p){return(p.stage||"Cible")==="Cible"&&!(p.relance&&p.relance<=t)&&hasContact(p)}).sort(function(a,b){return(b.brouillon?1:0)-(a.brouillon?1:0)||String(a.nom).localeCompare(String(b.nom))});
+var nocontact=ok.filter(function(p){return(p.stage||"Cible")==="Cible"&&!hasContact(p)}).length;
+var rr=$("pro-rel"),rv=$("pro-val"),rf=$("pro-first");if(!rr||!rv||!rf)return;
+/* ne pas écraser un texte en cours de saisie */
+var ae=document.activeElement;if(ae&&ae.tagName==="TEXTAREA"&&$("v-pro").contains(ae))return;
+fill(rr,rel.length?rel.map(function(p){return proItem(p,"rel")}):[el("p","g-note","Aucune relance à faire aujourd’hui.")]);
+fill(rv,val.length?val.map(function(p){return proItem(p,"val")}):[el("p","g-note","Rien à valider pour l’instant.")]);
+fill(rf,first.length?first.slice(0,proMore).map(function(p){return proItem(p,"first")}):[el("p","g-note","Aucun prospect prêt à contacter.")]);
+$("pro-rel-n").textContent=rel.length;$("pro-val-n").textContent=val.length;$("pro-first-n").textContent=first.length;
+var mb=$("pro-more");mb.hidden=first.length<=proMore;mb.onclick=function(){proMore+=8;drawPro()};
+$("pro-first-note").textContent=nocontact?nocontact+" prospect"+(nocontact>1?"s":"")+" sans e-mail, Instagram ni téléphone : demande à Claude de les enrichir.":"";
+var n=rel.length+val.length,b=$("pro-n");b.hidden=!n;b.textContent=n}
+function render(){drawPro();drawDash();drawCrm();drawPipe();drawCli();drawPrj();drawDoc();drawSet()}
 var NEED=Object.keys(C).length+1;var pend=0;function sched(){if(pend)return;pend=requestAnimationFrame(function(){pend=0;render()})}
 /* ---------- modèles de messages ---------- */
 function tpls(){$("tp1").textContent="Bonjour [Prénom],\nJe suis Jonas, vidéaste à Rouen (Wayle Production). J’ai vu [ce que vous faites] et je pense qu’une courte vidéo ferait bien ressortir [point fort]. Est-ce que je peux vous montrer un exemple, sans engagement ?\nBelle journée,\nJonas";
