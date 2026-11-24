@@ -102,6 +102,8 @@ export const EASINGS = {
   "ease-in-out": "ease-in-out",
   spring: "cubic-bezier(.34,1.56,.64,1)",
 };
+export const COVER_WAYLE =
+  "radial-gradient(60% 50% at 80% 6%,rgba(96,44,176,.9),transparent 70%),radial-gradient(75% 60% at 22% 30%,rgba(232,80,30,.72),transparent 68%),radial-gradient(85% 55% at 45% 102%,rgba(106,43,208,.95),transparent 70%),var(--bg)";
 export const MESH_WAYLE =
   "radial-gradient(60% 50% at 80% 6%,rgba(96,44,176,.9),transparent 70%),radial-gradient(75% 60% at 22% 30%,rgba(232,80,30,.72),transparent 68%),radial-gradient(55% 45% at 88% 48%,rgba(214,70,40,.5),transparent 70%),radial-gradient(85% 55% at 45% 102%,rgba(106,43,208,.95),transparent 70%),radial-gradient(50% 40% at 4% 96%,rgba(232,140,90,.55),transparent 70%),var(--bg)";
 

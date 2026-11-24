@@ -1,6 +1,6 @@
 /* Compile un thème validé en CSS. Seules des valeurs issues de validate() y entrent. */
-import { EASINGS, MESH_WAYLE } from "../tokens/schema.js";
-import { fontStack } from "../tokens/fonts.js";
+import { EASINGS, MESH_WAYLE, COVER_WAYLE } from "../tokens/schema.js";
+import { fontStack, fontImports } from "../tokens/fonts.js";
 import { parse, mix, toCss, withAlpha } from "./color.js";
 
 const kebab = (s) => s.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase());
@@ -28,6 +28,18 @@ export function autoMesh(dark) {
   ].join(",");
 }
 
+/* version à trois taches du dégradé, pour le bandeau d'accueil */
+export function autoCover(dark) {
+  const p = parse(dark.primary), s = parse(dark.secondary), K = { r: 0, g: 0, b: 0, a: 1 };
+  const c = (x, a) => toCss(withAlpha(x, a));
+  return [
+    `radial-gradient(60% 50% at 80% 6%,${c(mix(s, K, 0.12), 0.9)},transparent 70%)`,
+    `radial-gradient(75% 60% at 22% 30%,${c(p, 0.72)},transparent 68%)`,
+    `radial-gradient(85% 55% at 45% 102%,${c(s, 0.95)},transparent 70%)`,
+    "var(--bg)",
+  ].join(",");
+}
+
 export function compile(t) {
   const L = t.colors.light, D = t.colors.dark, ty = t.typography, r = t.shape.radius;
   const mesh = t.background.style === "flat" ? "var(--bg)" : t.background.mesh === "auto" ? autoMesh(D) : MESH_WAYLE;
@@ -46,12 +58,14 @@ export function compile(t) {
     "--radius-img:" + r.img + "px",
     "--radius-field:" + r.field + "px",
     "--bg-mesh:" + mesh,
+    "--bg-cover:" + (t.background.style === "flat" ? "var(--bg)" : t.background.mesh === "auto" ? autoCover(D) : COVER_WAYLE),
     "--color-primary:var(--orange)",
     "--color-secondary:var(--violet)",
   ];
   const lightBlock = `${palette(L)};color-scheme:light`;
   const darkBlock = `${palette(D)};color-scheme:dark`;
-  let css = `/* thème : ${t.name.replace(/[^\p{L}\p{N} ._'-]/gu, "")} */\n:root{${root.join(";")};${lightBlock}}\n`;
+  let css = fontImports([ty.fontHeading, ty.fontBody, ty.fontMono]).join("\n") + (fontImports([ty.fontHeading, ty.fontBody, ty.fontMono]).length ? "\n" : "");
+  css += `/* thème : ${t.name.replace(/[^\p{L}\p{N} ._'-]/gu, "")} */\n:root{${root.join(";")};${lightBlock}}\n`;
   if (t.mode === "dark") css += `:root:not([data-theme="light"]){${darkBlock}}\n`;
   else if (t.mode === "light") css += `:root[data-theme="dark"]{${darkBlock}}\n`;
   else css += `@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${darkBlock}}}\n:root[data-theme="dark"]{${darkBlock}}\n`;

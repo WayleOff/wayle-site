@@ -76,6 +76,7 @@ dialog{background:var(--panel);color:var(--ink);border:1px solid var(--line);bor
 dialog::backdrop{background:rgba(0,0,0,.6)}
 .empty{color:var(--mid);padding:1.5rem;text-align:center;border:1px dashed var(--line);border-radius:14px}
 .warn{background:#3a2a14;border:1px solid #6a4b1d;color:#FFD9A0;border-radius:12px;padding:.8rem 1rem;margin-bottom:1rem}
+main.wide{max-width:none;padding:0}
 @media (max-width:820px){.app{grid-template-columns:1fr}aside.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.side nav{display:flex;flex-wrap:wrap;gap:.2rem}.side .ext{display:none}}
 </style></head>
 <body>
@@ -84,6 +85,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div class="brand">wayle<b>.</b><small>Espace admin</small></div>
   <nav id="nav" aria-label="Sections">
     <a href="#accueil">Accueil</a>
+    <a href="#theme">Thème</a>
     <a href="#apparence">Apparence</a>
     <a href="#textes">Textes du site</a>
     <a href="#pages">Pages</a>
@@ -130,9 +132,10 @@ function loadAll(){
 }
 
 /* ---------- navigation ---------- */
-var VIEWS={accueil:vHome,apparence:vLook,textes:vTexts,pages:vPages,medias:vMedia,clients:vClients,sauvegarde:vBackup};
+var VIEWS={accueil:vHome,theme:vTheme,apparence:vLook,textes:vTexts,pages:vPages,medias:vMedia,clients:vClients,sauvegarde:vBackup};
 function route(){
   if(S.dirty&&!confirm("Vous avez des modifications non enregistrées. Quitter quand même ?")){history.replaceState(null,"",S.hash||"#accueil");return}
+  if(S.unmount){S.unmount();S.unmount=null}
   var h=(location.hash||"#accueil").slice(1),seg=h.split("/"),v=seg[0];
   if(!VIEWS[v]){v="accueil";seg=[v]}
   S.hash="#"+h;setDirty(false);
@@ -152,7 +155,8 @@ function vHome(){
   var nm=Object.keys(S.content.items).length,np=Object.keys(S.pages).length,pub=Object.keys(S.pages).filter(function(k){return S.pages[k].published}).length;
   main(head("Bonjour Jonas",'Ici, vous modifiez votre site vous-même : couleurs, textes, pages, images. Les changements apparaissent sur le site en quelques secondes.')
    +'<div class="grid">'
-   +'<a class="tile" href="#apparence"><b>Apparence</b><span>Couleurs et favicon</span></a>'
+   +'<a class="tile" href="#theme"><b>Thème</b><span>Couleurs, polices, formes, aperçu en direct</span></a>'
+   +'<a class="tile" href="#apparence"><b>Apparence</b><span>Favicon</span></a>'
    +'<a class="tile" href="#textes"><b>Textes du site</b><span>'+nm+' texte'+(nm>1?"s":"")+' personnalisé'+(nm>1?"s":"")+'</span></a>'
    +'<a class="tile" href="#pages"><b>Pages</b><span>'+np+' page'+(np>1?"s":"")+' créée'+(np>1?"s":"")+', '+pub+' publiée'+(pub>1?"s":"")+'</span></a>'
    +'<a class="tile" href="#medias"><b>Images</b><span>'+S.media.length+' image'+(S.media.length>1?"s":"")+'</span></a>'
@@ -177,24 +181,23 @@ function gradient(p,s,b){var W=[255,255,255],K=[0,0,0];
   return"radial-gradient(60% 50% at 80% 6%,"+rgba(mixc(s,K,.12),.9)+",transparent 70%),radial-gradient(75% 60% at 22% 30%,"+rgba(p,.72)+",transparent 68%),radial-gradient(55% 45% at 88% 48%,"+rgba(mixc(p,K,.08),.5)+",transparent 70%),radial-gradient(85% 55% at 45% 102%,"+rgba(s,.95)+",transparent 70%),radial-gradient(50% 40% at 4% 96%,"+rgba(mixc(p,W,.3),.55)+",transparent 70%),rgb("+b.join(",")+")"}
 var COLS=[["primary","Couleur principale","Accents orange du site, dégradé du fond"],["secondary","Couleur secondaire","Accents violets, dégradé du fond"],["base","Fond du site","Teinte sombre derrière le dégradé"]];
 function vLook(){
-  var col=Object.assign({},DEF,S.cfg.colors||{}),fav=S.cfg.favicon;
-  main(head("Apparence","Choisissez les couleurs du site et l’icône de l’onglet (favicon).",true)
-   +'<div class="card"><h2 style="margin-top:0">Couleurs</h2><div class="colors">'+COLS.map(function(c){return'<div class="colorf"><label class="f" for="c-'+c[0]+'">'+c[1]+'<span class="hint">'+c[2]+'</span></label><div class="row"><input type="color" id="c-'+c[0]+'" data-c="'+c[0]+'" value="'+esc(col[c[0]])+'"><input type="text" data-ch="'+c[0]+'" value="'+esc(col[c[0]])+'" maxlength="7" style="width:7rem" aria-label="Code '+c[1]+'"></div></div>'}).join("")
-   +'</div><div class="prev" id="prev"><span class="b1">Bouton principal</span><span class="b2">Bouton contour</span></div>'
-   +'<div class="row" style="margin-top:.9rem"><button class="btn ghost sm" id="rstcol" type="button">Rétablir les couleurs d’origine</button></div></div>'
+  var fav=S.cfg.favicon,mig=S.cfg.colors&&Object.keys(S.cfg.colors).length;
+  main(head("Apparence","Icône de l’onglet du navigateur (favicon).",false)
+   +'<div class="card"><h2 style="margin-top:0">Couleurs</h2><p class="hint" style="margin:0">Les couleurs, les polices et les formes se règlent maintenant dans <a href="#theme">Thème</a>, avec un aperçu en direct.'+(mig?' Vos anciennes couleurs y seront reprises à la première ouverture.':'')+'</p></div>'
    +'<div class="card"><h2 style="margin-top:0">Favicon</h2><p class="hint" style="margin-top:0">La petite icône dans l’onglet du navigateur. Une image carrée (PNG ou JPG, au moins 128 px) donne le meilleur résultat.</p><div class="row">'
    +(fav?'<img class="fav" id="favimg" src="/api/media?id='+esc(fav)+'" alt="Favicon actuel">':'<div class="fav" id="favimg" style="display:grid;place-items:center;color:#666;font-size:.75rem">aucun</div>')
    +'<label class="btn ghost sm" style="cursor:pointer">Choisir une image<input type="file" id="favfile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label>'+(fav?'<button class="btn danger sm" id="favrm" type="button">Retirer</button>':'')+'</div></div>');
-  function prev(){var p=hex($("#c-primary").value),s=hex($("#c-secondary").value),b=hex($("#c-base").value);if(p&&s&&b)$("#prev").style.background=gradient(p,s,b)}
-  prev();
-  $$("[data-c]").forEach(function(i){i.addEventListener("input",function(){$('[data-ch="'+i.dataset.c+'"]').value=i.value;S.cfg.colors=Object.assign({},S.cfg.colors||{});S.cfg.colors[i.dataset.c]=i.value;prev();setDirty(true)})});
-  $$("[data-ch]").forEach(function(i){i.addEventListener("input",function(){var v=i.value.trim();if(v[0]!=="#")v="#"+v;if(hex(v)){$('[data-c="'+i.dataset.ch+'"]').value=v;S.cfg.colors=Object.assign({},S.cfg.colors||{});S.cfg.colors[i.dataset.ch]=v;prev();setDirty(true)}})});
-  $("#rstcol").onclick=function(){S.cfg.colors={};vLook();setDirty(true)};
   $("#favfile").onchange=function(e){var f=e.target.files[0];if(!f)return;
     imgToBlob(f,256,true,"image/png").then(function(r){return saveMedia(r,"Favicon")}).then(function(id){S.cfg.favicon=id;return api("PUT","c=s_config&id=main",S.cfg)}).then(function(){toast("Favicon enregistré");vLook()}).catch(fail)};
   var rm=$("#favrm");if(rm)rm.onclick=function(){S.cfg.favicon=null;api("PUT","c=s_config&id=main",S.cfg).then(function(){toast("Favicon retiré");vLook()}).catch(fail)};
-  $("#savebtn").onclick=function(){var c=S.cfg.colors||{},o={};Object.keys(c).forEach(function(k){if(hex(c[k])&&c[k].toUpperCase()!==DEF[k].toUpperCase())o[k]=c[k]});S.cfg.colors=o;
-    api("PUT","c=s_config&id=main",S.cfg).then(function(){setDirty(false);toast("Couleurs enregistrées. Visible sur le site dans quelques secondes.")}).catch(fail)};
+}
+/* ---------- Thème (éditeur : /theme/customizer/panel.js) ---------- */
+function vTheme(){
+  main('<p class="sub" style="padding:1.5rem">Chargement de l’éditeur…</p>');
+  import("/theme/customizer/panel.js").then(function(m){
+    S.unmount=m.mount($("#main"),{api:api,toast:toast,fail:fail,setDirty:setDirty,
+      legacy:{get:function(){return S.cfg.colors},clear:function(){if(!S.cfg.colors||!Object.keys(S.cfg.colors).length)return null;S.cfg.colors={};return api("PUT","c=s_config&id=main",S.cfg)}}});
+  }).catch(function(e){main('<div class="warn" style="margin:1.5rem">Impossible de charger l’éditeur de thème ('+esc(e&&e.message||"erreur")+'). Vérifiez que le dossier <b>theme</b> est bien en ligne.</div>')});
 }
 
 /* ---------- images ---------- */
