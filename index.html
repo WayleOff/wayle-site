@@ -391,6 +391,54 @@ h1,h2{text-wrap:balance}
 :root:not([data-theme="light"]) .ferr{color:#FFB4A5}
 :root:not([data-theme="light"]) [aria-invalid="true"]{border-color:#FF8A75}
 </style>
+<style id="inspire">
+/* inspiré de notlith.com : apparitions discrètes, teinte de fond par section, cartes avec photo, lignes dépliables, barre d'action */
+:root{--ease:cubic-bezier(.22,.7,.22,1)}
+/* teinte de fond qui s'approfondit selon la section affichée */
+html::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:rgba(14,6,30,.4);opacity:0;transition:opacity .9s ease}
+html[data-tone="deep"]::after{opacity:1}
+/* apparitions : 12 px, 0,55 s, décalées (seulement si le script est actif) */
+@keyframes rvIn{from{opacity:0;translate:0 12px}}
+html.rv [data-rv]:not(.in){opacity:0;translate:0 12px}
+html.rv [data-rv].in{animation:rvIn .55s var(--ease) backwards;animation-delay:calc(min(var(--i,0),6)*70ms)}
+/* cartes d'offres avec photo, lien aligné en bas */
+.offers article{display:flex;flex-direction:column;overflow:hidden}
+.o-ph{margin:-1.75rem -1.75rem 1.4rem;aspect-ratio:16/10;overflow:hidden;background:var(--surface)}
+.o-ph img{display:block;width:100%;height:100%;object-fit:cover;transition:transform 1.1s var(--ease)}
+.offers article:hover .o-ph img{transform:scale(1.04)}
+.offers .more{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding:.95rem 0 0;border-bottom:0;border-top:1px solid var(--line);min-height:0}
+.offers ul{margin-bottom:1.1rem}
+.offers .more::after{transition:translate .25s var(--ease)}
+.offers .more:hover::after{transform:none;translate:5px 0}
+.ref-open img{transition:transform .9s var(--ease)}
+/* méthode : lignes numérotées et dépliables */
+.steps{display:block;max-width:44rem;counter-reset:none}
+.steps li{border-top:1px solid var(--line);padding:0}
+.steps li:last-child{border-bottom:1px solid var(--line)}
+.steps li::before{display:none}
+.steps summary{display:flex;align-items:center;gap:1.1rem;padding:1.15rem 0;cursor:pointer;list-style:none}
+.steps summary::-webkit-details-marker{display:none}
+.steps summary .n{flex:0 0 2rem;font:600 .9rem "Figtree",sans-serif;color:var(--mid);font-variant-numeric:tabular-nums}
+.steps summary strong{flex:1;margin:0;font:800 clamp(1.1rem,2vw,1.35rem) "Bricolage Grotesque",sans-serif;letter-spacing:-.02em}
+.steps summary::after{content:"+";color:var(--orange);font-size:1.5rem;line-height:1;transition:transform .3s var(--ease)}
+.steps details[open] summary::after{transform:rotate(45deg)}
+.steps summary:hover strong{translate:4px 0}
+.steps summary strong{transition:translate .3s var(--ease)}
+.steps li p{margin:0 0 1.2rem 3.1rem;max-width:34rem;color:var(--mid);line-height:1.55}
+@supports (interpolate-size:allow-keywords){.steps details{interpolate-size:allow-keywords}.steps details::details-content{block-size:0;overflow:hidden;transition:block-size .4s var(--ease),content-visibility .4s allow-discrete}.steps details[open]::details-content{block-size:auto}}
+/* barre d'action flottante sur ordinateur, après la vidéo d'ouverture */
+@media (min-width:901px){
+html .cta-bar{display:flex;position:fixed;left:50%;bottom:1.25rem;z-index:60;gap:.5rem;padding:.45rem;border-radius:999px;background:rgba(20,8,40,.72);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.18);translate:-50% 160%;opacity:0;pointer-events:none;transition:translate .55s var(--ease),opacity .4s ease}
+html .cta-bar.show{translate:-50% 0;opacity:1;pointer-events:auto}
+html .cta-bar a{padding:.7rem 1.3rem;border-radius:999px;font-weight:600;text-decoration:none;white-space:nowrap}
+html .cta-bar .p{background:var(--btn);color:var(--btn-ink)}
+html .cta-bar .s{border:1.5px solid rgba(255,255,255,.55);color:#fff}
+html .cta-bar a{transition:transform .2s}
+html .cta-bar a:hover{transform:translateY(-2px)}
+}
+@media (prefers-reduced-motion:reduce){html::after,.o-ph img,.steps summary::after,.steps summary strong,.offers .more::after,.ref-open img,html .cta-bar{transition:none!important}.steps details::details-content{transition:none!important}}
+@media print{html.rv [data-rv]{opacity:1!important;translate:none!important}}
+</style>
 <script src="site.js"></script><script src="perso.js"></script><style id="cta-bar">.cta-bar{display:none}.rdv{display:inline-block;margin-top:1rem;border:1.5px solid var(--ink);color:var(--ink);padding:.8rem 1.5rem;border-radius:999px;font-weight:600;text-decoration:none}.rdv:hover{background:var(--ink);color:var(--bg)}
 @media (max-width:900px){.cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;gap:.5rem;padding:.6rem .75rem calc(.6rem + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}.cta-bar a{flex:1;text-align:center;padding:.8rem .4rem;border-radius:999px;font-weight:600;font-size:.95rem;text-decoration:none;line-height:1.2}.cta-bar .p{background:var(--btn);color:var(--btn-ink)}.cta-bar .s{border:1.5px solid var(--ink);color:var(--ink)}body{padding-bottom:4.8rem}}</style>
 </head>
@@ -532,6 +580,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
   </div>
   <div class="offers">
     <article data-a="artistes">
+      <div class="o-ph" aria-hidden="true"><img src="hero-narks-poster.jpg" width="1920" height="1080" alt="" loading="lazy" decoding="async" style="object-position:50% 40%"></div>
       <h3 data-k="m.offres.3">Artistes et musique</h3>
       <p data-k="m.offres.4">Teasers, clips et contenus pour faire vivre votre musique.</p>
       <ul>
@@ -542,6 +591,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
           <a class="more" href="artistes.html">En savoir plus</a>
     </article>
     <article data-a="entreprises">
+      <div class="o-ph" aria-hidden="true"><img src="video-slavery-poster.jpg" width="720" height="1280" alt="" loading="lazy" decoding="async" style="object-position:50% 38%"></div>
       <h3 data-k="m.offres.11">Entreprises</h3>
       <p data-k="m.offres.12">Présenter votre activité ou un produit, avec votre identité visuelle.</p>
       <ul>
@@ -553,6 +603,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
           <a class="more" href="entreprises.html">En savoir plus</a>
     </article>
     <article data-a="commerces">
+      <div class="o-ph" aria-hidden="true"><img src="vit-yaourt.jpg" width="900" height="900" alt="" loading="lazy" decoding="async" style="object-position:50% 55%"></div>
       <h3 data-k="m.offres.17">Commerces et indépendants</h3>
       <p data-k="m.offres.18">Nous venons filmer chez vous. L’offre Découverte comprend 1 h 30 de tournage et 15 secondes de vidéo montée.</p>
       <ul>
@@ -604,11 +655,11 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
   <h2 data-k="m.process.1">Comment nous travaillons ensemble</h2>
   <p class="lead" data-k="m.process.2">Un déroulé simple, du premier échange à la livraison.</p>
   <ol class="steps">
-    <li><strong data-k="m.process.3">Brief et stratégie</strong><span data-k="m.process.4">Nous échangeons sur votre projet, vos objectifs et votre audience.</span></li>
-    <li><strong data-k="m.process.5">Tournage ou rushes</strong><span data-k="m.process.6">Nous filmons chez vous, ou vous nous envoyez vos rushes et éléments graphiques.</span></li>
-    <li><strong data-k="m.process.7">Montage et création</strong><span data-k="m.process.8">Rythme, transitions, sous-titres et effets pour maximiser l’impact.</span></li>
-    <li><strong data-k="m.process.9">Ajustements et validation</strong><span data-k="m.process.10">Vous recevez une première version, nous affinons ensemble.</span></li>
-    <li><strong data-k="m.process.11">Livraison finale</strong><span data-k="m.process.12">Export haute qualité, prêt à publier sur vos plateformes.</span></li>
+    <li><details><summary><span class="n" aria-hidden="true">01</span><strong data-k="m.process.3">Brief et stratégie</strong></summary><p data-k="m.process.4">Nous échangeons sur votre projet, vos objectifs et votre audience.</p></details></li>
+    <li><details><summary><span class="n" aria-hidden="true">02</span><strong data-k="m.process.5">Tournage ou rushes</strong></summary><p data-k="m.process.6">Nous filmons chez vous, ou vous nous envoyez vos rushes et éléments graphiques.</p></details></li>
+    <li><details><summary><span class="n" aria-hidden="true">03</span><strong data-k="m.process.7">Montage et création</strong></summary><p data-k="m.process.8">Rythme, transitions, sous-titres et effets pour maximiser l’impact.</p></details></li>
+    <li><details><summary><span class="n" aria-hidden="true">04</span><strong data-k="m.process.9">Ajustements et validation</strong></summary><p data-k="m.process.10">Vous recevez une première version, nous affinons ensemble.</p></details></li>
+    <li><details><summary><span class="n" aria-hidden="true">05</span><strong data-k="m.process.11">Livraison finale</strong></summary><p data-k="m.process.12">Export haute qualité, prêt à publier sur vos plateformes.</p></details></li>
   </ol>
 </div></section>
 
@@ -1046,6 +1097,42 @@ Promise.all([claude.use("user"),claude.use("artifact")]).then(function(r){
 })();
 </script>
 
+<script>
+/* apparitions au défilement, teinte de fond par section, barre d'action : améliorations facultatives */
+(function(){
+if(!("IntersectionObserver" in window))return;
+var de=document.documentElement,calm=matchMedia("(prefers-reduced-motion:reduce)").matches;
+var secs=[].slice.call(document.querySelectorAll("main > section"));
+/* teinte */
+var tones={offres:"deep",references:"deep",apropos:"deep",contact:"deep"};
+if(!calm){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var t=tones[e.target.id]||"";if(t)de.setAttribute("data-tone",t);else de.removeAttribute("data-tone")}})},{rootMargin:"-45% 0px -50% 0px"});
+  secs.forEach(function(x){io.observe(x)});
+}
+/* apparitions */
+if(!calm){
+  var all=[];
+  function tag(el,i){if(!el||el.hidden)return;el.setAttribute("data-rv","");el.style.setProperty("--i",Math.min(i,6));all.push(el)}
+  secs.forEach(function(sec){var w=sec.firstElementChild;if(!w)return;var i=0;
+    [].slice.call(w.children).forEach(function(c){
+      if(c.matches(".offers,.steps,.values,.faq,.refs,.sf")){[].slice.call(c.children).forEach(function(k,j){tag(k,j)})}
+      else tag(c,i++);
+    });
+  });
+  var ro=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");ro.unobserve(e.target)}})},{threshold:.12,rootMargin:"0px 0px -6% 0px"});
+  all.forEach(function(el){ro.observe(el)});
+  de.classList.add("rv");
+  setTimeout(function(){all.forEach(function(el){el.classList.add("in")})},6000);
+  addEventListener("beforeprint",function(){all.forEach(function(el){el.classList.add("in")})});
+}
+/* barre d'action : visible après la vidéo d'ouverture, cachée devant le formulaire */
+function barInit(){var bar=document.querySelector(".cta-bar"),cover=document.getElementById("cover"),ct=document.getElementById("contact"),past=false,atContact=false;
+function upd(){if(bar)bar.classList.toggle("show",past&&!atContact)}
+if(bar&&cover){new IntersectionObserver(function(es){es.forEach(function(e){past=!e.isIntersecting&&e.boundingClientRect.top<0;upd()})},{threshold:0}).observe(cover)}
+if(bar&&ct){new IntersectionObserver(function(es){es.forEach(function(e){atContact=e.isIntersecting;upd()})},{threshold:.25}).observe(ct)}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",barInit);else barInit();
+})();
+</script>
 <script>
 /* typographie française : espaces insécables dans les textes modifiés depuis l'admin */
 (function(){var R=[[/(\S) ([?!:;»])/g,"$1\u00a0$2"],[/« /g,"«\u00a0"],[/(\d) (?=€)/g,"$1\u00a0"],[/(\d) (?=\d{3}\b)/g,"$1\u00a0"],[/\bdès (?=\d)/g,"dès\u00a0"]];
