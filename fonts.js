@@ -8,6 +8,9 @@ export const FONTS = [
   { name: "Space Grotesk", kind: "display", fallback: "system-ui,sans-serif", google: "Space+Grotesk:wght@400..700", verified: false },
   { name: "Playfair Display", kind: "serif", fallback: "Georgia,serif", google: "Playfair+Display:wght@400..800", verified: false },
   { name: "JetBrains Mono", kind: "mono", fallback: "ui-monospace,monospace", google: "JetBrains+Mono:wght@400..800", verified: false },
+  /* polices envoyées par l'administrateur (.woff2) : le fichier se règle dans typography.customN.file */
+  { name: "Police importée 1", kind: "custom", slot: 1, fallback: "system-ui,sans-serif", google: null },
+  { name: "Police importée 2", kind: "custom", slot: 2, fallback: "system-ui,sans-serif", google: null },
   { name: "Système", kind: "sans", fallback: "", stack: 'system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif', google: null },
   { name: "Georgia", kind: "serif", fallback: "", stack: "Georgia,'Times New Roman',serif", google: null },
   { name: "Monospace système", kind: "mono", fallback: "", stack: 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace', google: null },

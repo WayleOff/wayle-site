@@ -1,6 +1,7 @@
 /* Compile un thème validé en CSS. Seules des valeurs issues de validate() y entrent. */
 import { EASINGS, MESH_WAYLE, COVER_WAYLE } from "../tokens/schema.js";
 import { fontStack, fontImports } from "../tokens/fonts.js";
+import { stripComments, checkCustomCss } from "../tokens/validate.js";
 import { parse, mix, toCss, withAlpha } from "./color.js";
 
 const kebab = (s) => s.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase());
@@ -76,6 +77,17 @@ export function extras(t) {
   return out;
 }
 
+/* @font-face des polices .woff2 envoyées, seulement si elles servent (titres, texte ou monospace).
+   « font-weight:100 900 » : la police couvre tous les graisses demandées, le navigateur ne fabrique pas de faux gras. */
+export function customFaces(t) {
+  const ty = t.typography, used = new Set([ty.fontHeading, ty.fontBody, ty.fontMono]), out = [];
+  for (const n of [1, 2]) {
+    const f = ty["custom" + n];
+    if (f && f.file && used.has("Police importée " + n)) out.push(`@font-face{font-family:"Police importée ${n}";src:url(${f.file}) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}`);
+  }
+  return out;
+}
+
 export function compile(t) {
   const L = t.colors.light, D = t.colors.dark, ty = t.typography, r = t.shape.radius;
   const root = [
@@ -100,11 +112,16 @@ export function compile(t) {
   const imports = fontImports([ty.fontHeading, ty.fontBody, ty.fontMono]);
   const lightBlock = scheme(t, L, false), darkBlock = scheme(t, D, true);
   let css = imports.join("\n") + (imports.length ? "\n" : "");
+  const faces = customFaces(t);
+  if (faces.length) css += faces.join("\n") + "\n";
   css += `/* thème : ${t.name.replace(/[^\p{L}\p{N} ._'-]/gu, "")} */\n:root{${root.join(";")};${lightBlock}}\n`;
   /* les pages tiennent « sans attribut » pour sombre ; un petit script pose data-theme pour clair et auto */
   if (t.mode === "dark") css += `:root:not([data-theme="light"]){${darkBlock}}\n`;
   else css += `:root[data-theme="dark"]{${darkBlock}}\n`;
   const x = extras(t);
   if (x.length) css += x.join("\n") + "\n";
+  /* CSS personnalisé : en dernier pour primer. Re-contrôlé ici (défense en profondeur) et émis sans commentaires. */
+  const adv = t.advanced;
+  if (adv && adv.customCssOn && adv.customCss && !checkCustomCss(adv.customCss)) css += "/* css personnalisé */\n" + stripComments(adv.customCss).trim() + "\n";
   return css;
 }

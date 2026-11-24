@@ -159,7 +159,7 @@ function vHome(){
    +'<a class="tile" href="#apparence"><b>Apparence</b><span>Favicon</span></a>'
    +'<a class="tile" href="#textes"><b>Textes du site</b><span>'+nm+' texte'+(nm>1?"s":"")+' personnalisé'+(nm>1?"s":"")+'</span></a>'
    +'<a class="tile" href="#pages"><b>Pages</b><span>'+np+' page'+(np>1?"s":"")+' créée'+(np>1?"s":"")+', '+pub+' publiée'+(pub>1?"s":"")+'</span></a>'
-   +'<a class="tile" href="#medias"><b>Images</b><span>'+S.media.length+' image'+(S.media.length>1?"s":"")+'</span></a>'
+   +'<a class="tile" href="#medias"><b>Images</b><span>'+imgs().length+' image'+(imgs().length>1?"s":"")+'</span></a>'
    +'</div><h2>Vos autres espaces</h2><div class="grid">'
    +'<a class="tile" href="/gestion"><b>Gestion de l’entreprise</b><span>Clients, projets, prospection, documents</span></a>'
    +'<a class="tile" href="#clients"><b>Espaces clients</b><span>'+Object.keys(S.portals).length+' espace'+(Object.keys(S.portals).length>1?"s":"")+(totalNew()?' · <b>'+totalNew()+' nouveauté'+(totalNew()>1?"s":"")+'</b>':'')+'</span></a>'
@@ -197,6 +197,7 @@ function vTheme(){
   import("/theme/customizer/panel.js").then(function(m){
     S.unmount=m.mount($("#main"),{api:api,toast:toast,fail:fail,setDirty:setDirty,
       upload:function(f,max){return imgToBlob(f,max,false,"image/png").then(function(r){return saveMedia(r,f.name)})},
+      uploadFont:uploadFont,
       legacy:{get:function(){return S.cfg.colors},clear:function(){if(!S.cfg.colors||!Object.keys(S.cfg.colors).length)return null;S.cfg.colors={};return api("PUT","c=s_config&id=main",S.cfg)}}});
   }).catch(function(e){main('<div class="warn" style="margin:1.5rem">Impossible de charger l’éditeur de thème ('+esc(e&&e.message||"erreur")+'). Vérifiez que le dossier <b>theme</b> est bien en ligne.</div>')});
 }
@@ -227,6 +228,22 @@ function saveMedia(r,name){
   return blobToB64(r.blob).then(function(b64){
     var id=newId("m"),d={name:name||r.name||"image",type:r.type,w:r.w,h:r.h,size:r.blob.size,at:Date.now(),data:b64};
     return api("PUT","c=s_media&id="+id,d).then(function(){var m=Object.assign({},d);delete m.data;S.media.unshift({id:id,d:m});return id});
+  });
+}
+function isFontMedia(m){return m&&m.d&&m.d.type==="font/woff2"}
+function imgs(){return S.media.filter(function(m){return !isFontMedia(m)})}
+/* police .woff2 : contrôles côté navigateur (extension, taille, signature « wOF2 »), puis le serveur recontrôle tout */
+function uploadFont(f){
+  return new Promise(function(res,rej){
+    if(!/\.woff2$/i.test(f.name)){rej(new Error("Choisissez un fichier .woff2"));return}
+    if(f.size>1000000){rej(new Error("Police trop lourde (1 Mo maximum)"));return}
+    var r=new FileReader();r.onerror=function(){rej(new Error("Fichier illisible"))};
+    r.onload=function(){
+      var u=new Uint8Array(r.result);
+      if(String.fromCharCode(u[0],u[1],u[2],u[3])!=="wOF2"){rej(new Error("Ce fichier n'est pas une police WOFF2 valide"));return}
+      res(saveMedia({blob:new Blob([u],{type:"font/woff2"}),w:0,h:0,type:"font/woff2",name:f.name}));
+    };
+    r.readAsArrayBuffer(f.slice(0,1000000));
   });
 }
 function uploadFiles(files){
@@ -356,7 +373,7 @@ function editPage(slug){
 function pickMedia(cb){
   var d=$("#dlg");
   d.innerHTML='<div class="row" style="justify-content:space-between"><h2 style="margin:0">Choisir une image</h2><button class="btn ghost sm" id="dx" type="button">Fermer</button></div><div class="row" style="margin:.8rem 0"><label class="btn sm" style="cursor:pointer">Envoyer une nouvelle image<input type="file" id="dup" accept="image/*" multiple hidden></label></div><div class="thumbs" id="dth"></div>';
-  function fill(){$("#dth").innerHTML=S.media.length?S.media.map(function(m){return'<button type="button" class="thumb pick" data-id="'+esc(m.id)+'" style="padding:0;text-align:left;cursor:pointer"><img src="/api/media?id='+esc(m.id)+'" alt=""><span class="t">'+esc(m.d.name||"image")+'</span></button>'}).join(""):'<div class="empty" style="grid-column:1/-1">Aucune image. Envoyez-en une.</div>';
+  function fill(){$("#dth").innerHTML=imgs().length?imgs().map(function(m){return'<button type="button" class="thumb pick" data-id="'+esc(m.id)+'" style="padding:0;text-align:left;cursor:pointer"><img src="/api/media?id='+esc(m.id)+'" alt=""><span class="t">'+esc(m.d.name||"image")+'</span></button>'}).join(""):'<div class="empty" style="grid-column:1/-1">Aucune image. Envoyez-en une.</div>';
     $$(".pick",d).forEach(function(b){b.onclick=function(){d.close();cb(b.dataset.id)}})}
   fill();$("#dx").onclick=function(){d.close()};
   $("#dup").onchange=function(e){toast("Envoi en cours…");uploadFiles(e.target.files).then(function(){toast("Image envoyée");fill()}).catch(fail)};
@@ -364,11 +381,20 @@ function pickMedia(cb){
 }
 
 /* ---------- Images ---------- */
+function fontRows(){
+  var f=S.media.filter(isFontMedia);if(!f.length)return"";
+  return'<h2 style="margin:1.6rem 0 .4rem;font-size:1.05rem">Polices importées</h2><p class="sub">Envoyées depuis l’éditeur de thème (onglet Typographie). Elles ne sont pas des images.</p>'
+   +f.map(function(m){return'<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:.45rem 0"><span>'+esc(m.d.name||"police")+' <span class="sub">· '+Math.round((m.d.size||0)/1024)+' Ko</span></span><button class="btn danger sm" data-df="'+esc(m.id)+'" type="button">Supprimer</button></div>'}).join("");
+}
 function vMedia(){
   main(head("Images","Les images que vous envoyez sont réduites automatiquement pour garder le site rapide. Utilisez-les dans vos pages.")
    +'<div class="row" style="margin-bottom:1rem"><label class="btn" style="cursor:pointer">+ Envoyer des images<input type="file" id="mf" accept="image/*" multiple hidden></label></div>'
-   +'<div class="thumbs">'+(S.media.length?S.media.map(function(m){return'<div class="thumb"><img src="/api/media?id='+esc(m.id)+'" alt=""><div class="t"><span title="'+esc(m.d.name)+'">'+esc((m.d.name||"image").slice(0,26))+'</span><span>'+(m.d.w||"?")+'×'+(m.d.h||"?")+' · '+Math.round((m.d.size||0)/1024)+' Ko</span><div class="row"><button class="btn ghost sm" data-cp="'+esc(m.id)+'" type="button">Copier le lien</button><button class="btn danger sm" data-dm="'+esc(m.id)+'" type="button">Supprimer</button></div></div></div>'}).join(""):'<div class="empty" style="grid-column:1/-1">Aucune image pour l’instant.</div>')+'</div>');
+   +'<div class="thumbs">'+(imgs().length?imgs().map(function(m){return'<div class="thumb"><img src="/api/media?id='+esc(m.id)+'" alt=""><div class="t"><span title="'+esc(m.d.name)+'">'+esc((m.d.name||"image").slice(0,26))+'</span><span>'+(m.d.w||"?")+'×'+(m.d.h||"?")+' · '+Math.round((m.d.size||0)/1024)+' Ko</span><div class="row"><button class="btn ghost sm" data-cp="'+esc(m.id)+'" type="button">Copier le lien</button><button class="btn danger sm" data-dm="'+esc(m.id)+'" type="button">Supprimer</button></div></div></div>'}).join(""):'<div class="empty" style="grid-column:1/-1">Aucune image pour l’instant.</div>')+'</div>'
+   +fontRows());
   $("#mf").onchange=function(e){toast("Envoi en cours…");uploadFiles(e.target.files).then(function(){toast("Images envoyées");vMedia()}).catch(fail)};
+  $$("[data-df]").forEach(function(b){b.onclick=function(){
+    if(!confirm("Supprimer cette police ? Si le thème publié l'utilise, le site reviendra à la police de secours jusqu'à la prochaine publication."))return;
+    api("DELETE","c=s_media&id="+b.dataset.df).then(function(){S.media=S.media.filter(function(m){return m.id!==b.dataset.df});toast("Police supprimée");vMedia()}).catch(fail)}});
   $$("[data-cp]").forEach(function(b){b.onclick=function(){var u=location.origin+"/api/media?id="+b.dataset.cp;(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(function(){toast("Lien copié")}).catch(function(){prompt("Copiez ce lien :",u)})}});
   $$("[data-dm]").forEach(function(b){b.onclick=function(){
     var id=b.dataset.dm,used=[];Object.keys(S.pages).forEach(function(k){if(JSON.stringify(S.pages[k].blocks).indexOf(id)>=0)used.push(S.pages[k].title)});

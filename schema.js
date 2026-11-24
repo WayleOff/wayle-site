@@ -44,6 +44,10 @@ const fontNames = FONTS.map((f) => f.name);
 add("typography.fontHeading", "Police des titres", "Typographie", "font", "Bricolage Grotesque", { options: fontNames, wired: true });
 add("typography.fontBody", "Police du texte", "Typographie", "font", "Figtree", { options: fontNames, wired: true });
 add("typography.fontMono", "Police monospace", "Typographie", "font", "Monospace système", { options: fontNames, wired: true });
+add("typography.custom1.file", "Police importée 1 : fichier", "Typographie", "asset", "", { wired: true });
+add("typography.custom1.name", "Police importée 1 : nom", "Typographie", "text", "", { max: 60, wired: true });
+add("typography.custom2.file", "Police importée 2 : fichier", "Typographie", "asset", "", { wired: true });
+add("typography.custom2.name", "Police importée 2 : nom", "Typographie", "text", "", { max: 60, wired: true });
 add("typography.baseSize", "Taille de base", "Typographie", "number", 1.0625, { min: 0.875, max: 1.375, step: 0.0625, unit: "rem", wired: true });
 add("typography.lineHeight", "Hauteur de ligne du texte", "Typographie", "number", 1.65, { min: 1.2, max: 2, step: 0.05, wired: true });
 add("typography.headingLineHeight", "Hauteur de ligne des titres", "Typographie", "number", 1.08, { min: 0.9, max: 1.5, step: 0.02 });
@@ -90,6 +94,10 @@ add("identity.logoLight", "Logo (fond clair)", "Identité", "asset", "");
 add("identity.logoDark", "Logo (fond sombre)", "Identité", "asset", "");
 add("identity.favicon", "Favicon", "Identité", "asset", "");
 add("identity.ogImage", "Image de partage", "Identité", "asset", "");
+
+/* ---------- Avancé (étape 4) ---------- */
+add("advanced.customCssOn", "CSS personnalisé actif", "Avancé", "bool", true, { wired: true });
+add("advanced.customCss", "CSS personnalisé", "Avancé", "css", "", { max: 8000, wired: true });
 
 /* ---------- Méta du thème ---------- */
 add("name", "Nom du thème", "Thème", "text", "Wayle", { max: 60, wired: true });

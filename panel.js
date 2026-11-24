@@ -2,11 +2,12 @@
    Contexte : { api(method, qs, body), toast(msg, err), fail(e), setDirty(bool), legacy:{ get(), clear() } } */
 import { SCHEMA, defaultTheme, getPath, setPath } from "../tokens/schema.js";
 import { FONTS } from "../tokens/fonts.js";
-import { validate, checkValue, diffFromDefaults } from "../tokens/validate.js";
+import { validate, checkValue, diffFromDefaults, checkCustomCss } from "../tokens/validate.js";
 import { compile } from "../engine/compile.js";
 import { parse, toHex, toCss, withAlpha, mix, suggestText } from "../engine/color.js";
 import { contrastReport } from "../engine/contrast.js";
 import { PRESETS } from "../themes/presets.js";
+import { HARMONIES, fromBase, dominantColors, randomPatch, applyPatch, paletteToPatch } from "../engine/palette.js";
 import { cssFromStored } from "../engine/index.js";
 
 const BYPATH = new Map(SCHEMA.map((t) => [t.path, t]));
@@ -31,6 +32,10 @@ const CTRL = [
   ["type", "typography.fontHeading", "Police des titres", "Les polices s'affichent dans l'aperçu à droite"],
   ["type", "typography.fontBody", "Police du texte", ""],
   ["type", "typography.fontMono", "Police monospace", ""],
+  ["type", "typography.custom1.file", "Police importée 1", "Fichier .woff2 (1 Mo max). Vous devez en avoir les droits. Choisissez-la ensuite dans la liste des polices ci-dessus.", { font: true }],
+  ["type", "typography.custom1.name", "Nom de la police importée 1", "", { hidden: true }],
+  ["type", "typography.custom2.file", "Police importée 2", "Un second fichier .woff2, par exemple pour le texte courant.", { font: true }],
+  ["type", "typography.custom2.name", "Nom de la police importée 2", "", { hidden: true }],
   ["type", "typography.baseSize", "Taille du texte", "1 rem = 16 px"],
   ["type", "typography.lineHeight", "Interligne du texte", ""],
   ["shape", "shape.radius.pill", "Boutons et pastilles", "", { choices: [[0, "Carré"], [8, "Léger"], [16, "Arrondi"], [999, "Pilule"]] }],
@@ -55,14 +60,17 @@ const CTRL = [
   ["ident", "identity.logoLight", "Logo sur fond clair", "Image PNG, JPG ou SVG. Vide = logo d'origine", { asset: true }],
   ["ident", "identity.logoDark", "Logo sur fond sombre", "Vide = logo d'origine", { asset: true }],
   ["ident", "identity.ogImage", "Image de partage", "Aperçu sur WhatsApp, LinkedIn… (1200 × 630 idéal)", { asset: true }],
+  ["adv", "advanced.customCssOn", "Activer le CSS personnalisé", "Décochez pour le désactiver sans effacer votre code"],
+  ["adv", "advanced.customCss", "CSS personnalisé", "S'applique en dernier, sur tout le site public. Refusés : @import, url() hors de vos médias, expressions, caractères « < » et « \\ »."],
 ];
-const TABS = [["themes", "Thèmes"], ["colors", "Couleurs"], ["type", "Typographie"], ["shape", "Formes"], ["comp", "Composants"], ["anim", "Animations"], ["ident", "Identité"], ["share", "Partage"]];
+const TABS = [["themes", "Thèmes"], ["gen", "Générer"], ["colors", "Couleurs"], ["type", "Typographie"], ["shape", "Formes"], ["comp", "Composants"], ["anim", "Animations"], ["ident", "Identité"], ["adv", "Avancé"], ["share", "Partage"]];
 const SECTIONS = { colors: [["Affichage", ["mode"]], ["Fond et surfaces", [D + "bg", D + "surface", D + "line", "background.style", "background.mesh"]], ["Texte", [D + "ink", D + "mid"]], ["Accents", [D + "primary", D + "secondary"]], ["Boutons", [D + "btn", D + "btnInk"]], ["Messages", [D + "success", D + "error"]]],
-  type: [["Polices", ["typography.fontHeading", "typography.fontBody", "typography.fontMono"]], ["Tailles", ["typography.baseSize", "typography.lineHeight"]]],
+  type: [["Polices", ["typography.fontHeading", "typography.fontBody", "typography.fontMono"]], ["Polices importées (.woff2)", ["typography.custom1.file", "typography.custom1.name", "typography.custom2.file", "typography.custom2.name"]], ["Tailles", ["typography.baseSize", "typography.lineHeight"]]],
   shape: [["Arrondis", ["shape.radius.pill", "shape.radius.xl", "shape.radius.card", "shape.radius.md", "shape.radius.img", "shape.radius.field"]], ["Mise en page", ["layout.container"]]],
   comp: [["Boutons", ["components.button.style", "components.button.case"]], ["Cartes et images", ["components.card.hover", "components.image.filter"]], ["Formulaires", ["components.field.style"]], ["Accueil", ["components.hero.overlay"]]],
   anim: [["Mouvement", ["motion.enabled", "motion.duration", "motion.easing"]], ["Défilement", ["motion.reveal", "motion.smoothScroll"]]],
-  ident: [["Site", ["identity.siteName"]], ["Images", ["identity.logoLight", "identity.logoDark", "identity.ogImage"]]] };
+  ident: [["Site", ["identity.siteName"]], ["Images", ["identity.logoLight", "identity.logoDark", "identity.ogImage"]]],
+  adv: [["CSS personnalisé", ["advanced.customCssOn", "advanced.customCss"]]] };
 const DEVICES = [["desktop", "Ordinateur", 1440], ["tablet", "Tablette", 820], ["mobile", "Mobile", 390]];
 const PAGES = [["/", "Accueil"], ["/artistes", "Artistes"], ["/entreprises", "Entreprises"], ["/commerces", "Commerces"]];
 
@@ -134,7 +142,7 @@ const res = (st, p) => (p[0] === "@" ? "colors." + curScheme(st) + "." + p.slice
 const curScheme = (st) => (st.T.mode === "light" ? "light" : st.T.mode === "dark" ? "dark" : st.scheme || "dark");
 
 export function mount(root, ctx) {
-  const st = { scheme: "", compare: false, saved: [], T: defaultTheme(), pub: null, hist: [], hi: -1, tab: "themes", q: "", page: "/", device: "desktop", dirty: false, lastKey: "", lastAt: 0, draftTimer: 0, ready: false, notes: [] };
+  const st = { scheme: "", compare: false, saved: [], T: defaultTheme(), pub: null, hist: [], hi: -1, tab: "themes", q: "", page: "/", device: "desktop", dirty: false, lastKey: "", lastAt: 0, draftTimer: 0, ready: false, notes: [], gen: { c: "#7C3AED", h: "analogue", info: "" }, cssDraft: null };
   const cleanup = [];
   const on = (t, ev, fn, o) => { t.addEventListener(ev, fn, o); cleanup.push(() => t.removeEventListener(ev, fn, o)); };
   if (!document.getElementById("tc-css")) { const s = document.createElement("style"); s.id = "tc-css"; s.textContent = CSS; document.head.appendChild(s); }
@@ -256,6 +264,7 @@ export function mount(root, ctx) {
   function valueOf(p) { return getPath(st.T, p); }
   function control(p) {
     const m = meta(p), t = BYPATH.get(p), v = valueOf(p), o = m[4] || {}, id = "c-" + p.replace(/\./g, "-");
+    if (o.hidden) return "";
     const head = `<label for="${id}">${esc(m[2])}</label>`, hint = m[3] ? `<span class="h">${esc(m[3])}</span>` : "";
     let body = "";
     if (t.type === "color") {
@@ -270,11 +279,17 @@ export function mount(root, ctx) {
     } else if (t.type === "number") {
       body = `<div class="tc-r"><input type="range" id="${id}" min="${t.min}" max="${t.max}" step="${t.step || 1}" value="${v}" data-p="${p}" data-k="num"><input type="number" min="${t.min}" max="${t.max}" step="${t.step || 1}" value="${v}" data-p="${p}" data-k="numt" aria-label="${esc(m[2])} : valeur"><span class="px">${esc(t.unit || "")}</span></div>`;
     } else if (t.type === "font") {
-      body = `<select id="${id}" data-p="${p}" data-k="enum">${FONTS.map((f) => `<option${f.name === v ? " selected" : ""}>${esc(f.name)}</option>`).join("")}</select>`;
+      body = `<select id="${id}" data-p="${p}" data-k="enum">${FONTS.map((f) => `<option value="${esc(f.name)}"${f.name === v ? " selected" : ""}>${esc(fontLabel(f))}</option>`).join("")}</select>`;
     } else if (t.type === "bool") {
       return `<div class="tc-c" data-ctl="${p}"><label class="tc-ck"><input type="checkbox" id="${id}" data-p="${p}" data-k="bool"${v ? " checked" : ""}> ${esc(m[2])}</label>${hint}</div>`;
     } else if (t.type === "text") {
       body = `<input type="text" id="${id}" data-p="${p}" data-k="str" maxlength="${t.max || 80}" value="${esc(v)}" class="tc-str">`;
+    } else if (t.type === "css") {
+      const draft = st.cssDraft != null && checkCustomCss(st.cssDraft, t.max) ? st.cssDraft : v, err = checkCustomCss(draft, t.max);
+      body = `<textarea class="tc-ta" id="${id}" data-p="${p}" data-k="css" rows="14" spellcheck="false" autocapitalize="off" aria-describedby="${id}-e" style="min-height:260px" placeholder="/* Exemple : */\n.btn { letter-spacing: .02em; }">${esc(draft)}</textarea><div class="tc-er" id="${id}-e" role="alert">${err ? "Non appliqué : " + esc(err) : ""}</div><span class="h" data-csscount>${draft.length} / ${t.max} caractères</span>`;
+    } else if (t.type === "asset" && o.font) {
+      const nm = getPath(st.T, p.replace(/\.file$/, ".name"));
+      body = `<div class="tc-as">${v ? `<span style="flex:1;font-weight:600">${esc(nm || "Fichier envoyé")}</span>` : `<span class="none">aucun</span>`}<label class="btn ghost sm" style="cursor:pointer">Choisir un .woff2<input type="file" accept=".woff2,font/woff2" hidden data-p="${p}" data-k="fontfile"></label>${v ? `<button class="btn ghost sm" type="button" data-clearfont="${p}">Retirer</button>` : ""}</div>`;
     } else if (t.type === "asset") {
       body = `<div class="tc-as">${v ? `<img src="${esc(v)}" alt="">` : `<span class="none">d'origine</span>`}<label class="btn ghost sm" style="cursor:pointer">Choisir<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden data-p="${p}" data-k="file"></label>${v ? `<button class="btn ghost sm" type="button" data-clear="${p}">Retirer</button>` : ""}</div>`;
     } else if (t.type === "enum") {
@@ -282,6 +297,43 @@ export function mount(root, ctx) {
       body = `<select id="${id}" data-p="${p}" data-k="enum">${t.options.map((x) => `<option value="${esc(x)}"${x === v ? " selected" : ""}>${esc(lab[x] || x)}</option>`).join("")}</select>`;
     }
     return `<div class="tc-c" data-ctl="${p}">${head}${body}${hint}</div>`;
+  }
+  function fontLabel(f) {
+    if (!f.slot) return f.name;
+    const file = getPath(st.T, "typography.custom" + f.slot + ".file"), nm = getPath(st.T, "typography.custom" + f.slot + ".name");
+    return f.name + (file ? (nm ? " — " + nm : "") : " — aucun fichier envoyé");
+  }
+  function genHtml() {
+    const g = st.gen, B = (a, l, cls) => `<button type="button" class="btn ${cls || "ghost"} sm" data-gen="${a}">${l}</button>`;
+    return `<div class="tc-note"><b>Rien n'est publié</b> tant que vous ne cliquez pas sur « Publier ». Chaque action se défait avec ↶ Annuler.</div>
+      <h3>À partir d'une couleur</h3>
+      <div class="tc-c"><label for="g-col">Couleur de départ</label><div class="tc-r"><input type="color" id="g-col" value="${esc(g.c)}"><input type="text" id="g-colt" value="${esc(g.c)}" spellcheck="false" aria-label="Couleur de départ : valeur"></div></div>
+      <div class="tc-c"><label for="g-har">Harmonie</label><select id="g-har">${Object.entries(HARMONIES).map(([k, v]) => `<option value="${k}"${g.h === k ? " selected" : ""}>${esc(v)}</option>`).join("")}</select><span class="h">Détermine la couleur secondaire. Les palettes claire et sombre sont toutes deux générées, avec un contraste lisible.</span></div>
+      <p>${B("color", "Générer la palette", "")}</p>
+      <h3>À partir d'une image</h3>
+      <div class="tc-c"><span class="h">L'image est analysée dans votre navigateur : elle n'est pas envoyée sur le site.</span><label class="btn ghost sm" style="cursor:pointer;justify-self:start">Choisir une image<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden id="g-img"></label>${g.info}</div>
+      <h3>Au hasard</h3>
+      <p class="tc-r" style="flex-wrap:wrap">${B("rnd-all", "🎲 Tout", "")}${B("rnd-colors", "Couleurs")}${B("rnd-fonts", "Polices")}${B("rnd-shapes", "Formes")}</p>
+      <span class="h">« Tout » change aussi le mode (sombre ou clair). Les couleurs aléatoires respectent toujours un contraste lisible.</span>`;
+  }
+  const chip = (c) => `<span style="display:inline-block;width:1.4rem;height:1.4rem;border-radius:6px;border:1px solid var(--line);background:${esc(c)};vertical-align:middle"></span>`;
+  function applyPalette(p, info) {
+    const t = clone(st.T); applyPatch(t, paletteToPatch(p), setPath);
+    st.gen.info = info || "";
+    setTheme(t); ctx.toast("Palette appliquée. Annulez avec ↶ si elle ne vous plaît pas.");
+  }
+  function fromImage(file) {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 64 / Math.max(im.naturalWidth, im.naturalHeight, 1)), w = Math.max(1, Math.round(im.naturalWidth * k)), h = Math.max(1, Math.round(im.naturalHeight * k));
+      const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+      const x = cv.getContext("2d", { willReadFrequently: true }); x.drawImage(im, 0, 0, w, h); URL.revokeObjectURL(u);
+      let data; try { data = x.getImageData(0, 0, w, h).data; } catch (e) { ctx.toast("Image non analysable", true); return; }
+      const d = dominantColors(data), p = fromBase(d.primary, "analogue", d.secondary);
+      applyPalette(p, `<div class="tc-r" style="margin-top:.4rem"><span class="h">Couleurs détectées :</span>${chip(d.primary)}${d.secondary ? chip(d.secondary) : ""}${d.secondary ? "" : '<span class="h">(image presque grise : secondaire déduite)</span>'}</div>`);
+    };
+    im.onerror = () => { URL.revokeObjectURL(u); ctx.toast("Image illisible", true); };
+    im.src = u;
   }
   function contrastHtml() {
     const rep = contrastReport(validate(st.T).theme).filter((r) => r.mode === curScheme(st));
@@ -340,6 +392,7 @@ export function mount(root, ctx) {
       const q = fold(st.q.trim()), hits = CTRL.filter((c) => fold(c[2] + " " + c[3] + " " + keywords(R_(c[1]))).includes(q));
       h = hits.length ? hits.map((c) => control(R_(c[1]))).join("") : `<p class="hint">Aucun réglage ne correspond à « ${esc(st.q)} ».</p>`;
     } else if (st.tab === "themes") h = themesHtml();
+    else if (st.tab === "gen") h = genHtml();
     else if (st.tab === "share") h = shareHtml();
     else {
       if (st.tab === "colors" && st.T.mode === "auto") h += `<div class="tc-c"><span class="l">Palette modifiée</span><span class="tc-seg" role="group">${["dark", "light"].map((x) => `<button type="button" data-scheme="${x}" aria-pressed="${curScheme(st) === x}">${x === "dark" ? "Sombre" : "Claire"}</button>`).join("")}</span></div>`;
@@ -373,7 +426,13 @@ export function mount(root, ctx) {
     old.replaceWith(tmp.querySelector(".tc-ct"));
   }
   function onInput(e) {
-    const el = e.target, p = el.dataset.p; if (!p) return;
+    const el = e.target;
+    if (el.type === "file" && e.type === "input") return; /* un champ fichier émet « input » puis « change » : on ne traite que « change » (sinon double envoi) */
+    if (el.id === "g-col") { st.gen.c = el.value.toUpperCase(); const t = root.querySelector("#g-colt"); if (t) t.value = st.gen.c; return; }
+    if (el.id === "g-colt") { const c = parse(el.value); el.setAttribute("aria-invalid", !c); if (c) { st.gen.c = toHex({ ...c, a: 1 }); const k = root.querySelector("#g-col"); if (k) k.value = st.gen.c; } return; }
+    if (el.id === "g-har") { st.gen.h = el.value; return; }
+    if (el.id === "g-img") { const f = el.files && el.files[0]; if (f) fromImage(f); el.value = ""; return; }
+    const p = el.dataset.p; if (!p) return;
     const k = el.dataset.k, t = BYPATH.get(p), cur = valueOf(p);
     if (k === "pick") { const c = parse(cur) || { a: 1 }; const n = parse(el.value); if (setValue(p, n.a < 1 || c.a < 1 ? toCss(withAlpha(n, c.a)) : el.value.toUpperCase(), p)) { syncColor(p); refreshContrast(); } }
     else if (k === "alpha") { const c = parse(cur); if (setValue(p, toCss(withAlpha(c, el.value / 100)), p)) { syncColor(p); refreshContrast(); } }
@@ -386,6 +445,21 @@ export function mount(root, ctx) {
     else if (k === "bool") setValue(p, el.checked, p);
     else if (k === "str") { const ok = setValue(p, el.value, p); el.setAttribute("aria-invalid", !ok); }
     else if (k === "file") { const f = el.files && el.files[0]; if (f && ctx.upload) ctx.upload(f, p === "identity.ogImage" ? 1600 : 800).then((id) => { setValue(p, "/api/media?id=" + id, "file"); renderTab(); }).catch((e) => ctx.fail(e)); }
+    else if (k === "css") {
+      st.cssDraft = el.value;
+      const err = checkCustomCss(el.value, t.max), box = el.closest("[data-ctl]");
+      box.querySelector(".tc-er").textContent = err ? "Non appliqué : " + err : ""; el.setAttribute("aria-invalid", !!err);
+      box.querySelector("[data-csscount]").textContent = el.value.length + " / " + t.max + " caractères";
+      if (!err) setValue(p, el.value, p);
+    }
+    else if (k === "fontfile") {
+      const f = el.files && el.files[0]; if (!f || !ctx.uploadFont) return;
+      ctx.uploadFont(f).then((id) => {
+        const base = p.replace(/\.file$/, ""), nm = f.name.replace(/\.woff2$/i, "").replace(/[^\p{L}\p{N} ._'-]/gu, " ").replace(/\s+/g, " ").trim().slice(0, 60);
+        setValue(p, "/api/media?id=" + id, "font"); setValue(base + ".name", nm, "font"); renderTab();
+        ctx.toast("Police envoyée. Choisissez-la dans « Police des titres » ou « Police du texte ».");
+      }).catch((err) => ctx.fail(err));
+    }
     else if (k === "enum") { if (setValue(p, el.value, p) && (p === "background.style" || p === "background.mesh" || p === "mode")) renderTab(); }
   }
   function onClick(e) {
@@ -393,6 +467,15 @@ export function mount(root, ctx) {
     if (pr) { const p = PRESETS.find((x) => x.id === pr.dataset.preset); if (p) setTheme(p.theme, "preset"); return; }
     const fx = e.target.closest("[data-fix]");
     if (fx) { const [fg, bg, tg] = fx.dataset.fix.split("|"), c = st.T.colors[curScheme(st)]; const bgc = bg === "bg" ? c.bg : c[bg]; setValue(R_("@" + fg), suggestText(c[fg], parse(bgc) ? toCss({ ...parse(bgc), a: 1 }) : "#000", +tg).toUpperCase(), "fix" + fg); renderTab(); return; }
+    const gn = e.target.closest("[data-gen]");
+    if (gn) {
+      const a = gn.dataset.gen;
+      if (a === "color") { const pal = fromBase(st.gen.c, st.gen.h); if (pal) applyPalette(pal, ""); else ctx.toast("Couleur invalide", true); }
+      else if (/^rnd-/.test(a)) { const t = clone(st.T); applyPatch(t, randomPatch(a.slice(4), Math.random, st.T), setPath); st.gen.info = ""; setTheme(t); ctx.toast("Thème aléatoire appliqué. Cliquez à nouveau pour un autre, ou ↶ pour revenir."); }
+      return;
+    }
+    const cf = e.target.closest("[data-clearfont]");
+    if (cf) { const base = cf.dataset.clearfont.replace(/\.file$/, ""); setValue(cf.dataset.clearfont, "", "clear"); setValue(base + ".name", "", "clear"); renderTab(); return; }
     const cl = e.target.closest("[data-clear]");
     if (cl) { setValue(cl.dataset.clear, "", "clear"); renderTab(); return; }
     const sc = e.target.closest("[data-scheme]");
