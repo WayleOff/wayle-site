@@ -22,6 +22,15 @@
     document.head.appendChild(st);
     var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content","#"+b.map(function(x){return("0"+x.toString(16)).slice(-2)}).join(""));
   }
+  function identity(id){
+    if(!id||typeof id!=="object")return;
+    var ok=function(u){return typeof u==="string"&&/^\/api\/media\?id=[A-Za-z0-9_-]{1,64}$/.test(u)};
+    if(ok(id.logoLight))[].forEach.call(document.querySelectorAll("img.on-light"),function(i){i.src=id.logoLight;i.removeAttribute("srcset")});
+    if(ok(id.logoDark))[].forEach.call(document.querySelectorAll("img.on-dark"),function(i){i.src=id.logoDark;i.removeAttribute("srcset")});
+    var meta=function(sel,v){var m=document.querySelector(sel);if(m&&v)m.setAttribute("content",v)};
+    if(ok(id.ogImage)){var abs=location.origin+id.ogImage;meta('meta[property="og:image"]',abs);meta('meta[name="twitter:image"]',abs)}
+    if(typeof id.siteName==="string"&&id.siteName&&id.siteName.length<=80)meta('meta[property="og:site_name"]',id.siteName);
+  }
   function favicon(cfg){
     if(!cfg||!cfg.favicon||!/^[A-Za-z0-9_-]{1,64}$/.test(cfg.favicon))return;
     [].forEach.call(document.querySelectorAll('link[rel~="icon"],link[rel="apple-touch-icon"]'),function(l){l.remove()});
@@ -46,14 +55,14 @@
     });
   }
   /* 1. couleurs et favicon tout de suite (mémorisés), sans attendre le réseau */
-  try{var c0=JSON.parse(localStorage.getItem(CK)||"null");if(c0){theme(c0.config);favicon(c0.config)}}catch(e){}
+  try{var c0=JSON.parse(localStorage.getItem(CK)||"null");if(c0){theme(c0.config);favicon(c0.config);identity(c0.identity)}}catch(e){}
   /* 2. réglages à jour */
   var ready=new Promise(function(r){if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",r);else r()});
   fetch("/api/site",{credentials:"same-origin"}).then(function(r){return r.ok?r.json():null}).catch(function(){return null}).then(function(j){
     if(!j)return;
-    try{localStorage.setItem(CK,JSON.stringify({config:j.config||{}}))}catch(e){}
-    theme(j.config);favicon(j.config);
+    try{localStorage.setItem(CK,JSON.stringify({config:j.config||{},identity:j.identity||null}))}catch(e){}
+    theme(j.config);favicon(j.config);identity(j.identity);
     ready.then(function(){nav(j.pages);texts(j.content)});
   });
 })();
-;(function(){if(window.parent===window)return;window.addEventListener("message",function(e){if(e.origin!==location.origin)return;var d=e.data;if(!d||d.type!=="wayle-theme"||typeof d.css!=="string"||d.css.length>60000)return;window.__tcPreview=true;var o=document.getElementById("site-theme");if(o)o.remove();var s=document.getElementById("theme-preview");if(!s){s=document.createElement("style");s.id="theme-preview";document.head.appendChild(s)}s.textContent=d.css})})();
+;(function(){if(window.parent===window)return;window.addEventListener("message",function(e){if(e.origin!==location.origin)return;var d=e.data;if(!d||d.type!=="wayle-theme"||typeof d.css!=="string"||d.css.length>60000)return;window.__tcPreview=true;var o=document.getElementById("site-theme");if(o)o.remove();var s=document.getElementById("theme-preview");if(!s){s=document.createElement("style");s.id="theme-preview";document.head.appendChild(s)}s.textContent=d.css;if(window.__wayleMode)window.__wayleMode()})})();

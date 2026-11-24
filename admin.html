@@ -196,6 +196,7 @@ function vTheme(){
   main('<p class="sub" style="padding:1.5rem">Chargement de l’éditeur…</p>');
   import("/theme/customizer/panel.js").then(function(m){
     S.unmount=m.mount($("#main"),{api:api,toast:toast,fail:fail,setDirty:setDirty,
+      upload:function(f,max){return imgToBlob(f,max,false,"image/png").then(function(r){return saveMedia(r,f.name)})},
       legacy:{get:function(){return S.cfg.colors},clear:function(){if(!S.cfg.colors||!Object.keys(S.cfg.colors).length)return null;S.cfg.colors={};return api("PUT","c=s_config&id=main",S.cfg)}}});
   }).catch(function(e){main('<div class="warn" style="margin:1.5rem">Impossible de charger l’éditeur de thème ('+esc(e&&e.message||"erreur")+'). Vérifiez que le dossier <b>theme</b> est bien en ligne.</div>')});
 }
