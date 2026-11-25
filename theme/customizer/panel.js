@@ -50,6 +50,7 @@ const CTRL = [
   ["comp", "components.card.hover", "Cartes et photos au survol", "", { labels: { none: "Aucun effet", lift: "Se soulèvent", zoom: "Zoom sur la photo (d'origine)" } }],
   ["comp", "components.field.style", "Champs de formulaire", "", { labels: { boxed: "Encadrés (d'origine)", underlined: "Soulignés", filled: "Remplis" } }],
   ["comp", "components.image.filter", "Filtre sur les photos", "Les logos ne sont pas touchés", { labels: { none: "Aucun", grayscale: "Noir et blanc", sepia: "Sépia" } }],
+  ["comp", "components.hero.size", "Bandeau vidéo d'accueil", "Vous pouvez aussi le choisir page par page dans « Modifier en direct » (bandeau vidéo)", { labels: { full: "Grand : la vidéo remplit l'écran (d'origine)", compact: "Petit : titre à gauche, vidéo à droite" } }],
   ["comp", "components.hero.overlay", "Voile sur la vidéo d'accueil", "Assombrit la vidéo pour mieux lire le titre"],
   ["anim", "motion.enabled", "Animations", "Désactivez pour un site sans aucun mouvement"],
   ["anim", "motion.duration", "Durée des animations", "0,35 s = vitesse d'origine"],
@@ -67,7 +68,7 @@ const TABS = [["themes", "Thèmes"], ["gen", "Générer"], ["colors", "Couleurs"
 const SECTIONS = { colors: [["Affichage", ["mode"]], ["Fond et surfaces", [D + "bg", D + "surface", D + "line", "background.style", "background.mesh"]], ["Texte", [D + "ink", D + "mid"]], ["Accents", [D + "primary", D + "secondary"]], ["Boutons", [D + "btn", D + "btnInk"]], ["Messages", [D + "success", D + "error"]]],
   type: [["Polices", ["typography.fontHeading", "typography.fontBody", "typography.fontMono"]], ["Polices importées (.woff2)", ["typography.custom1.file", "typography.custom1.name", "typography.custom2.file", "typography.custom2.name"]], ["Tailles", ["typography.baseSize", "typography.lineHeight"]]],
   shape: [["Arrondis", ["shape.radius.pill", "shape.radius.xl", "shape.radius.card", "shape.radius.md", "shape.radius.img", "shape.radius.field"]], ["Mise en page", ["layout.container"]]],
-  comp: [["Boutons", ["components.button.style", "components.button.case"]], ["Cartes et images", ["components.card.hover", "components.image.filter"]], ["Formulaires", ["components.field.style"]], ["Accueil", ["components.hero.overlay"]]],
+  comp: [["Boutons", ["components.button.style", "components.button.case"]], ["Cartes et images", ["components.card.hover", "components.image.filter"]], ["Formulaires", ["components.field.style"]], ["Accueil", ["components.hero.size", "components.hero.overlay"]]],
   anim: [["Mouvement", ["motion.enabled", "motion.duration", "motion.easing"]], ["Défilement", ["motion.reveal", "motion.smoothScroll"]]],
   ident: [["Site", ["identity.siteName"]], ["Images", ["identity.logoLight", "identity.logoDark", "identity.ogImage"]]],
   adv: [["CSS personnalisé", ["advanced.customCssOn", "advanced.customCss"]]] };

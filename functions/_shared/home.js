@@ -23,7 +23,18 @@ const pos = (s) => (/^[0-9.]{1,5}% [0-9.]{1,5}%$/.test(String(s || "")) ? s : ""
 const CATS = ["artistes", "entreprises", "commerces"];
 const RCATS = { artistes: "Artistes", commerces: "Commerces", marques: "Marques", entreprises: "Entreprises" };
 const anchor = (s) => (/^[a-z][a-z0-9-]{0,40}$/.test(String(s || "")) ? s : "");
-const open = (b, cls, ctx) => { const c = [cls, widthClass(b)].filter(Boolean).join(" "); return `<section${anchor(b.anchor) ? ` id="${b.anchor}"` : ""}${c ? ` class="${c}"` : ""}${ctx && ctx.live ? ` data-ls="${ctx.i}"` : ""}><div>`; };
+const open = (b, cls, ctx, st) => { const c = [cls, widthClass(b)].filter(Boolean).join(" "); return `<section${anchor(b.anchor) ? ` id="${b.anchor}"` : ""}${c ? ` class="${c}"` : ""}${st ? ` style="${st.sec}"` : ""}${ctx && ctx.live ? ` data-ls="${ctx.i}"` : ""}><div${st ? ` style="${st.div}"` : ""}>`; };
+/* Couleur de fond choisie pour un bandeau (contact) : « #rrggbb » seulement. Le texte et le bouton s'adaptent au contraste. */
+const HEX = /^#[0-9a-f]{6}$/i;
+const lumin = (h) => { const v = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((x) => (x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4))); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+function bandStyle(bg) {
+  if (!HEX.test(String(bg || ""))) return null;
+  const L = lumin(bg), light = (1.05) / (L + 0.05) >= (L + 0.05) / (lumin("#1D1A17") + 0.05); // texte clair si plus contrasté
+  const vars = light
+    ? "--ink:#FBF6EE;--mid:rgba(251,246,238,.86);--muted:rgba(251,246,238,.82);--line:rgba(251,246,238,.32);--surface:rgba(255,255,255,.14);--surface-raised:rgba(255,255,255,.18);--bg:rgba(0,0,0,.2);--btn:#FBF6EE;--orange:#FBF6EE;--violet:#FBF6EE;"
+    : "--ink:#1D1A17;--mid:#3B3732;--muted:#55504A;--line:rgba(29,26,23,.28);--surface:rgba(255,255,255,.5);--surface-raised:rgba(255,255,255,.7);--bg:rgba(255,255,255,.72);--btn:#1D1A17;--orange:#1D1A17;--violet:#1D1A17;";
+  return { sec: `background:${bg};box-shadow:0 0 0 100vmax ${bg};clip-path:inset(0 -100vmax);--btn-ink:${light ? bg : "#FBF6EE"}`, div: `${vars}color:var(--ink)` };
+}
 const imgPos = (o) => { const s = posStyle(o && o.pos); return s ? ` style="${s}"` : ""; };
 const btn = (l, u, ghost) => (l ? `<a class="btn${ghost ? " ghost" : ""}" href="${esc(safeUrl(u))}">${t(l)}</a>` : "");
 
@@ -172,7 +183,7 @@ ${items.map((x, n) => `    <details${ctx.live ? " open" : ""}><summary${lf(ctx, 
 function contact(b, ctx) {
   const links = String(b.links || "").split("\n").map((l) => l.split("|").map((s) => s.trim())).filter((x) => x[0] && x[1]);
   const mail = /^[^\s@<>"]+@[^\s@<>"]+\.[a-z]{2,}$/i.test(String(b.email || "")) ? b.email : "";
-  return `${open(b, "contact", ctx)}
+  return `${open(b, "contact", ctx, bandStyle(b.bg))}
   <div class="contact-grid">
     <div>
       <h2${lf(ctx, "title")}>${t(b.title)}</h2>
@@ -217,5 +228,5 @@ export function renderCover(c, opts) {
   c = c || {};
   const ctx = { live: !!(opts && opts.live), i: "cover" };
   const v = (a) => list(a, 8).map((x) => ({ s: vid(x.s), p: poster(x.p), t: fr(x.t || "") })).filter((x) => x.s);
-  return { pitch: `<div class="cover-pitch"><p class="cp1"${lf(ctx, "pitch1")}>${t(c.pitch1)}</p><p class="cp2"${lf(ctx, "pitch2")}>${t(c.pitch2)}</p></div>`, cue: t(c.cue || "Découvrir"), data: { wide: v(c.wide), tall: v(c.tall) } };
+  return { size: c.size === "compact" || c.size === "full" ? c.size : "", pitch: `<div class="cover-pitch"><p class="cp1"${lf(ctx, "pitch1")}>${t(c.pitch1)}</p><p class="cp2"${lf(ctx, "pitch2")}>${t(c.pitch2)}</p></div>`, cue: t(c.cue || "Découvrir"), data: { wide: v(c.wide), tall: v(c.tall) } };
 }
