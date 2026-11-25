@@ -17,18 +17,30 @@ function fill(html, parts) {
   return html;
 }
 
+/* titre et description pour Google (facultatifs : page.seo = { title, desc }) */
+function seo(html, page) {
+  const s = page && page.seo;
+  if (html === null || !s || typeof s !== "object") return html;
+  const t = String(s.title || "").trim().slice(0, 90), d = String(s.desc || "").trim().slice(0, 260);
+  if (t) html = html.replace(/<title>[^<]*<\/title>/, () => `<title>${esc(t)}</title>`)
+    .replace(/(<meta property="og:title" content=")[^"]*(")/, (m, a, b) => a + esc(t) + b);
+  if (d) html = html.replace(/(<meta name="description" content=")[^"]*(")/, (m, a, b) => a + esc(d) + b)
+    .replace(/(<meta property="og:description" content=")[^"]*(")/, (m, a, b) => a + esc(d) + b);
+  return html;
+}
+
 /* page d'accueil */
 export function composeHome(html, home, opts) {
   const r = renderHome(home, opts), c = renderCover(home.cover, opts);
   const data = jsonScript("cover-data", c.data) + (r.pj ? jsonScript("pj-data", r.pj) : "");
-  return fill(html, [["<!--HOME-->", "<!--/HOME-->", r.main], ["<!--COVER-PITCH-->", "<!--/COVER-PITCH-->", c.pitch], ["<!--CUE-->", "<!--/CUE-->", c.cue], ["<!--HOME-DATA-->", "<!--/HOME-DATA-->", data]]);
+  return seo(fill(html, [["<!--HOME-->", "<!--/HOME-->", r.main], ["<!--COVER-PITCH-->", "<!--/COVER-PITCH-->", c.pitch], ["<!--CUE-->", "<!--/CUE-->", c.cue], ["<!--HOME-DATA-->", "<!--/HOME-DATA-->", data]]), home);
 }
 
 /* pages Artistes, Entreprises, Commerces */
 export function composeSvc(html, page, opts) {
   const r = renderSvc(page, opts);
   const data = r.conf ? jsonScript("conf-data", r.conf) : "";
-  return fill(html, [["<!--PAGE-->", "<!--/PAGE-->", r.main], ["<!--PAGE-DATA-->", "<!--/PAGE-DATA-->", data]]);
+  return seo(fill(html, [["<!--PAGE-->", "<!--/PAGE-->", r.main], ["<!--PAGE-DATA-->", "<!--/PAGE-DATA-->", data]]), page);
 }
 
 /* pages /p/<adresse> (gabarit page-template.tpl) */
