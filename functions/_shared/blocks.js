@@ -5,6 +5,7 @@ export function safeUrl(u) {
   u = String(u || "").trim();
   if (/^(https?:\/\/|mailto:|tel:|\/|#)/i.test(u)) return u;
   if (/^[a-z0-9_-]+\.html(#[\w-]*)?$/i.test(u)) return "/" + u; // page du site (artistes.html…)
+  if (/^\.\/[\w.\/-]*(#[\w-]*)?$/.test(u)) return u; // lien relatif (./#contact)
   if (/^[a-z0-9.\-]+\.[a-z]{2,}(\/|$)/i.test(u)) return "https://" + u;
   return "#";
 }

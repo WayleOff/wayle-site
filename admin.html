@@ -102,7 +102,7 @@ details.bd>summary{margin:.2rem 0 .6rem}
   <div class="brand">wayle<b>.</b><small>Espace admin</small></div>
   <nav id="nav" aria-label="Sections">
     <a href="#accueil">Accueil</a>
-    <a href="#page-accueil">Page d’accueil</a>
+    <a href="#principales">Pages principales</a>
     <a href="#theme">Thème</a>
     <a href="#apparence">Apparence</a>
     <a href="#textes">Textes du site</a>
@@ -150,7 +150,7 @@ function loadAll(){
 }
 
 /* ---------- navigation ---------- */
-var VIEWS={"page-accueil":vHomePage,accueil:vHome,theme:vTheme,apparence:vLook,textes:vTexts,pages:vPages,medias:vMedia,clients:vClients,sauvegarde:vBackup};
+var VIEWS={principales:vMainPages,"page-accueil":function(){location.replace("#principales/accueil")},accueil:vHome,theme:vTheme,apparence:vLook,textes:vTexts,pages:vPages,medias:vMedia,clients:vClients,sauvegarde:vBackup};
 function route(){
   if(S.dirty&&!confirm("Vous avez des modifications non enregistrées. Quitter quand même ?")){history.replaceState(null,"",S.hash||"#accueil");return}
   if(S.unmount){S.unmount();S.unmount=null}
@@ -175,7 +175,7 @@ function vHome(){
    +'<div class="grid">'
    +'<a class="tile" href="#theme"><b>Thème</b><span>Couleurs, polices, formes, aperçu en direct</span></a>'
    +'<a class="tile" href="#apparence"><b>Apparence</b><span>Favicon</span></a>'
-   +'<a class="tile" href="#page-accueil"><b>Page d’accueil</b><span>Sections, offres, références</span></a>'
+   +'<a class="tile" href="#principales"><b>Pages principales</b><span>Accueil, Artistes, Entreprises, Commerces</span></a>'
    +'<a class="tile" href="#textes"><b>Textes du site</b><span>'+nm+' texte'+(nm>1?"s":"")+' personnalisé'+(nm>1?"s":"")+'</span></a>'
    +'<a class="tile" href="#pages"><b>Pages</b><span>'+np+' page'+(np>1?"s":"")+' créée'+(np>1?"s":"")+', '+pub+' publiée'+(pub>1?"s":"")+'</span></a>'
    +'<a class="tile" href="#medias"><b>Images</b><span>'+imgs().length+' image'+(imgs().length>1?"s":"")+'</span></a>'
@@ -445,6 +445,11 @@ BT.h_steps={n:"Étapes",home:1,max:10,item:TT2};
 BT.h_about={n:"Le studio",home:1,max:6,item:TT2};
 BT.h_faq={n:"Questions fréquentes",home:1,max:40,item:function(){return{q:"",a:""}}};
 BT.h_contact={n:"Contact et formulaire",home:1};
+BT.v_offers={n:"Formules et tarifs",home:1,max:8,item:function(){return{kind:"",id:"",title:"",text:"",from:"dès",price:"",unit:"TTC",lines:"",after:"",img:"",media:"",pos:"",v:"",vp:"",vt:"",vs:"",play:"",photos:[],photosCap:""}}};
+BT.v_config={n:"Configurateur de devis",home:1};
+BT.v_steps={n:"Étapes",home:1,max:10,item:TT2};
+BT.v_ref={n:"Une référence",home:1};
+BT.v_cta={n:"Bandeau final",home:1};
 BT.cards.item=function(){return{title:"",text:"",price:"",lines:"",link:"",linkLabel:""}};BT.cards.max=6;
 function sel(opts,cur,attrs){return'<select '+attrs+'>'+Object.keys(opts).map(function(k){return'<option value="'+k+'"'+(k===cur?" selected":"")+'>'+opts[k]+'</option>'}).join("")+'</select>'}
 function blockForm(b,i){
@@ -460,6 +465,11 @@ function blockForm(b,i){
     case"h_offers":return F("Titre","title")+F("Chapeau","lead","area")+'<label class="f">Boutons de filtre (artiste, entreprise, commerce)'+sel({"1":"Afficher","":"Masquer"},b.chips?"1":"",'data-b="'+i+'" data-f="chips"')+'</label>'
       +items(function(j){var it=b.items[j];return'<div class="row"><label class="f" style="flex:1">Public'+sel({"":"—",artistes:"Artistes",entreprises:"Entreprises",commerces:"Commerces"},it.cat,'data-b="'+i+'" data-i="'+j+'" data-f="cat"')+'</label></div>'+hthumb(it,'data-picki="'+i+'.'+j+'"','data-clri="'+i+'.'+j+'"')+IF(j,"Titre","title")+IF(j,"Description","text","area")+'<label class="f">Tarifs, une ligne par prestation<textarea data-b="'+i+'" data-i="'+j+'" data-f="lines">'+esc(it.lines)+'</textarea><span class="hint">Écrivez « Street clip : dès 350 € » ou « Sur mesure : sur devis ».</span></label><div class="row"><label class="f" style="flex:1">Lien<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="link" value="'+esc(it.link)+'"></label><label class="f" style="flex:1">Texte du lien<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="linkLabel" value="'+esc(it.linkLabel)+'"></label></div>'},"cette offre")+F("Note sous les offres","note","area");
     case"h_band":return blockForm(Object.assign({},b,{t:"band"}),i);
+    case"v_offers":return svcOffers(b,i);
+    case"v_config":return svcConfig(b,i);
+    case"v_steps":return F("Titre","title")+items(function(j){return TT(j,"Étape "+(j+1),"Détail (visible au clic)")},"cette étape");
+    case"v_ref":return F("Titre","title")+F("Texte","lead","area")+'<div class="row"><label class="f" style="flex:1">Bouton<input type="text" data-b="'+i+'" data-f="btnl" value="'+esc(b.btnl)+'"></label><label class="f" style="flex:1">Lien<input type="text" data-b="'+i+'" data-f="btnu" value="'+esc(b.btnu)+'"></label></div>'+hthumb(b,'data-pick="'+i+'"','data-clr="'+i+'"')+F("Lien de l’image","link");
+    case"v_cta":return F("Titre","title")+'<div class="row"><label class="f" style="flex:1">Bouton 1<input type="text" data-b="'+i+'" data-f="b1l" value="'+esc(b.b1l)+'"></label><label class="f" style="flex:1">Lien<input type="text" data-b="'+i+'" data-f="b1u" value="'+esc(b.b1u)+'"></label></div><div class="row"><label class="f" style="flex:1">Bouton 2<input type="text" data-b="'+i+'" data-f="b2l" value="'+esc(b.b2l)+'"></label><label class="f" style="flex:1">Lien<input type="text" data-b="'+i+'" data-f="b2u" value="'+esc(b.b2u)+'"></label></div>';
     case"h_refs":return F("Titre","title")+F("Chapeau","lead","area")
       +items(function(j){var it=b.items[j];return'<div class="row"><label class="f" style="flex:1">Catégorie'+sel({artistes:"Artistes",commerces:"Commerces",marques:"Marques",entreprises:"Entreprises"},it.cat,'data-b="'+i+'" data-i="'+j+'" data-f="cat"')+'</label></div>'+hthumb(it,'data-picki="'+i+'.'+j+'"','data-clri="'+i+'.'+j+'"')+IF(j,"Description de l’image","alt")+IF(j,"Nom","title")+IF(j,"Courte description","text","area")
         +'<details class="sub"><summary>Fenêtre du projet (au clic)</summary>'+IF(j,"Titre dans la fenêtre","pt")+IF(j,"Type de projet","pk","","Artiste · Clip")+IF(j,"Texte","pd","area")+'<div class="row"><label class="f" style="flex:2">Vidéo<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="v" value="'+esc(it.v)+'" placeholder="video-kaane.mp4"></label><label class="f" style="flex:2">Image d’attente de la vidéo<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="vp" value="'+esc(it.vp)+'" placeholder="video-kaane-poster.jpg"></label><label class="f" style="flex:1">Format'+sel({"":"Vertical/large","1":"Carré"},it.sq?"1":"",'data-b="'+i+'" data-i="'+j+'" data-f="sq"')+'</label></div><span class="hint">Vidéo : un fichier .mp4 déjà sur le site, ou un lien https vers un .mp4. Laissez la fenêtre vide pour ouvrir plutôt le lien ci-dessous.</span>'+IF(j,"Lien (si pas de fenêtre)","url","","https://…")+'</details>'},"cette référence")
@@ -662,55 +672,115 @@ function editClient(id){
   if(newActivity(id)){P.seenAt=Date.now();api("PUT","c=c_portal&id="+id,P).catch(function(){})}
 }
 
+
+/* ---------- champs par chemin (sections des pages métiers) ---------- */
+function PF(i,b,path,l,type,hint,ph){var v=getP(b,path);v=v==null?"":v;var a='data-p="'+i+':'+path+'"';
+  return'<label class="f"'+(type==="half"?' style="flex:1"':type==="third"?' style="flex:1;min-width:7rem"':'')+'>'+l+(type==="area"?'<textarea '+a+'>'+esc(v)+'</textarea>':'<input type="text" '+a+' value="'+esc(v)+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>')+(hint?'<span class="hint">'+hint+'</span>':'')+'</label>'}
+function PS(i,b,path,l,opts){var v=getP(b,path);v=v===true?"1":v===false||v==null?"":String(v);return'<label class="f">'+l+'<select data-p="'+i+':'+path+'">'+Object.keys(opts).map(function(k){return'<option value="'+esc(k)+'"'+(k===v?" selected":"")+'>'+esc(opts[k])+'</option>'}).join("")+'</select></label>'}
+function PL(i,b,path,word,row,tpl,max){var a=getP(b,path)||[];
+  return a.map(function(x,j){return'<div class="item">'+row(path+"."+j,x,j)+'<div><button class="btn danger sm" type="button" data-prm="'+i+':'+path+'.'+j+'">Retirer '+word+'</button></div></div>'}).join("")
+   +(a.length<(max||20)?'<div><button class="btn ghost sm" type="button" data-padd="'+i+':'+path+'" data-tpl="'+esc(JSON.stringify(tpl))+'">+ Ajouter '+word.replace(/^(cette|ce|cet) /,"")+'</button></div>':"")}
+function pthumb(i,o,path,noRm){var src=o.media?"/api/media?id="+o.media:(o.img?"/"+String(o.img).replace(/^\//,""):"");
+  return'<div class="row">'+(src?'<img class="fav" style="width:90px;height:68px;object-fit:cover" src="'+esc(src)+'" alt="">':'<div class="fav" style="width:90px;height:68px;display:grid;place-items:center;color:#666;font-size:.75rem">aucune</div>')+'<button class="btn ghost sm" type="button" data-ppick="'+i+':'+path+'">'+(src?"Changer l’image":"Choisir une image")+'</button>'+(o.media&&o.img?'<button class="btn ghost sm" type="button" data-pclr="'+i+':'+path+'">Remettre l’image d’origine</button>':'')+(src&&!noRm?'<button class="btn ghost sm" type="button" data-pnone="'+i+':'+path+'">Retirer l’image</button>':'')+'</div>'}
+function svcOffers(b,i){
+  var it=function(p,x,j){
+    if(x.kind==="custom")return PS(i,b,p+".kind","Type de carte",{"":"Formule","custom":"Sur mesure (pleine largeur)"})+PF(i,b,p+".title","Titre")+PF(i,b,p+".text","Texte","area")+PF(i,b,p+".price","Prix affiché","","","Sur devis")+'<div class="row">'+PF(i,b,p+".b1l","Bouton 1","half")+PF(i,b,p+".b1u","Lien","half")+'</div><div class="row">'+PF(i,b,p+".b2l","Bouton 2","half")+PF(i,b,p+".b2u","Lien","half")+'</div>';
+    return PS(i,b,p+".kind","Type de carte",{"":"Formule","custom":"Sur mesure (pleine largeur)"})+PF(i,b,p+".title","Nom de la formule")+PF(i,b,p+".text","Description","area")
+      +'<div class="row">'+PF(i,b,p+".from","Avant le prix","third","","dès")+PF(i,b,p+".price","Prix","third","","350 €")+PF(i,b,p+".unit","Après le prix","third","","TTC / mois")+'</div>'
+      +PF(i,b,p+".lines","Détails, une ligne par élément","area","Écrivez « Tournage : 2 h sur place ».")+PF(i,b,p+".after","Texte sous les détails (facultatif)","area")
+      +'<details class="sub"><summary>Image en haut de la carte</summary>'+pthumb(i,x,p)+PF(i,b,p+".pos","Cadrage (facultatif)","","Ex. « 50% 35% » : position horizontale puis verticale.","50% 40%")+'</details>'
+      +'<details class="sub"><summary>Vidéo d’exemple'+(x.v?" ✓":"")+'</summary><div class="row">'+PF(i,b,p+".v","Fichier vidéo","half","","video-kaane.mp4")+PF(i,b,p+".vp","Image d’attente","half","","video-kaane-poster.jpg")+'</div>'+PF(i,b,p+".vt","Titre de la vidéo")+PF(i,b,p+".vs","Sous-titre")+PF(i,b,p+".play","Texte du bouton","","","Voir un exemple")+'<span class="hint">Laissez « Fichier vidéo » vide pour ne pas afficher de bouton.</span></details>'
+      +'<details class="sub"><summary>Photos d’exemple ('+((x.photos||[]).length)+')</summary>'+PL(i,b,p+".photos","cette photo",function(pp,ph){return pthumb(i,ph,pp,1)+PF(i,b,pp+".alt","Description de la photo")},{img:"",media:"",alt:"",w:"",h:""},12)+PF(i,b,p+".photosCap","Légende","","","Exemples de photos")+'</details>'
+      +PF(i,b,p+".id","Ancre (facultatif)","","Pour un lien direct vers cette carte, ex. « street-clip ».");
+  };
+  return PS(i,b,"sub","Style du titre",{"":"Titre de section","1":"Sous-titre (dans la même section)"})+PS(i,b,"join","Placement",{"":"Nouvelle section","1":"À la suite de la section précédente"})
+    +PF(i,b,"title","Titre")+PF(i,b,"lead","Chapeau","area")+PS(i,b,"layout","Disposition",{"":"3 cartes par ligne","duo":"2 cartes par ligne"})
+    +'<p class="hint" style="margin:.6rem 0 .3rem">Cartes</p>'+PL(i,b,"items","cette carte",it,BT.v_offers.item(),8)
+    +PF(i,b,"perks","Avantages (facultatif), un par ligne","area","Mettez le début en gras avec **…**, ex. « **−10 %** en vous engageant 6 mois ».")+PF(i,b,"note","Note sous les cartes","area");
+}
+function svcConfig(b,i){
+  return PF(i,b,"title","Titre")+PF(i,b,"lead","Chapeau","area")
+   +'<details class="sub" open><summary>1. Formules de départ</summary>'+PL(i,b,"bases","cette formule",function(p){return'<div class="row">'+PF(i,b,p+".n","Nom","half")+PF(i,b,p+".p","Prix de départ (€)","third")+'</div>'+PF(i,b,p+".d","Résumé")+PS(i,b,p+".voice","Voix off",{"":"En option","1":"Incluse dans cette formule"})},{n:"",p:"",d:"",voice:false},8)+'</details>'
+   +'<details class="sub"><summary>2. Ajustements (avec + et −)</summary>'+PL(i,b,"steps","cet ajustement",function(p){return PF(i,b,p+".l","Libellé")+'<div class="row">'+PF(i,b,p+".pu","Prix unitaire (€)","third")+PF(i,b,p+".u","Unité","third","","heure")+PF(i,b,p+".max","Maximum","third")+'</div>'+PF(i,b,p+".sub","Précision")},{l:"",u:"",pu:"",max:"5",sub:""},10)+'</details>'
+   +'<details class="sub"><summary>3. Options (cases à cocher)</summary>'+PL(i,b,"opts","cette option",function(p,x){return PF(i,b,p+".l","Libellé")+'<div class="row">'+PF(i,b,p+".pu","Prix (€)","third")+'</div>'+PF(i,b,p+".sub","Précision")+(x.k==="voice"?'<span class="hint">Option « voix off » : cochée d’office avec les formules où elle est incluse.</span>':"")},{l:"",pu:"",sub:""},10)+'</details>'
+   +'<p class="hint">Les prix sont en euros TTC, sans le signe €. L’estimation reste indicative sur le site.</p>';
+}
 /* ---------- Page d'accueil à blocs ---------- */
 /* Brouillon dans s_home/draft, version en ligne dans s_home/live. Sans version en ligne, le site sert l'accueil d'origine. */
-function vHomePage(){
-  main(head("Page d’accueil")+'<p class="sub">Chargement…</p>');
-  Promise.all([api("GET","c=s_home&id=draft"),api("GET","c=s_home&id=live")]).then(function(r){
+var PAGES={
+  accueil:{n:"Accueil",coll:"s_home",d:"draft",l:"live",def:"/home-default.json",url:"/",cover:1,hero:"Grand titre"},
+  artistes:{n:"Artistes",coll:"s_svc",d:"artistes-draft",l:"artistes-live",def:"/svc-artistes.json",url:"/artistes",hero:"En-tête de la page"},
+  entreprises:{n:"Entreprises",coll:"s_svc",d:"entreprises-draft",l:"entreprises-live",def:"/svc-entreprises.json",url:"/entreprises",hero:"En-tête de la page"},
+  commerces:{n:"Commerces",coll:"s_svc",d:"commerces-draft",l:"commerces-live",def:"/svc-commerces.json",url:"/commerces",hero:"En-tête de la page"}
+};
+function vMainPages(seg){
+  if(seg&&PAGES[seg[0]])return vMain(seg[0]);
+  main(head("Pages principales","Les pages principales du site, découpées en sections modifiables. Chaque page garde sa version d’origine tant que vous n’avez rien publié.")+'<p class="sub">Chargement…</p>');
+  var keys=Object.keys(PAGES);
+  Promise.all(keys.map(function(k){var P=PAGES[k];return Promise.all([api("GET","c="+P.coll+"&id="+P.d),api("GET","c="+P.coll+"&id="+P.l)])})).then(function(r){
+    main(head("Pages principales","Les pages principales du site, découpées en sections modifiables. Chaque page garde sa version d’origine tant que vous n’avez rien publié.")
+     +'<div class="grid">'+keys.map(function(k,n){var d=r[n][0].data,l=r[n][1].data;
+        var st=l?'<span class="badge on">version modifiable en ligne</span>':d?'<span class="badge mod">brouillon</span>':'<span class="badge">version d’origine</span>';
+        return'<a class="tile" href="#principales/'+k+'"><b>'+esc(PAGES[k].n)+'</b><span>'+st+'</span></a>'}).join("")+'</div>');
+  }).catch(fail);
+}
+function vMain(key){
+  var P=S.P=PAGES[key];S.homeKey=key;
+  main(head(esc(P.n))+'<p class="sub">Chargement…</p>');
+  Promise.all([api("GET","c="+P.coll+"&id="+P.d),api("GET","c="+P.coll+"&id="+P.l)]).then(function(r){
     S.homeDraft=r[0].data;S.homeLive=r[1].data;
     if(!S.homeDraft)homeIntro();else homeEdit();
   }).catch(fail);
 }
 function homeIntro(){
-  main(head("Page d’accueil","Transformez votre page d’accueil en sections modifiables : textes, offres, références, ordre des sections, et ajout de blocs (comme dans les pages).")
-   +'<div class="card"><p style="margin-top:0">On commence par importer l’accueil tel qu’il est aujourd’hui, avec les textes que vous avez déjà personnalisés. <b>Rien ne change sur le site</b> tant que vous n’avez pas cliqué sur « Publier ».</p><button class="btn" id="himp" type="button">Importer l’accueil actuel</button></div>');
+  var P=S.P;
+  main(head(esc(P.n),'<a href="#principales">← Pages principales</a> · Transformez cette page en sections modifiables : textes, tarifs, ordre des sections, et ajout de blocs (comme dans les pages).')
+   +'<div class="card"><p style="margin-top:0">On commence par importer la page telle qu’elle est aujourd’hui, avec les textes que vous avez déjà personnalisés. <b>Rien ne change sur le site</b> tant que vous n’avez pas cliqué sur « Publier ».</p><button class="btn" id="himp" type="button">Importer la page actuelle</button></div>');
   $("#himp").onclick=function(){
     this.disabled=true;
-    fetch("/home-default.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("home-default.json introuvable");return r.json()}).then(function(h){
+    fetch(P.def,{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error(P.def+" introuvable");return r.json()}).then(function(h){
       var items=S.content.items||{},K=h._k||{};delete h._k;
       Object.keys(K).forEach(function(path){var e=items[K[path]];if(!e||typeof e.v!=="string"||!e.v.trim())return;
-        var m=/^(.*)#(\d+)$/.exec(path);
-        if(m){var o=getP(h,m[1]),ps=String(o||"").split(/\n\s*\n/);ps[+m[2]]=e.v;setP(h,m[1],ps.join("\n\n"))}
-        else setP(h,path,e.v)});
+        var v=e.v,m=/^(.*)#(\d+)$/.exec(path),ml=/^(.*)#(\d+)#([lvb])$/.exec(path);
+        if(ml){var L=String(getP(h,ml[1])||"").split("\n"),j=+ml[2],ln=L[j]||"";
+          if(ml[3]==="b"){ln=ln.replace(/^\*\*[^*]*\*\*/,"**"+v+"**")}
+          else{var q=ln.indexOf(" : "),lab=q>=0?ln.slice(0,q):ln,val=q>=0?ln.slice(q+3):"";if(ml[3]==="l")lab=v;else val=v;ln=lab+" : "+val}
+          L[j]=ln;setP(h,ml[1],L.join("\n"))}
+        else if(m){var o=getP(h,m[1]),ps=String(o||"").split(/\n\s*\n/);ps[+m[2]]=v;setP(h,m[1],ps.join("\n\n"))}
+        else setP(h,path,v)});
       h.updated=Date.now();
-      return api("PUT","c=s_home&id=draft",h).then(function(){S.homeDraft=h;toast("Accueil importé. Rien n’est encore publié.");homeEdit()});
+      return api("PUT","c="+P.coll+"&id="+P.d,h).then(function(){S.homeDraft=h;toast("Page importée. Rien n’est encore publié.");homeEdit()});
     }).catch(function(e){$("#himp").disabled=false;fail(e)});
   };
 }
 function getP(o,path){return path.split(".").reduce(function(a,k){return a==null?a:a[k]},o)}
 function setP(o,path,v){var ks=path.split("."),last=ks.pop(),t=ks.reduce(function(a,k){return a==null?a:a[k]},o);if(t!=null)t[last]=v}
 function homeEdit(){
-  var E=JSON.parse(JSON.stringify(S.homeDraft));S.edit={home:E};
+  var P=S.P,E=JSON.parse(JSON.stringify(S.homeDraft));S.edit={home:E};
   var live=!!S.homeLive,same=live&&JSON.stringify(strip(S.homeLive))===JSON.stringify(strip(E));
   function strip(o){var c=JSON.parse(JSON.stringify(o||{}));delete c.updated;delete c.publishedAt;return c}
   var C=E.cover=E.cover||{},Hh=E.hero=E.hero||{};C.wide=C.wide||[];C.tall=C.tall||[];
   function vrow(g,j){var v=C[g][j];return'<div class="item"><div class="row"><label class="f" style="flex:2">Titre affiché<input type="text" data-cv="'+g+'.'+j+'.t" value="'+esc(v.t)+'"></label><label class="f" style="flex:1">Fichier vidéo<input type="text" data-cv="'+g+'.'+j+'.s" value="'+esc(v.s)+'" placeholder="hero-kaane.mp4"></label><label class="f" style="flex:1">Image d’attente<input type="text" data-cv="'+g+'.'+j+'.p" value="'+esc(v.p)+'" placeholder="hero-kaane-poster.jpg"></label></div><div><button class="btn danger sm" data-cvrm="'+g+'.'+j+'" type="button">Retirer</button></div></div>'}
   function draw(){
+    /* garder les parties dépliées et la position de lecture d'un affichage à l'autre */
+    var keep={},y=window.scrollY;$$("[id^=hs] details").forEach(function(d){var w=d.closest("[id^=hs]");if(d.open)keep[w.id+"/"+[].indexOf.call(w.querySelectorAll("details"),d)]=1});
     var bl=E.sections.map(function(b,i){var T=BT[b.t]||{n:b.t},home=!!T.home;
       return'<div class="blk'+(b.hidden?' off':'')+'" id="hs'+i+'"><div class="hd"><b>'+(i+1)+'. '+esc(T.n)+(b.hidden?' <span class="badge">masquée</span>':'')+'</b><div class="mini">'
         +'<button type="button" data-mv="'+i+'.-1" aria-label="Monter"'+(i===0?" disabled":"")+'>↑</button><button type="button" data-mv="'+i+'.1" aria-label="Descendre"'+(i===E.sections.length-1?" disabled":"")+'>↓</button>'
         +(home?'<button type="button" data-hide="'+i+'" aria-label="'+(b.hidden?"Afficher":"Masquer")+'" title="'+(b.hidden?"Afficher":"Masquer")+'" style="width:auto;padding:0 .6rem">'+(b.hidden?"Afficher":"Masquer")+'</button>':'<button type="button" data-dup="'+i+'" aria-label="Dupliquer">⧉</button><button type="button" data-rm="'+i+'" aria-label="Supprimer">✕</button>')
         +'</div></div><details class="bd"'+(S.homeOpen===i?" open":"")+' data-open="'+i+'"><summary class="hint">Modifier</summary>'+blockForm(b,i)+'</details></div>'}).join("");
     var gen=Object.keys(BT).filter(function(k){return!BT[k].home});
-    main(head("Page d’accueil",'État : '+(live?(same?'<span class="badge on">en ligne</span> la version à sections est publiée.':'<span class="badge mod">modifications non publiées</span> le site montre la dernière version publiée.'):'<span class="badge">brouillon</span> le site montre encore l’accueil d’origine.'),true)
-     +'<div class="card"><div class="row"><a class="btn ghost" id="hprev" target="_blank" rel="noopener" href="/?preview=1">Aperçu du brouillon ↗</a><button class="btn" id="hpub" type="button">Publier sur le site</button>'+(live?'<button class="btn ghost" id="hoff" type="button">Revenir à l’accueil d’origine</button>':'')+'</div><p class="hint" style="margin:.6rem 0 0">« Enregistrer » garde un brouillon. L’aperçu montre le dernier brouillon enregistré. Une fois publiée, l’accueil se modifie ici : la rubrique « Textes du site » ne s’applique plus à cette page.</p></div>'
-     +'<h2>Bandeau vidéo</h2><div class="card"><label class="f">Accroche (ligne 1)<input type="text" data-c="pitch1" value="'+esc(C.pitch1)+'"></label><label class="f">Accroche (ligne 2)<input type="text" data-c="pitch2" value="'+esc(C.pitch2)+'"></label><label class="f">Texte de la flèche<input type="text" data-c="cue" value="'+esc(C.cue)+'"></label>'
+    main(head(esc(P.n),'<a href="#principales">← Pages principales</a> · État : '+(live?(same?'<span class="badge on">en ligne</span> la version à sections est publiée.':'<span class="badge mod">modifications non publiées</span> le site montre la dernière version publiée.'):'<span class="badge">brouillon</span> le site montre encore la page d’origine.'),true)
+     +'<div class="card"><div class="row"><a class="btn ghost" id="hprev" target="_blank" rel="noopener" href="'+P.url+'?preview=1">Aperçu du brouillon ↗</a><button class="btn" id="hpub" type="button">Publier sur le site</button>'+(live?'<button class="btn ghost" id="hoff" type="button">Revenir à la page d’origine</button>':'')+'</div><p class="hint" style="margin:.6rem 0 0">« Enregistrer » garde un brouillon. L’aperçu montre le dernier brouillon enregistré. Une fois publiée, cette page se modifie ici : la rubrique « Textes du site » ne s’applique plus à elle.</p></div>'
+     +(!P.cover?'':'<h2>Bandeau vidéo</h2><div class="card"><label class="f">Accroche (ligne 1)<input type="text" data-c="pitch1" value="'+esc(C.pitch1)+'"></label><label class="f">Accroche (ligne 2)<input type="text" data-c="pitch2" value="'+esc(C.pitch2)+'"></label><label class="f">Texte de la flèche<input type="text" data-c="cue" value="'+esc(C.cue)+'"></label>'
        +'<details class="sub"><summary>Vidéos sur ordinateur ('+C.wide.length+')</summary>'+C.wide.map(function(v,j){return vrow("wide",j)}).join("")+'<button class="btn ghost sm" data-cvadd="wide" type="button">+ Ajouter une vidéo</button></details>'
        +'<details class="sub"><summary>Vidéos sur téléphone ('+C.tall.length+')</summary>'+C.tall.map(function(v,j){return vrow("tall",j)}).join("")+'<button class="btn ghost sm" data-cvadd="tall" type="button">+ Ajouter une vidéo</button></details>'
-       +'<p class="hint">Les vidéos sont des fichiers .mp4 du site (trop lourdes pour l’envoi d’images). Pour en ajouter une nouvelle, déposez-la d’abord dans le dépôt GitHub.</p></div>'
-     +'<h2>Grand titre</h2><div class="card"><label class="f">Titre<input type="text" data-h="title" value="'+esc(Hh.title)+'"></label><label class="f">Texte<textarea data-h="text">'+esc(Hh.text)+'</textarea></label><div class="row"><label class="f" style="flex:1">Bouton 1<input type="text" data-h="b1l" value="'+esc(Hh.b1l)+'"></label><label class="f" style="flex:1">Lien<input type="text" data-h="b1u" value="'+esc(Hh.b1u)+'"></label></div><div class="row"><label class="f" style="flex:1">Bouton 2<input type="text" data-h="b2l" value="'+esc(Hh.b2l)+'"></label><label class="f" style="flex:1">Lien<input type="text" data-h="b2u" value="'+esc(Hh.b2u)+'"></label></div></div>'
+       +'<p class="hint">Les vidéos sont des fichiers .mp4 du site (trop lourdes pour l’envoi d’images). Pour en ajouter une nouvelle, déposez-la d’abord dans le dépôt GitHub.</p></div>')
+     +'<h2>'+P.hero+'</h2><div class="card"><label class="f">Titre<input type="text" data-h="title" value="'+esc(Hh.title)+'"></label><label class="f">Texte<textarea data-h="text">'+esc(Hh.text)+'</textarea></label><div class="row"><label class="f" style="flex:1">Bouton 1<input type="text" data-h="b1l" value="'+esc(Hh.b1l)+'"></label><label class="f" style="flex:1">Lien<input type="text" data-h="b1u" value="'+esc(Hh.b1u)+'"></label></div><div class="row"><label class="f" style="flex:1">Bouton 2<input type="text" data-h="b2l" value="'+esc(Hh.b2l)+'"></label><label class="f" style="flex:1">Lien<input type="text" data-h="b2u" value="'+esc(Hh.b2u)+'"></label></div></div>'
      +'<h2>Sections</h2><p class="hint">Les sections d’origine peuvent être masquées et déplacées. Les blocs ajoutés peuvent aussi être dupliqués ou supprimés.</p>'+bl
      +'<div class="addbar"><span class="hint" style="align-self:center">Ajouter</span><select id="hpos">'+E.sections.map(function(b,i){return'<option value="'+(i+1)+'"'+(i===E.sections.length-1?" selected":"")+'>après '+(i+1)+'. '+esc((BT[b.t]||{n:b.t}).n)+'</option>'}).join("")+'<option value="0">tout en haut</option></select>'+gen.map(function(k){return'<button class="btn ghost sm" type="button" data-add="'+k+'">+ '+BT[k].n+'</button>'}).join("")+'</div>');
+    Object.keys(keep).forEach(function(k){var a=k.split("/"),w=document.getElementById(a[0]),d=w&&w.querySelectorAll("details")[+a[1]];if(d)d.open=true});
+    if(y)window.scrollTo(0,y);
     $("#savebtn").onclick=save;
     var ch=function(){setDirty(true)};
     $$("[data-c]").forEach(function(el){el.oninput=function(){C[el.dataset.c]=el.value;ch()}});
@@ -732,15 +802,21 @@ function homeEdit(){
     $$("[data-clr]").forEach(function(b){b.onclick=function(){E.sections[+b.dataset.clr].media="";ch();draw()}});
     $$("[data-clri]").forEach(function(b){b.onclick=function(){var a=b.dataset.clri.split(".");E.sections[+a[0]].items[+a[1]].media="";ch();draw()}});
     $("#hpub").onclick=publish;
-    if($("#hoff"))$("#hoff").onclick=function(){if(!confirm("Remettre l’accueil d’origine sur le site ? Votre version à sections reste enregistrée en brouillon."))return;
-      api("DELETE","c=s_home&id=live").then(function(){S.homeLive=null;toast("L’accueil d’origine est de nouveau en ligne.");homeEdit()}).catch(fail)};
+    $$("[data-p]").forEach(function(el){var a=el.dataset.p.split(":"),h=function(){setP(E.sections[+a[0]],a[1],el.value);ch()};el.addEventListener(el.tagName==="SELECT"?"change":"input",h)});
+    $$("[data-padd]").forEach(function(b){b.onclick=function(){var a=b.dataset.padd.split(":"),sec=E.sections[+a[0]],arr=getP(sec,a[1]);if(!arr){setP(sec,a[1],[]);arr=getP(sec,a[1])}arr.push(JSON.parse(b.dataset.tpl));ch();draw()}});
+    $$("[data-prm]").forEach(function(b){b.onclick=function(){var a=b.dataset.prm.split(":"),ks=a[1].split("."),j=+ks.pop();getP(E.sections[+a[0]],ks.join(".")).splice(j,1);ch();draw()}});
+    $$("[data-ppick]").forEach(function(b){b.onclick=function(){var a=b.dataset.ppick.split(":");pickMedia(function(id){getP(E.sections[+a[0]],a[1]).media=id;ch();draw()})}});
+    $$("[data-pclr]").forEach(function(b){b.onclick=function(){var a=b.dataset.pclr.split(":");getP(E.sections[+a[0]],a[1]).media="";ch();draw()}});
+    $$("[data-pnone]").forEach(function(b){b.onclick=function(){var a=b.dataset.pnone.split(":"),o=getP(E.sections[+a[0]],a[1]);o.media="";o.img="";ch();draw()}});
+    if($("#hoff"))$("#hoff").onclick=function(){if(!confirm("Remettre la page d’origine sur le site ? Votre version à sections reste enregistrée en brouillon."))return;
+      api("DELETE","c="+P.coll+"&id="+P.l).then(function(){S.homeLive=null;toast("La page d’origine est de nouveau en ligne.");homeEdit()}).catch(fail)};
     setDirty(S.dirty);
   }
-  function save(){E.updated=Date.now();return api("PUT","c=s_home&id=draft",E).then(function(){S.homeDraft=JSON.parse(JSON.stringify(E));setDirty(false);toast("Brouillon enregistré.");homeEdit()}).catch(function(e){fail(e);throw e})}
+  function save(){E.updated=Date.now();return api("PUT","c="+P.coll+"&id="+P.d,E).then(function(){S.homeDraft=JSON.parse(JSON.stringify(E));setDirty(false);toast("Brouillon enregistré.");homeEdit()}).catch(function(e){fail(e);throw e})}
   function publish(){
-    if(!confirm(live?"Publier ces modifications sur la page d’accueil ?":"Publier la page d’accueil à sections ? Elle remplacera l’accueil actuel (vous pourrez revenir en arrière)."))return;
+    if(!confirm(live?"Publier ces modifications sur la page « "+P.n+" » ?":"Publier la page « "+P.n+" » à sections ? Elle remplacera la page actuelle (vous pourrez revenir en arrière)."))return;
     var p=S.dirty?save():Promise.resolve();
-    p.then(function(){var L=JSON.parse(JSON.stringify(S.homeDraft));L.publishedAt=Date.now();return api("PUT","c=s_home&id=live",L).then(function(){S.homeLive=L;toast("Page d’accueil publiée. Visible dans quelques secondes.");homeEdit()})}).catch(function(e){if(e)fail(e)});
+    p.then(function(){var L=JSON.parse(JSON.stringify(S.homeDraft));L.publishedAt=Date.now();return api("PUT","c="+P.coll+"&id="+P.l,L).then(function(){S.homeLive=L;toast("Page publiée. Visible dans quelques secondes.");homeEdit()})}).catch(function(e){if(e)fail(e)});
   }
   draw();
 }
@@ -751,8 +827,10 @@ function vBackup(){
    +'<div class="card"><div class="row"><button class="btn" id="bx" type="button">Télécharger la sauvegarde</button><label class="btn ghost" style="cursor:pointer">Restaurer une sauvegarde<input type="file" id="bi" accept="application/json,.json" hidden></label></div></div>'
    +'<div class="warn">Restaurer remplace les réglages, les textes et les pages actuels par ceux du fichier.</div>');
   $("#bx").onclick=function(){
-    Promise.all([api("GET","c=s_home&id=draft"),api("GET","c=s_home&id=live")]).catch(function(){return[{},{}]}).then(function(hr){
-    var o={v:1,at:new Date().toISOString(),config:S.cfg,content:S.content,pages:S.pages,home:{draft:hr[0].data||null,live:hr[1].data||null}};
+    var KS=Object.keys(PAGES);
+    Promise.all(KS.map(function(k){var P=PAGES[k];return Promise.all([api("GET","c="+P.coll+"&id="+P.d),api("GET","c="+P.coll+"&id="+P.l)]).catch(function(){return[{},{}]})})).then(function(R){
+    var hr=R[0],main={};KS.forEach(function(k,n){main[k]={draft:R[n][0].data||null,live:R[n][1].data||null}});
+    var o={v:1,at:new Date().toISOString(),config:S.cfg,content:S.content,pages:S.pages,home:{draft:hr[0].data||null,live:hr[1].data||null},main:main};
     var b=new Blob([JSON.stringify(o,null,1)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="wayle-site-sauvegarde-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();a.remove();
     });
   };
@@ -761,7 +839,8 @@ function vBackup(){
       if(!confirm("Remplacer les réglages, textes et pages actuels par ceux de cette sauvegarde ?"))return;
       var p=api("PUT","c=s_config&id=main",o.config||{}).then(function(){return api("PUT","c=s_content&id=main",o.content||{items:{}})});
       Object.keys(o.pages||{}).forEach(function(k){if(/^[a-z0-9][a-z0-9-]{0,62}$/.test(k))p=p.then(function(){return api("PUT","c=s_pages&id="+k,o.pages[k])})});
-      if(o.home){["draft","live"].forEach(function(k){p=p.then(function(){return o.home[k]?api("PUT","c=s_home&id="+k,o.home[k]):(k==="live"?api("DELETE","c=s_home&id=live"):null)})})}
+      var MP=o.main||(o.home?{accueil:o.home}:null);
+      if(MP)Object.keys(MP).forEach(function(k){var P=PAGES[k];if(!P)return;p=p.then(function(){return MP[k].draft?api("PUT","c="+P.coll+"&id="+P.d,MP[k].draft):null}).then(function(){return MP[k].live?api("PUT","c="+P.coll+"&id="+P.l,MP[k].live):api("DELETE","c="+P.coll+"&id="+P.l)})});
       return p.then(loadAll).then(function(){toast("Sauvegarde restaurée");vBackup()});
     }).catch(function(err){toast("Impossible de restaurer : "+(err&&err.message||"fichier invalide"),true)})};
 }
