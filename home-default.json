@@ -1,0 +1,376 @@
+{
+ "v": 1,
+ "published": false,
+ "cover": {
+  "pitch1": "Des vidéos pour les artistes, les entreprises et les commerces",
+  "pitch2": "Studio de production à Rouen · offres dès 95 €",
+  "cue": "Découvrir",
+  "wide": [
+   {
+    "s": "hero-d.mp4",
+    "p": "hero-d-poster.jpg",
+    "t": "MANA - Live Performance"
+   },
+   {
+    "s": "hero-kaane.mp4",
+    "p": "hero-kaane-poster.jpg",
+    "t": "KAANE - Godbless (clip)"
+   },
+   {
+    "s": "hero-narks.mp4",
+    "p": "hero-narks-poster.jpg",
+    "t": "NARKS - 106 Experience"
+   }
+  ],
+  "tall": [
+   {
+    "s": "hero-v.mp4",
+    "p": "hero-v-poster.jpg",
+    "t": "Chef Vingalalon - Tacos"
+   }
+  ]
+ },
+ "hero": {
+  "title": "Votre communication vidéo, de l’idée à la diffusion.",
+  "text": "Wayle est un studio de production vidéo. Nous imaginons, filmons et montons les contenus des artistes, des entreprises et des commerces, avec un seul interlocuteur du début à la fin.",
+  "b1l": "Parler de mon projet",
+  "b1u": "#contact",
+  "b2l": "Découvrir nos services",
+  "b2u": "#savoir-faire"
+ },
+ "sections": [
+  {
+   "t": "h_services",
+   "anchor": "savoir-faire",
+   "title": "Tout ce qu’il faut, au même endroit",
+   "lead": "De la première réflexion à la vidéo publiée, nous prenons en charge chaque étape. Vous pouvez aussi n’en choisir qu’une.",
+   "items": [
+    {
+     "title": "Stratégie et conseil",
+     "text": "Objectifs, public, ligne éditoriale et plan de contenus. Nous définissons ce qu’il faut raconter, où et à quel rythme.",
+     "label": "Stratégie",
+     "cap": "Objectifs, public et plan de contenus"
+    },
+    {
+     "title": "Tournage et réalisation",
+     "text": "Scénario, moodboard, matériel haut de gamme et tournage sur place, pour que l’image serve votre message.",
+     "label": "Tournage",
+     "cap": "Scénario et tournage sur place"
+    },
+    {
+     "title": "Montage et post-production",
+     "text": "Rythme, étalonnage, sound design, sous-titres et effets, livrés dans les formats de chaque plateforme.",
+     "label": "Montage",
+     "cap": "Rythme, étalonnage et sous-titres"
+    },
+    {
+     "title": "Photographie",
+     "text": "Portraits, produits, ambiance de lieu : des photos cohérentes avec vos vidéos, pour votre site et vos réseaux.",
+     "label": "Photo",
+     "cap": "Portraits, produits et lieux"
+    }
+   ]
+  },
+  {
+   "t": "h_offers",
+   "anchor": "offres",
+   "title": "Une offre pour chaque besoin",
+   "lead": "Trois univers, une même exigence. Chaque projet est ajusté à votre marque et à vos objectifs.",
+   "chips": true,
+   "items": [
+    {
+     "cat": "artistes",
+     "img": "hero-narks-poster.jpg",
+     "pos": "50% 40%",
+     "w": "1920",
+     "h": "1080",
+     "title": "Artistes et musique",
+     "text": "Teasers, clips et contenus pour faire vivre votre musique.",
+     "lines": "Teaser et visualiser : dès 105 €\nStreet clip : dès 350 €\nClip YouTube : dès 750 €",
+     "link": "artistes.html",
+     "linkLabel": "En savoir plus"
+    },
+    {
+     "cat": "entreprises",
+     "img": "video-slavery-poster.jpg",
+     "pos": "50% 38%",
+     "w": "720",
+     "h": "1280",
+     "title": "Entreprises",
+     "text": "Présenter votre activité ou un produit, avec votre identité visuelle.",
+     "lines": "Business : dès 550 €\nBusiness + : dès 750 €\nBusiness 360 : dès 1 250 €\nSur mesure : sur devis",
+     "link": "entreprises.html",
+     "linkLabel": "En savoir plus"
+    },
+    {
+     "cat": "commerces",
+     "img": "vit-yaourt.jpg",
+     "pos": "50% 55%",
+     "w": "900",
+     "h": "900",
+     "title": "Commerces et indépendants",
+     "text": "Nous venons filmer chez vous. L’offre Découverte comprend 1 h 30 de tournage et 15 secondes de vidéo montée.",
+     "lines": "Découverte : dès 95 €\nVitrine : dès 200 €\nMontage de vos rushes : dès 35 €",
+     "link": "commerces.html",
+     "linkLabel": "En savoir plus"
+    }
+   ],
+   "note": "Tarifs TTC (TVA non applicable, art. 293 B du CGI). Abonnements mensuels disponibles pour les contenus réguliers, avec calendrier de publication. Options : voix off, miniature, musique ou images libres de droits, sous-titrage dynamique."
+  },
+  {
+   "t": "h_band",
+   "anchor": "abonnement",
+   "title": "Du contenu chaque mois pour votre commerce",
+   "text": "Un tournage régulier chez vous, puis des vidéos et des photos prêtes à publier, livrées chaque mois. Vous gardez votre temps pour vos clients, nous nous occupons de votre image.",
+   "small": "Formules dès 390 € TTC par mois, selon la fréquence des tournages et le volume de contenus.",
+   "b1l": "Voir les formules",
+   "b1u": "commerces.html",
+   "b2l": "Demander une formule",
+   "b2u": "#contact"
+  },
+  {
+   "t": "h_refs",
+   "anchor": "references",
+   "title": "Ils nous ont fait confiance",
+   "lead": "Quelques projets récents, entre musique, produits et commerces de santé et de beauté.",
+   "items": [
+    {
+     "cat": "artistes",
+     "img": "ref-kurtys.jpg",
+     "alt": "Kurtys, artiste afro-francophone",
+     "title": "Kurtys",
+     "text": "Prodige de l’afro-francophone.",
+     "pt": "Kurtys - Chérie",
+     "pk": "Artiste · Clip",
+     "pd": "Prodige de l’afro-francophone.",
+     "v": "video-kurtys.mp4",
+     "vp": "video-kurtys-poster.jpg",
+     "sq": false
+    },
+    {
+     "cat": "marques",
+     "img": "ref-slavery.jpg",
+     "alt": "Flacon de parfum Slavery Parfums",
+     "title": "Slavery Parfums",
+     "text": "Vidéo produit pour la marque de parfums.",
+     "pt": "Slavery Parfums",
+     "pk": "Marque de parfums",
+     "pd": "Vidéo produit réalisée pour la marque.",
+     "v": "video-slavery.mp4",
+     "vp": "video-slavery-poster.jpg",
+     "sq": false
+    },
+    {
+     "cat": "artistes",
+     "img": "ref-twins.jpg",
+     "alt": "Les Twins Moreno",
+     "title": "Twins Moreno",
+     "text": "Vidéo réalisée avec Stane Christine pour deux frères jumeaux populaires sur les réseaux.",
+     "pt": "Twins Moreno",
+     "pk": "Créateurs de contenu",
+     "pd": "Vidéo réalisée en collaboration avec Stane Christine pour le compte des Twins Moreno, deux frères jumeaux populaires sur les réseaux sociaux.",
+     "v": "video-twins.mp4",
+     "vp": "video-twins-poster.jpg",
+     "sq": false
+    },
+    {
+     "cat": "entreprises",
+     "img": "ref-seriderm.jpg",
+     "alt": "Soin Baby Face chez Sériderm",
+     "title": "Sériderm",
+     "text": "Vidéo du Baby Face Day, pour la clinique de dermatologie esthétique de Rouen.",
+     "pt": "Sériderm",
+     "pk": "Clinique de dermatologie esthétique, Rouen",
+     "pd": "Vidéo réalisée dans le cadre du Baby Face Day, un événement organisé par Sériderm pour promouvoir son nouveau soin Baby Face.",
+     "v": "video-seriderm.mp4",
+     "vp": "video-seriderm-poster.jpg",
+     "sq": true
+    }
+   ],
+   "quote": "Jonas a effectué un travail professionnel en étant à l’écoute de nos demandes",
+   "author": "GYN 1957, client"
+  },
+  {
+   "t": "h_steps",
+   "anchor": "process",
+   "title": "Comment nous travaillons ensemble",
+   "lead": "Un déroulé simple, du premier échange à la livraison.",
+   "items": [
+    {
+     "title": "Brief et stratégie",
+     "text": "Nous échangeons sur votre projet, vos objectifs et votre audience."
+    },
+    {
+     "title": "Tournage ou rushes",
+     "text": "Nous filmons chez vous, ou vous nous envoyez vos rushes et éléments graphiques."
+    },
+    {
+     "title": "Montage et création",
+     "text": "Rythme, transitions, sous-titres et effets pour maximiser l’impact."
+    },
+    {
+     "title": "Ajustements et validation",
+     "text": "Vous recevez une première version, nous affinons ensemble."
+    },
+    {
+     "title": "Livraison finale",
+     "text": "Export haute qualité, prêt à publier sur vos plateformes."
+    }
+   ]
+  },
+  {
+   "t": "h_about",
+   "anchor": "apropos",
+   "title": "Le studio",
+   "text": "Wayle accompagne les artistes, les entreprises et les commerces dans toute leur communication vidéo, de la stratégie à la livraison.\n\nDerrière le studio, Jonas Deschamps : monteur et réalisateur, passionné par le rythme, l’émotion et le storytelling. Notre objectif est simple : booster votre visibilité avec des vidéos qui font la différence et respectent votre identité.",
+   "img": "apropos.jpg",
+   "alt": "Image extraite d’un clip réalisé par Wayle Production",
+   "items": [
+    {
+     "title": "Notre approche",
+     "text": "Un montage rapide, soigné et taillé pour l’engagement et la viralité."
+    },
+    {
+     "title": "Notre expertise",
+     "text": "Contenus courts, vidéos corporate, clips musicaux et storytelling impactant."
+    },
+    {
+     "title": "Notre mission",
+     "text": "Des vidéos sur mesure, livrées rapidement, avec ajustements inclus."
+    }
+   ]
+  },
+  {
+   "t": "h_faq",
+   "anchor": "faq",
+   "title": "Questions fréquentes",
+   "items": [
+    {
+     "q": "Faut-il déjà avoir filmé pour travailler avec vous ?",
+     "a": "Non. Nous pouvons tout prendre en charge, du tournage au montage, ou monter les rushes que vous nous envoyez."
+    },
+    {
+     "q": "Combien de modifications sont incluses ?",
+     "a": "Chaque offre comprend des révisions, de 2 à 8 selon le type de projet. Le détail figure dans chaque offre."
+    },
+    {
+     "q": "Quels sont les délais de livraison ?",
+     "a": "Pour les vidéos corporate, la livraison se fait en 7 jours. Pour les autres projets, le délai est fixé ensemble lors du brief."
+    },
+    {
+     "q": "La musique et les images sont-elles libres de droits ?",
+     "a": "Oui. La musique libre de droits est incluse dans les offres corporate, et disponible en option pour les autres offres, tout comme les images et vidéos libres de droits."
+    },
+    {
+     "q": "Les tarifs incluent-ils la TVA ?",
+     "a": "Les tarifs affichés sont TTC : la TVA n’est pas applicable (art. 293 B du CGI). Ils sont exprimés « à partir de » et le prix final dépend de votre projet."
+    }
+   ]
+  },
+  {
+   "t": "h_contact",
+   "anchor": "contact",
+   "title": "Un projet en tête ?",
+   "lead": "Décrivez-nous votre besoin en quelques lignes. Nous vous répondons avec une proposition adaptée.",
+   "email": "waylecorp@gmail.com",
+   "rdvl": "Prendre rendez-vous (appel de 20 min)",
+   "rdvu": "https://calendly.com/waylecorp/appel-decouverte",
+   "links": "07 86 85 81 14 | tel:+33786858114\n@wayleproduction | https://www.instagram.com/wayleproduction\nPortfolio complet | https://wayleproduction.myportfolio.com/"
+  }
+ ],
+ "_k": {
+  "cover.pitch1": "m.cover.1",
+  "cover.pitch2": "m.cover.2",
+  "cover.cue": "m.x.1",
+  "cover.wide.0.t": "h.mana",
+  "cover.wide.1.t": "h.kaane",
+  "cover.wide.2.t": "h.narks",
+  "cover.tall.0.t": "h.taco",
+  "hero.title": "m.top.1",
+  "hero.text": "m.top.2",
+  "hero.b1l": "m.top.3",
+  "hero.b2l": "m.top.4",
+  "sections.0.title": "m.savoir-faire.1",
+  "sections.0.lead": "m.savoir-faire.2",
+  "sections.0.items.0.title": "m.savoir-faire.3",
+  "sections.0.items.0.text": "m.savoir-faire.4",
+  "sections.0.items.1.title": "m.savoir-faire.5",
+  "sections.0.items.1.text": "m.savoir-faire.6",
+  "sections.0.items.2.title": "m.savoir-faire.7",
+  "sections.0.items.2.text": "m.savoir-faire.8",
+  "sections.0.items.3.title": "m.savoir-faire.9",
+  "sections.0.items.3.text": "m.savoir-faire.10",
+  "sections.1.title": "m.offres.1",
+  "sections.1.lead": "m.offres.2",
+  "sections.1.note": "m.offres.25",
+  "sections.1.items.0.title": "m.offres.3",
+  "sections.1.items.0.text": "m.offres.4",
+  "sections.1.items.1.title": "m.offres.11",
+  "sections.1.items.1.text": "m.offres.12",
+  "sections.1.items.2.title": "m.offres.17",
+  "sections.1.items.2.text": "m.offres.18",
+  "sections.2.title": "m.abonnement.1",
+  "sections.2.text": "m.abonnement.2",
+  "sections.2.small": "m.abonnement.3",
+  "sections.2.b1l": "m.abonnement.4",
+  "sections.2.b2l": "m.abonnement.5",
+  "sections.3.title": "m.references.1",
+  "sections.3.lead": "m.references.2",
+  "sections.3.quote": "m.references.11",
+  "sections.3.author": "m.references.12",
+  "sections.3.items.0.title": "m.references.3",
+  "sections.3.items.0.text": "m.references.4",
+  "sections.3.items.0.pt": "p.kurtys.t",
+  "sections.3.items.0.pk": "p.kurtys.k",
+  "sections.3.items.0.pd": "p.kurtys.d",
+  "sections.3.items.1.title": "m.references.5",
+  "sections.3.items.1.text": "m.references.6",
+  "sections.3.items.1.pt": "p.slavery.t",
+  "sections.3.items.1.pk": "p.slavery.k",
+  "sections.3.items.1.pd": "p.slavery.d",
+  "sections.3.items.2.title": "m.references.7",
+  "sections.3.items.2.text": "m.references.8",
+  "sections.3.items.2.pt": "p.twins.t",
+  "sections.3.items.2.pk": "p.twins.k",
+  "sections.3.items.2.pd": "p.twins.d",
+  "sections.3.items.3.title": "m.references.9",
+  "sections.3.items.3.text": "m.references.10",
+  "sections.3.items.3.pt": "p.seriderm.t",
+  "sections.3.items.3.pk": "p.seriderm.k",
+  "sections.3.items.3.pd": "p.seriderm.d",
+  "sections.4.title": "m.process.1",
+  "sections.4.lead": "m.process.2",
+  "sections.4.items.0.title": "m.process.3",
+  "sections.4.items.0.text": "m.process.4",
+  "sections.4.items.1.title": "m.process.5",
+  "sections.4.items.1.text": "m.process.6",
+  "sections.4.items.2.title": "m.process.7",
+  "sections.4.items.2.text": "m.process.8",
+  "sections.4.items.3.title": "m.process.9",
+  "sections.4.items.3.text": "m.process.10",
+  "sections.4.items.4.title": "m.process.11",
+  "sections.4.items.4.text": "m.process.12",
+  "sections.5.title": "m.apropos.1",
+  "sections.5.text#0": "m.apropos.2",
+  "sections.5.text#1": "m.apropos.3",
+  "sections.5.items.0.title": "m.apropos.4",
+  "sections.5.items.0.text": "m.apropos.5",
+  "sections.5.items.1.title": "m.apropos.6",
+  "sections.5.items.1.text": "m.apropos.7",
+  "sections.5.items.2.title": "m.apropos.8",
+  "sections.5.items.2.text": "m.apropos.9",
+  "sections.6.title": "m.faq.1",
+  "sections.6.items.0.q": "m.faq.2",
+  "sections.6.items.0.a": "m.faq.3",
+  "sections.6.items.1.q": "m.faq.4",
+  "sections.6.items.1.a": "m.faq.5",
+  "sections.6.items.2.q": "m.faq.6",
+  "sections.6.items.2.a": "m.faq.7",
+  "sections.6.items.3.q": "m.faq.8",
+  "sections.6.items.3.a": "m.faq.9",
+  "sections.6.items.4.q": "m.faq.10",
+  "sections.6.items.4.a": "m.faq.11",
+  "sections.7.title": "m.contact.1",
+  "sections.7.lead": "m.contact.2"
+ }
+}

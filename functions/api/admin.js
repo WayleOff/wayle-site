@@ -3,7 +3,7 @@
 import { verifyAccess, json } from "../_shared/access.js";
 import { validate, diffFromDefaults } from "../../theme/tokens/validate.js";
 
-const COLLS = ["g_clients", "g_projets", "g_docs", "g_prospects", "g_config", "g_notes", "g_taches",
+const COLLS = ["g_clients", "g_projets", "g_docs", "g_prospects", "g_config", "g_notes", "g_taches", "s_home",
   "s_config", "s_content", "s_pages", "s_media", "c_portal", "c_activity",
   "t_themes"]; // thèmes : { theme:{écarts}, label } ; « published » est servi par /theme.css
 const MAX_BODY = 200000;
