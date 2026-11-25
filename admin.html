@@ -683,7 +683,7 @@ function openLive(kind,key,P,E){
     var i=sel,b=obj(i),h='<div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">'+esc(i==="hero"?(rkind==="home"?"Grand titre":"En-tête"):i==="cover"?"Bandeau vidéo":name(b))+'</h3><button type="button" class="btn ghost sm" id="lv-back">← Plan</button></div>';
     if(!b){setPanel("plan");return}
     if(i==="hero")h+=PF("hero",b,"title","Titre")+PF("hero",b,"text","Texte","area")+'<div class="row">'+PF("hero",b,"b1l","Bouton 1","half")+PF("hero",b,"b1u","Lien","half")+'</div><div class="row">'+PF("hero",b,"b2l","Bouton 2","half")+PF("hero",b,"b2u","Lien","half")+'</div>';
-    else if(i==="cover")h+=PF("cover",b,"pitch1","Accroche (ligne 1)")+PF("cover",b,"pitch2","Accroche (ligne 2)")+PF("cover",b,"cue","Texte de la flèche")+'<p class="hint">La liste des vidéos se règle dans Pages principales → Accueil.</p>';
+    else if(i==="cover")h+=PF("cover",b,"pitch1","Accroche (ligne 1)")+PF("cover",b,"pitch2","Accroche (ligne 2)")+PF("cover",b,"cue","Texte de la flèche")+coverVids(b);
     else h+=blockForm(b,+i);
     side.innerHTML=h;
     $("#lv-back",side).onclick=function(){setPanel("plan")};
@@ -698,6 +698,9 @@ function openLive(kind,key,P,E){
     $$("[data-rmi]",side).forEach(function(b){b.onclick=function(){var a=b.dataset.rmi.split(".");snap();A[+a[0]].items.splice(+a[1],1);redo()}});
     $$("[data-padd]",side).forEach(function(b){b.onclick=function(){var a=b.dataset.padd.split(":"),o=obj(a[0]),arr=getP(o,a[1]);if(!arr){setP(o,a[1],[]);arr=getP(o,a[1])}snap();arr.push(JSON.parse(b.dataset.tpl));redo()}});
     $$("[data-prm]",side).forEach(function(b){b.onclick=function(){var a=b.dataset.prm.split(":"),ks=a[1].split("."),j=+ks.pop();snap();getP(obj(a[0]),ks.join(".")).splice(j,1);redo()}});
+    $$("[data-vsel]",side).forEach(function(b){b.onclick=function(){pickVideo(function(r){
+      var set=function(sl,val){var el=sl&&side.querySelector(sl);if(!el)return;el.value=val;el.dispatchEvent(new Event("input",{bubbles:true}))};
+      snap();set(b.dataset.vsel,r.src);if(b.dataset.psel&&r.poster)set(b.dataset.psel,r.poster);say("Vidéo choisie : "+(r.name||""))})}});
     $$("[data-pick]",side).forEach(function(b){b.onclick=function(){pickMedia(function(id){snap();A[+b.dataset.pick].media=id;redo()})}});
     $$("[data-picki]",side).forEach(function(b){b.onclick=function(){var a=b.dataset.picki.split(".");pickMedia(function(id){snap();A[+a[0]].items[+a[1]].media=id;redo()})}});
     $$("[data-clr]",side).forEach(function(b){b.onclick=function(){snap();A[+b.dataset.clr].media="";redo()}});
@@ -1074,7 +1077,7 @@ function blockForm(b,i){
     case"v_cta":return F("Titre","title")+'<div class="row"><label class="f" style="flex:1">Bouton 1<input type="text" data-b="'+i+'" data-f="b1l" value="'+esc(b.b1l)+'"></label><label class="f" style="flex:1">Lien<input type="text" data-b="'+i+'" data-f="b1u" value="'+esc(b.b1u)+'"></label></div><div class="row"><label class="f" style="flex:1">Bouton 2<input type="text" data-b="'+i+'" data-f="b2l" value="'+esc(b.b2l)+'"></label><label class="f" style="flex:1">Lien<input type="text" data-b="'+i+'" data-f="b2u" value="'+esc(b.b2u)+'"></label></div>';
     case"h_refs":return F("Titre","title")+F("Chapeau","lead","area")
       +items(function(j){var it=b.items[j];return'<div class="row"><label class="f" style="flex:1">Catégorie'+sel({artistes:"Artistes",commerces:"Commerces",marques:"Marques",entreprises:"Entreprises"},it.cat,'data-b="'+i+'" data-i="'+j+'" data-f="cat"')+'</label></div>'+hthumb(it,'data-picki="'+i+'.'+j+'"','data-clri="'+i+'.'+j+'"')+IF(j,"Description de l’image","alt")+IF(j,"Nom","title")+IF(j,"Courte description","text","area")
-        +'<details class="sub"><summary>Fenêtre du projet (au clic)</summary>'+IF(j,"Titre dans la fenêtre","pt")+IF(j,"Type de projet","pk","","Artiste · Clip")+IF(j,"Texte","pd","area")+'<div class="row"><label class="f" style="flex:2">Vidéo<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="v" value="'+esc(it.v)+'" placeholder="video-kaane.mp4"></label><label class="f" style="flex:2">Image d’attente de la vidéo<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="vp" value="'+esc(it.vp)+'" placeholder="video-kaane-poster.jpg"></label><label class="f" style="flex:1">Format'+sel({"":"Vertical/large","1":"Carré"},it.sq?"1":"",'data-b="'+i+'" data-i="'+j+'" data-f="sq"')+'</label></div><span class="hint">Vidéo : un fichier .mp4 déjà sur le site, ou un lien https vers un .mp4. Laissez la fenêtre vide pour ouvrir plutôt le lien ci-dessous.</span>'+IF(j,"Lien (si pas de fenêtre)","url","","https://…")+'</details>'},"cette référence")
+        +'<details class="sub"><summary>Fenêtre du projet (au clic)</summary>'+IF(j,"Titre dans la fenêtre","pt")+IF(j,"Type de projet","pk","","Artiste · Clip")+IF(j,"Texte","pd","area")+'<div class="row"><label class="f" style="flex:2">Vidéo<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="v" value="'+esc(it.v)+'" placeholder="video-kaane.mp4"></label><label class="f" style="flex:2">Image d’attente de la vidéo<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="vp" value="'+esc(it.vp)+'" placeholder="video-kaane-poster.jpg"></label><label class="f" style="flex:1">Format'+sel({"":"Vertical/large","1":"Carré"},it.sq?"1":"",'data-b="'+i+'" data-i="'+j+'" data-f="sq"')+'</label></div><span class="hint">Vidéo : un fichier .mp4 déjà sur le site, ou un lien https vers un .mp4. Laissez la fenêtre vide pour ouvrir plutôt le lien ci-dessous.</span>'+vbtn('[data-b="'+i+'"][data-i="'+j+'"][data-f="v"]','[data-b="'+i+'"][data-i="'+j+'"][data-f="vp"]')+''+IF(j,"Lien (si pas de fenêtre)","url","","https://…")+'</details>'},"cette référence")
       +F("Témoignage","quote","area")+F("Auteur du témoignage","author");
     case"h_steps":return F("Titre","title")+F("Chapeau","lead","area")+items(function(j){return TT(j,"Étape "+(j+1),"Détail (visible au clic)")},"cette étape");
     case"h_about":return F("Titre","title")+F("Texte","text","area","Une ligne vide sépare les paragraphes.")+hthumb(b,'data-pick="'+i+'"','data-clr="'+i+'"')+F("Description de l’image","alt")+'<p class="hint" style="margin:.4rem 0">Valeurs (sous le texte)</p>'+items(function(j){return TT(j)},"cette valeur");
@@ -1092,7 +1095,7 @@ function blockForm(b,i){
     case"image":{var m=S.media.filter(function(x){return x.id===b.media})[0];
       return'<div class="row">'+(m?'<img class="fav" style="width:110px;height:80px;object-fit:cover" src="/api/media?id='+esc(m.id)+'" alt="">':'<div class="fav" style="width:110px;height:80px;display:grid;place-items:center;color:#666;font-size:.75rem">aucune</div>')+'<button class="btn ghost sm" data-pick="'+i+'" type="button">'+(m?"Changer l’image":"Choisir une image")+'</button></div>'
        +F("Texte alternatif (description pour l’accessibilité et Google)","alt")+F("Légende (facultatif)","caption")+'<label class="f">Largeur'+sel({full:"Pleine largeur",medium:"Moyenne"},b.size,'data-b="'+i+'" data-f="size"')+'</label>'}
-    case"video":return F("Lien de la vidéo","url","text","YouTube, Vimeo, ou lien direct vers un fichier .mp4 (https).");
+    case"video":return F("Lien de la vidéo","url","text","YouTube, Vimeo, ou lien direct vers un fichier .mp4 (https).")+vbtn('[data-b="'+i+'"][data-f="url"]');
     case"button":return F("Texte du bouton","label")+F("Lien","url","text","Ex. /#contact, /p/mon-autre-page, https://…")+'<label class="f">Style'+sel({plain:"Plein",ghost:"Contour"},b.style,'data-b="'+i+'" data-f="style"')+'</label>';
     case"space":return'<label class="f">Hauteur'+sel({s:"Petit",m:"Moyen",l:"Grand"},b.size,'data-b="'+i+'" data-f="size"')+'</label>';
     case"faq":return b.items.map(function(it,j){return'<div class="item"><label class="f">Question<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="q" value="'+esc(it.q)+'"></label><label class="f">Réponse<textarea data-b="'+i+'" data-i="'+j+'" data-f="a">'+esc(it.a)+'</textarea></label><div><button class="btn danger sm" data-rmi="'+i+'.'+j+'" type="button">Retirer cette question</button></div></div>'}).join("")+'<div><button class="btn ghost sm" data-addi="'+i+'" type="button">+ Ajouter une question</button></div>';
@@ -1130,6 +1133,66 @@ function editPage(slug){
     api("PUT","c=s_pages&id="+slug,E).then(function(){S.pages[slug]=JSON.parse(JSON.stringify(E));setDirty(false);toast(E.published?"Page enregistrée et publiée.":"Brouillon enregistré.")}).catch(fail);
   }
   draw();
+}
+/* ---------- vidéos : envoi vers R2, bibliothèque, sélecteur ---------- */
+var SITE_VIDEOS=[["hero-d","Bandeau : MANA (live)"],["hero-kaane","Bandeau : KAANE"],["hero-narks","Bandeau : NARKS"],["hero-v","Bandeau : Tacos (vertical)"],["video-atom","Atom"],["video-kaane","Kaane"],["video-kurtys","Kurtys"],["video-narks-merveille","Narks – Merveille"],["video-seriderm","Sériderm"],["video-slavery","Slavery Parfums"],["video-twins","Twins Moreno"],["video-vitrine","Vitrine"]];
+function vbtn(vSel,pSel){return'<div class="row" style="margin:.2rem 0 .5rem"><button type="button" class="btn ghost sm" data-vsel="'+esc(vSel)+'"'+(pSel?' data-psel="'+esc(pSel)+'"':'')+'>▶ Choisir ou envoyer une vidéo…</button></div>'}
+function fmtSize(n){return n>=1048576?(n/1048576).toFixed(n>=10485760?0:1)+" Mo":Math.max(1,Math.round(n/1024))+" Ko"}
+function uploadVideo(file,onp){
+  return new Promise(function(res,rej){
+    var x=new XMLHttpRequest();x.open("POST","/api/admin/video?name="+encodeURIComponent(file.name)+"&type="+encodeURIComponent(file.type));
+    x.withCredentials=true;x.setRequestHeader("X-Wayle","1");
+    x.upload.onprogress=function(e){if(e.lengthComputable)onp(e.loaded/e.total)};
+    x.onload=function(){if(x.status>=200&&x.status<300){try{res(JSON.parse(x.responseText))}catch(e){rej(e)}}else{var m=x.status===413?"Vidéo trop lourde (90 Mo maximum). Compressez-la d’abord.":x.status===501?"Le stockage vidéo n’est pas encore activé dans Cloudflare.":"L’envoi a échoué ("+x.status+").";rej(new Error(m))}};
+    x.onerror=function(){rej(new Error("Connexion interrompue pendant l’envoi."))};
+    x.send(file);
+  });
+}
+/* image d'attente : une image de la vidéo, créée dans le navigateur */
+function videoPoster(file){
+  return new Promise(function(res){
+    var u=URL.createObjectURL(file),v=document.createElement("video"),done=false;
+    function end(b){if(done)return;done=true;URL.revokeObjectURL(u);res(b)}
+    v.muted=true;v.playsInline=true;v.preload="auto";
+    v.onloadeddata=function(){try{v.currentTime=Math.min(1,(v.duration||2)/2)}catch(e){end(null)}};
+    v.onseeked=function(){try{var w=Math.min(960,v.videoWidth),h=Math.round(w*v.videoHeight/v.videoWidth),c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(v,0,0,w,h);c.toBlob(end,"image/jpeg",.78)}catch(e){end(null)}};
+    v.onerror=function(){end(null)};setTimeout(function(){end(null)},15000);v.src=u;
+  });
+}
+function pickVideo(cb){
+  var d=$("#dlg"),conf=null,mine=[];
+  function draw(){
+    var h='<div class="row" style="justify-content:space-between"><h2 style="margin:0">Choisir une vidéo</h2><button class="btn ghost sm" id="dx" type="button">Fermer</button></div>';
+    if(conf===null)h+='<p class="sub">Chargement…</p>';
+    else if(!conf)h+='<div class="warn" style="margin:.8rem 0"><b>L’envoi de vidéos n’est pas encore activé.</b> Il faut relier un espace de stockage Cloudflare R2 au site (liaison « VIDEOS »). En attendant, vous pouvez réutiliser les vidéos déjà sur le site ci-dessous.</div>';
+    else h+='<div class="row" style="margin:.8rem 0;align-items:center"><label class="btn sm" style="cursor:pointer">Envoyer une vidéo<input type="file" id="vup" accept="video/mp4,video/webm" hidden></label><span class="hint">MP4 ou WebM, 90 Mo maximum. Pour un bandeau, une vidéo de 10 à 15 Mo (1080p, sans son) se charge plus vite.</span></div><progress id="vpg" max="1" value="0" hidden style="width:100%"></progress><p class="hint" id="vmsg" style="color:#ffb4a0"></p>';
+    if(mine.length)h+='<h3 style="font-size:.9rem;margin:1rem 0 .4rem">Vos vidéos envoyées</h3><div class="lv-lib" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr))">'+mine.map(function(v){return'<div class="lv-card" style="cursor:default">'+(v.d.poster?'<img src="'+esc(v.d.poster)+'" alt="" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px">':'<div style="aspect-ratio:16/9;background:rgba(255,255,255,.07);border-radius:8px"></div>')+'<b style="word-break:break-all">'+esc(v.d.name||"vidéo")+'</b><small>'+esc(fmtSize(v.d.size||0))+'</small><span class="row"><button type="button" class="btn sm" data-use="'+esc(v.id)+'">Utiliser</button><button type="button" class="btn danger sm" data-del="'+esc(v.id)+'">Supprimer</button></span></div>'}).join("")+'</div>';
+    h+='<h3 style="font-size:.9rem;margin:1rem 0 .4rem">Vidéos déjà sur le site</h3><div class="lv-lib" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr))">'+SITE_VIDEOS.map(function(v){return'<div class="lv-card" style="cursor:default"><img src="/'+v[0]+'-poster.jpg" alt="" loading="lazy" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px"><b>'+esc(v[1])+'</b><span class="row"><button type="button" class="btn sm" data-site="'+esc(v[0])+'">Utiliser</button></span></div>'}).join("")+'</div>';
+    d.innerHTML=h;
+    $("#dx").onclick=function(){d.close()};
+    $$("[data-use]",d).forEach(function(b){b.onclick=function(){var v=mine.filter(function(x){return x.id===b.dataset.use})[0];d.close();cb({src:"/api/video?id="+v.id,poster:v.d.poster||"",name:v.d.name})}});
+    $$("[data-site]",d).forEach(function(b){b.onclick=function(){d.close();cb({src:b.dataset.site+".mp4",poster:b.dataset.site+"-poster.jpg",name:b.dataset.site})}});
+    $$("[data-del]",d).forEach(function(b){b.onclick=function(){
+      if(!confirm("Supprimer cette vidéo ? Les pages qui l’utilisent n’afficheront plus de vidéo à cet endroit."))return;
+      fetch("/api/admin/video?id="+encodeURIComponent(b.dataset.del),{method:"DELETE",credentials:"same-origin",headers:{"X-Wayle":"1"}}).then(function(r){if(!r.ok)throw new Error("http "+r.status);return api("DELETE","c=s_videos&id="+b.dataset.del)}).then(function(){mine=mine.filter(function(x){return x.id!==b.dataset.del});toast("Vidéo supprimée");draw()}).catch(fail)}});
+    var up=$("#vup",d);if(up)up.onchange=function(){
+      var f=up.files[0];if(!f)return;var msg=$("#vmsg",d),pg=$("#vpg",d);msg.textContent="";
+      if(!/^video\/(mp4|webm)$/.test(f.type)){msg.textContent="Choisissez un fichier MP4 ou WebM.";return}
+      if(f.size>90*1048576){msg.textContent="Vidéo trop lourde ("+fmtSize(f.size)+"). 90 Mo maximum : compressez-la d’abord (HandBrake, ou l’export de votre logiciel de montage).";return}
+      pg.hidden=false;up.disabled=true;msg.style.color="";msg.textContent="Envoi de "+f.name+"…";
+      Promise.all([uploadVideo(f,function(r){pg.value=r}),videoPoster(f)]).then(function(r){
+        var out=r[0],pb=r[1];
+        var pp=pb?imgToBlob(new File([pb],"attente.jpg",{type:"image/jpeg"}),960,false,"image/jpeg").then(function(x){return saveMedia(x,"Image d’attente – "+f.name)}).then(function(id){return"/api/media?id="+id}).catch(function(){return""}):Promise.resolve("");
+        return pp.then(function(poster){
+          var doc={name:f.name,size:f.size,at:Date.now(),poster:poster};
+          return api("PUT","c=s_videos&id="+out.id,doc).then(function(){d.close();toast("Vidéo envoyée");cb({src:out.src,poster:poster,name:f.name})});
+        });
+      }).catch(function(e){pg.hidden=true;up.disabled=false;msg.style.color="#ffb4a0";msg.textContent=e&&e.message||"L’envoi a échoué."});
+    };
+  }
+  draw();d.showModal();
+  fetch("/api/admin/video",{credentials:"same-origin",headers:{"X-Wayle":"1"}}).then(function(r){return r.json()}).then(function(j){conf=!!j.configured}).catch(function(){conf=false})
+   .then(function(){return conf?api("GET","c=s_videos").catch(function(){return[]}):[]}).then(function(l){mine=(l||[]).filter(function(x){return x&&x.data}).map(function(x){return{id:x.id,d:x.data}}).sort(function(a,b){return(b.d.at||0)-(a.d.at||0)});if(d.open)draw()});
 }
 function pickMedia(cb){
   var d=$("#dlg");
@@ -1276,6 +1339,15 @@ function editClient(id){
 
 
 /* ---------- champs par chemin (sections des pages métiers) ---------- */
+function coverVids(b){
+  var row=function(pp,x){var ps=x&&x.p?(/^\/?api\//.test(x.p)?(x.p.charAt(0)==="/"?x.p:"/"+x.p):"/"+x.p):"";
+    return'<div class="row" style="align-items:center">'+(ps?'<img class="fav" style="width:80px;height:50px;object-fit:cover" src="'+esc(ps)+'" alt="">':'<div class="fav" style="width:80px;height:50px;display:grid;place-items:center;color:#888;font-size:.7rem">aucune</div>')+'<div style="flex:1">'+PF("cover",b,pp+".t","Titre affiché")+'</div></div>'
+    +vbtn('[data-p="cover:'+pp+'.s"]','[data-p="cover:'+pp+'.p"]')
+    +'<details class="sub"><summary>Fichiers (avancé)</summary>'+PF("cover",b,pp+".s","Fichier vidéo","","","hero-kaane.mp4")+PF("cover",b,pp+".p","Image d’attente","","","hero-kaane-poster.jpg")+'</details>'};
+  return'<h4 class="lv-gh">Vidéos sur ordinateur</h4>'+PL("cover",b,"wide","cette vidéo",row,{s:"",p:"",t:""},8)
+   +'<h4 class="lv-gh">Vidéos sur téléphone (verticales)</h4>'+PL("cover",b,"tall","cette vidéo",row,{s:"",p:"",t:""},8)
+   +'<p class="hint">Le bandeau passe d’une vidéo à l’autre dans l’ordre de cette liste. Retirez-en une pour qu’elle ne passe plus.</p>';
+}
 function PF(i,b,path,l,type,hint,ph){var v=getP(b,path);v=v==null?"":v;var a='data-p="'+i+':'+path+'"';
   return'<label class="f"'+(type==="half"?' style="flex:1"':type==="third"?' style="flex:1;min-width:7rem"':'')+'>'+l+(type==="area"?'<textarea '+a+'>'+esc(v)+'</textarea>':'<input type="text" '+a+' value="'+esc(v)+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>')+(hint?'<span class="hint">'+hint+'</span>':'')+'</label>'}
 function PS(i,b,path,l,opts){var v=getP(b,path);v=v===true?"1":v===false||v==null?"":String(v);return'<label class="f">'+l+'<select data-p="'+i+':'+path+'">'+Object.keys(opts).map(function(k){return'<option value="'+esc(k)+'"'+(k===v?" selected":"")+'>'+esc(opts[k])+'</option>'}).join("")+'</select></label>'}
@@ -1291,7 +1363,7 @@ function svcOffers(b,i){
       +'<div class="row">'+PF(i,b,p+".from","Avant le prix","third","","dès")+PF(i,b,p+".price","Prix","third","","350 €")+PF(i,b,p+".unit","Après le prix","third","","TTC / mois")+'</div>'
       +PF(i,b,p+".lines","Détails, une ligne par élément","area","Écrivez « Tournage : 2 h sur place ».")+PF(i,b,p+".after","Texte sous les détails (facultatif)","area")
       +'<details class="sub"><summary>Image en haut de la carte</summary>'+pthumb(i,x,p)+PF(i,b,p+".pos","Cadrage (facultatif)","","Ex. « 50% 35% » : position horizontale puis verticale.","50% 40%")+'</details>'
-      +'<details class="sub"><summary>Vidéo d’exemple'+(x.v?" ✓":"")+'</summary><div class="row">'+PF(i,b,p+".v","Fichier vidéo","half","","video-kaane.mp4")+PF(i,b,p+".vp","Image d’attente","half","","video-kaane-poster.jpg")+'</div>'+PF(i,b,p+".vt","Titre de la vidéo")+PF(i,b,p+".vs","Sous-titre")+PF(i,b,p+".play","Texte du bouton","","","Voir un exemple")+'<span class="hint">Laissez « Fichier vidéo » vide pour ne pas afficher de bouton.</span></details>'
+      +'<details class="sub"><summary>Vidéo d’exemple'+(x.v?" ✓":"")+'</summary><div class="row">'+PF(i,b,p+".v","Fichier vidéo","half","","video-kaane.mp4")+PF(i,b,p+".vp","Image d’attente","half","","video-kaane-poster.jpg")+'</div>'+PF(i,b,p+".vt","Titre de la vidéo")+PF(i,b,p+".vs","Sous-titre")+PF(i,b,p+".play","Texte du bouton","","","Voir un exemple")+'<span class="hint">Laissez « Fichier vidéo » vide pour ne pas afficher de bouton.</span>'+vbtn('[data-p="'+i+':'+p+'.v"]','[data-p="'+i+':'+p+'.vp"]')+'</details>'
       +'<details class="sub"><summary>Photos d’exemple ('+((x.photos||[]).length)+')</summary>'+PL(i,b,p+".photos","cette photo",function(pp,ph){return pthumb(i,ph,pp,1)+PF(i,b,pp+".alt","Description de la photo")},{img:"",media:"",alt:"",w:"",h:""},12)+PF(i,b,p+".photosCap","Légende","","","Exemples de photos")+'</details>'
       +PF(i,b,p+".id","Ancre (facultatif)","","Pour un lien direct vers cette carte, ex. « street-clip ».");
   };

@@ -7,9 +7,9 @@ const fr = (s) => FR.reduce((a, r) => a.replace(r[0], r[1]), String(s == null ? 
 const t = (s) => esc(fr(s));
 const rich = (s) => inline(fr(s));
 const FILE = /^\/?[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(jpe?g|png|webp|gif|avif)$/i;
-const VIDEO = /^(\/?[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(mp4|webm)|https:\/\/[^\s"'<>]+\.(mp4|webm)(\?[^\s"'<>]*)?)$/i;
+const VIDEO = /^(\/?[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(mp4|webm)|https:\/\/[^\s"'<>]+\.(mp4|webm)(\?[^\s"'<>]*)?|\/api\/video\?id=[A-Za-z0-9_-]{6,64})$/i;
 const vid = (s) => (VIDEO.test(String(s || "")) ? s : "");
-const poster = (s) => (FILE.test(String(s || "")) ? s : "");
+const poster = (s) => (FILE.test(String(s || "")) || /^\/api\/media\?id=[A-Za-z0-9_-]{1,64}$/.test(String(s || "")) ? s : "");
 const pos = (s) => (/^[0-9.]{1,5}% [0-9.]{1,5}%$/.test(String(s || "")) ? s : "");
 const dim = (v, d) => (/^\d{2,4}$/.test(String(v || "")) ? v : d);
 const slug = (s) => (/^[a-z][a-z0-9-]{0,40}$/.test(String(s || "")) ? s : "");

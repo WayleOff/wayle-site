@@ -32,7 +32,7 @@ function embed(url) {
   if (m) return `<div class="blk-vid"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}" title="Vidéo" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`;
   m = /vimeo\.com\/(?:video\/)?(\d{6,12})/.exec(url);
   if (m) return `<div class="blk-vid"><iframe src="https://player.vimeo.com/video/${m[1]}" title="Vidéo" loading="lazy" allow="fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
-  if (/^https:\/\/[^\s"'<>]+\.(mp4|webm)(\?[^\s"'<>]*)?$/i.test(url)) return `<div class="blk-vid"><video src="${esc(url)}" controls playsinline preload="metadata"></video></div>`;
+  if (/^(https:\/\/[^\s"'<>]+\.(mp4|webm)(\?[^\s"'<>]*)?|\/api\/video\?id=[A-Za-z0-9_-]{6,64})$/i.test(url)) return `<div class="blk-vid"><video src="${esc(url)}" controls playsinline preload="metadata"></video></div>`;
   return "";
 }
 
