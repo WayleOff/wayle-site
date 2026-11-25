@@ -7,6 +7,7 @@ const COLLS = ["g_clients", "g_projets", "g_docs", "g_prospects", "g_config", "g
   "s_config", "s_content", "s_pages", "s_media", "c_portal", "c_activity",
   "t_themes"]; // thèmes : { theme:{écarts}, label } ; « published » est servi par /theme.css
 const MAX_BODY = 200000;
+const MAX_FONT_B64 = 1400000; // police .woff2 : ≈ 1 Mo
 const MAX_BODY_MEDIA = 1900000; // images du site (≈ 1,4 Mo après encodage)
 
 export async function onRequest({ request, env }) {
@@ -49,8 +50,11 @@ export async function onRequest({ request, env }) {
     if (!body || typeof body !== "object" || Array.isArray(body)) return json({ error: "bad_body" }, 400);
     delete body.id;
     if (coll === "s_media") {
-      if (!/^image\/(png|jpeg|webp|gif)$/.test(String(body.type || "")) || typeof body.data !== "string" || !/^[A-Za-z0-9+/=]+$/.test(body.data))
+      if (!/^(image\/(png|jpeg|webp|gif)|font\/woff2)$/.test(String(body.type || "")) || typeof body.data !== "string" || !/^[A-Za-z0-9+/=]+$/.test(body.data))
         return json({ error: "bad_media" }, 400);
+      /* police : signature WOFF2 (« wOF2 » = d09GMg en base64) et taille limitée ; rien d'autre n'est accepté sous ce type */
+      if (body.type === "font/woff2" && (!body.data.startsWith("d09GMg") || body.data.length > MAX_FONT_B64))
+        return json({ error: "bad_font" }, 400);
     }
     if (coll === "t_themes") {
       // validation stricte côté serveur : rien d'inconnu n'est stocké, donc rien d'inconnu n'arrive dans le CSS public

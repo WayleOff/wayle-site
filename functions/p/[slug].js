@@ -36,13 +36,19 @@ function embed(url) {
   return "";
 }
 
+const mediaId = (id) => /^[A-Za-z0-9_-]{1,64}$/.test(String(id || ""));
+const list = (a, max) => (Array.isArray(a) ? a : []).filter((i) => i && typeof i === "object").slice(0, max);
+
 function block(b) {
   if (!b || typeof b !== "object") return "";
   switch (b.t) {
-    case "title": return `<${b.level === "h3" ? "h3" : "h2"} class="blk-t">${esc(b.text)}</${b.level === "h3" ? "h3" : "h2"}>`;
+    case "title": {
+      const h = b.level === "h3" ? "h3" : "h2";
+      return `<${h} class="blk-t">${esc(b.text)}</${h}>` + (b.lead ? `<p class="lead">${inline(b.lead)}</p>` : "");
+    }
     case "text": return `<div class="blk-text">${paras(b.text)}</div>`;
     case "image": {
-      if (!/^[A-Za-z0-9_-]{1,64}$/.test(b.media || "")) return "";
+      if (!mediaId(b.media)) return "";
       return `<figure class="blk-img ${b.size === "medium" ? "md" : ""}"><img src="/api/media?id=${esc(b.media)}" alt="${esc(b.alt)}" loading="lazy">${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ""}</figure>`;
     }
     case "video": return embed(b.url);
@@ -61,13 +67,57 @@ function block(b) {
         return `<article><h3>${esc(i.title)}</h3>${i.text ? `<p>${esc(i.text)}</p>` : ""}${i.price ? `<div class="price">${esc(i.price)}</div>` : ""}${lis ? `<ul>${lis}</ul>` : ""}${i.link ? `<p style="margin-top:1rem"><a class="btn" href="${esc(safeUrl(i.link))}">${esc(i.linkLabel || "En savoir plus")}</a></p>` : ""}</article>`;
       }).join("") + `</div>`;
     }
+    case "skills": {
+      const items = list(b.items, 12).filter((i) => i.title || i.text);
+      if (!items.length) return "";
+      return `<dl class="skills">${items.map((i) => `<div><dt>${esc(i.title)}</dt><dd>${inline(i.text)}</dd></div>`).join("")}</dl>`;
+    }
+    case "values": {
+      const items = list(b.items, 6).filter((i) => i.title || i.text);
+      if (!items.length) return "";
+      const c = items.length % 3 === 0 ? 3 : items.length % 2 === 0 ? 2 : Math.min(items.length, 3);
+      return `<div class="values blk-c${c}">${items.map((i) => `<div><h3>${esc(i.title)}</h3><p>${inline(i.text)}</p></div>`).join("")}</div>`;
+    }
+    case "steps": {
+      const items = list(b.items, 10).filter((i) => i.title || i.text);
+      if (!items.length) return "";
+      return `<ol class="steps acc">${items.map((i, k) => `<li><details${k === 0 ? " open" : ""}><summary><span class="n" aria-hidden="true">${String(k + 1).padStart(2, "0")}</span><strong>${esc(i.title)}</strong></summary><p>${inline(i.text)}</p></details></li>`).join("")}</ol>`;
+    }
+    case "band": {
+      const btns = [[b.b1l, b.b1u, ""], [b.b2l, b.b2u, " ghost"]].filter((x) => x[0])
+        .map((x) => `<a class="btn${x[2]}" href="${esc(safeUrl(x[1]))}">${esc(x[0])}</a>`).join("");
+      return `<div class="band"><div>${b.title ? `<h2>${esc(b.title)}</h2>` : ""}${b.text ? `<p>${inline(b.text)}</p>` : ""}${b.small ? `<p class="small">${inline(b.small)}</p>` : ""}</div>${btns ? `<div class="band-cta">${btns}</div>` : ""}</div>`;
+    }
+    case "textimg": {
+      const img = mediaId(b.media) ? `<div class="ref-ph"><img src="/api/media?id=${esc(b.media)}" alt="${esc(b.alt)}" loading="lazy" decoding="async"></div>` : "";
+      return `<div class="ref-grid${b.side === "left" ? " blk-left" : ""}"><div class="ref-txt">${b.title ? `<h2>${esc(b.title)}</h2>` : ""}<div class="blk-text">${paras(b.text)}</div>${b.btnl ? `<a class="btn" href="${esc(safeUrl(b.btnu))}">${esc(b.btnl)}</a>` : ""}</div>${img}</div>`;
+    }
+    case "quote": {
+      if (!b.text) return "";
+      return `<figure class="blk-quote"><blockquote><p>${inline(b.text)}</p></blockquote>${b.author ? `<figcaption>${esc(b.author)}</figcaption>` : ""}</figure>`;
+    }
+    case "projects": {
+      const items = list(b.items, 12).filter((i) => i.title || mediaId(i.media));
+      if (!items.length) return "";
+      return `<div class="refs blk-refs">${items.map((i) => {
+        const img = mediaId(i.media) ? `<img src="/api/media?id=${esc(i.media)}" alt="${esc(i.alt || i.title)}" loading="lazy" decoding="async">` : "";
+        const pic = img && i.url ? `<a class="ref-open" href="${esc(safeUrl(i.url))}">${img}</a>` : img;
+        return `<figure>${pic}${i.title ? `<h3>${esc(i.title)}</h3>` : ""}${i.text ? `<p>${inline(i.text)}</p>` : ""}</figure>`;
+      }).join("")}</div>`;
+    }
     default: return "";
   }
 }
 
-// Une page = une suite de « sections » ; chaque bloc est rendu dans l'ordre.
+// Une page = une suite de sections. Le bloc « Nouvelle section » ferme la section en cours
+// et en ouvre une autre (espacement et séparation comme sur les pages du site).
 function renderBlocks(blocks) {
-  return `<section><div class="blk">${(blocks || []).slice(0, 200).map(block).join("\n")}</div></section>`;
+  const groups = [[]];
+  for (const b of (Array.isArray(blocks) ? blocks : []).slice(0, 200)) {
+    if (b && b.t === "section") { if (groups[groups.length - 1].length) groups.push([]); continue; }
+    groups[groups.length - 1].push(b);
+  }
+  return groups.filter((g) => g.length).map((g) => `<section><div class="blk">${g.map(block).join("\n")}</div></section>`).join("\n");
 }
 
 const notFound = () => new Response("<!doctype html><meta charset=utf-8><title>Page introuvable</title><body style=\"font:16px system-ui;padding:3rem\"><h1>Page introuvable</h1><p><a href=\"/\">Retour à l’accueil</a></p>", { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } });

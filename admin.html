@@ -418,13 +418,35 @@ var BT={
   button:{n:"Bouton",init:function(){return{t:"button",label:"Demander un devis",url:"/#contact",style:"plain"}}},
   cards:{n:"Cartes (offres, services)",init:function(){return{t:"cards",items:[{title:"Offre 1",text:"",price:"",lines:"",link:"",linkLabel:""}]}}},
   faq:{n:"Questions fréquentes",init:function(){return{t:"faq",items:[{q:"",a:""}]}}},
-  space:{n:"Espace vide",init:function(){return{t:"space",size:"m"}}}
+  space:{n:"Espace vide",init:function(){return{t:"space",size:"m"}}},
+  section:{n:"Nouvelle section",init:function(){return{t:"section"}}},
+  skills:{n:"Points forts (liste)",init:function(){return{t:"skills",items:[{title:"",text:""}]}},item:function(){return{title:"",text:""}},max:12},
+  values:{n:"Colonnes",init:function(){return{t:"values",items:[{title:"",text:""},{title:"",text:""},{title:"",text:""}]}},item:function(){return{title:"",text:""}},max:6},
+  steps:{n:"Étapes",init:function(){return{t:"steps",items:[{title:"",text:""}]}},item:function(){return{title:"",text:""}},max:10},
+  band:{n:"Bandeau d’appel",init:function(){return{t:"band",title:"",text:"",small:"",b1l:"Demander un devis",b1u:"/#contact",b2l:"",b2u:""}}},
+  textimg:{n:"Texte + photo",init:function(){return{t:"textimg",title:"",text:"",media:"",alt:"",btnl:"",btnu:"",side:"right"}}},
+  quote:{n:"Témoignage",init:function(){return{t:"quote",text:"",author:""}}},
+  projects:{n:"Grille de projets",init:function(){return{t:"projects",items:[{media:"",alt:"",title:"",text:"",url:""}]}},item:function(){return{media:"",alt:"",title:"",text:"",url:""}},max:12}
 };
+BT.faq.item=function(){return{q:"",a:""}};BT.faq.max=40;
+BT.cards.item=function(){return{title:"",text:"",price:"",lines:"",link:"",linkLabel:""}};BT.cards.max=6;
 function sel(opts,cur,attrs){return'<select '+attrs+'>'+Object.keys(opts).map(function(k){return'<option value="'+k+'"'+(k===cur?" selected":"")+'>'+opts[k]+'</option>'}).join("")+'</select>'}
 function blockForm(b,i){
   var F=function(l,f,type,hint){return'<label class="f">'+l+(type==="area"?'<textarea data-b="'+i+'" data-f="'+f+'">'+esc(b[f])+'</textarea>':'<input type="text" data-b="'+i+'" data-f="'+f+'" value="'+esc(b[f])+'">')+(hint?'<span class="hint">'+hint+'</span>':'')+'</label>'};
+  var IF=function(j,l,f,type,ph){var it=b.items[j];return'<label class="f">'+l+(type==="area"?'<textarea data-b="'+i+'" data-i="'+j+'" data-f="'+f+'">'+esc(it[f])+'</textarea>':'<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="'+f+'" value="'+esc(it[f])+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>')+'</label>'};
+  var thumb=function(id,attr){var m=S.media.filter(function(x){return x.id===id})[0];return'<div class="row">'+(m?'<img class="fav" style="width:110px;height:80px;object-fit:cover" src="/api/media?id='+esc(m.id)+'" alt="">':'<div class="fav" style="width:110px;height:80px;display:grid;place-items:center;color:#666;font-size:.75rem">aucune</div>')+'<button class="btn ghost sm" '+attr+' type="button">'+(m?"Changer l’image":"Choisir une image")+'</button></div>'};
+  var items=function(row,word){var B=BT[b.t];return b.items.map(function(it,j){return'<div class="item">'+row(j)+'<div><button class="btn danger sm" data-rmi="'+i+'.'+j+'" type="button">Retirer '+word+'</button></div></div>'}).join("")+(b.items.length<B.max?'<div><button class="btn ghost sm" data-addi="'+i+'" type="button">+ Ajouter '+word.replace(/^(cette|ce) /,"")+'</button></div>':"")};
+  var TT=function(j,a,c){return IF(j,a||"Titre","title")+IF(j,c||"Texte","text","area")};
   switch(b.t){
-    case"title":return F("Titre","text")+'<label class="f">Taille'+sel({h2:"Grand titre",h3:"Sous-titre"},b.level,'data-b="'+i+'" data-f="level"')+'</label>';
+    case"title":return F("Titre","text")+'<label class="f">Taille'+sel({h2:"Grand titre",h3:"Sous-titre"},b.level,'data-b="'+i+'" data-f="level"')+'</label>'+F("Chapeau sous le titre (facultatif)","lead");
+    case"section":return'<p class="hint" style="margin:0">Les blocs qui suivent forment une nouvelle partie de la page, séparée de la précédente par un grand espace.</p>';
+    case"skills":return items(function(j){return TT(j,"Point fort","Explication")},"ce point");
+    case"values":return'<p class="hint" style="margin:0 0 .6rem">2, 3 ou 6 colonnes donnent le meilleur rendu. Sur téléphone, elles passent les unes sous les autres.</p>'+items(function(j){return TT(j)},"cette colonne");
+    case"steps":return items(function(j){return TT(j,"Étape "+(j+1),"Détail (visible au clic)")},"cette étape");
+    case"band":return F("Titre","title")+F("Texte (facultatif)","text","area")+F("Petite ligne (facultatif)","small","text","Ex. Formules dès 390 € TTC par mois.")+'<div class="row"><label class="f" style="flex:1">Bouton principal<input type="text" data-b="'+i+'" data-f="b1l" value="'+esc(b.b1l)+'"></label><label class="f" style="flex:1">Lien<input type="text" data-b="'+i+'" data-f="b1u" value="'+esc(b.b1u)+'"></label></div><div class="row"><label class="f" style="flex:1">Second bouton (facultatif)<input type="text" data-b="'+i+'" data-f="b2l" value="'+esc(b.b2l)+'"></label><label class="f" style="flex:1">Lien<input type="text" data-b="'+i+'" data-f="b2u" value="'+esc(b.b2u)+'"></label></div>';
+    case"textimg":return F("Titre","title")+F("Texte","text","area","Une ligne vide sépare les paragraphes. **gras**, [lien](https://…).")+thumb(b.media,'data-pick="'+i+'"')+F("Description de la photo (accessibilité et Google)","alt")+'<label class="f">Position de la photo'+sel({right:"À droite",left:"À gauche"},b.side,'data-b="'+i+'" data-f="side"')+'</label><div class="row"><label class="f" style="flex:1">Bouton (facultatif)<input type="text" data-b="'+i+'" data-f="btnl" value="'+esc(b.btnl)+'"></label><label class="f" style="flex:1">Lien<input type="text" data-b="'+i+'" data-f="btnu" value="'+esc(b.btnu)+'"></label></div>';
+    case"quote":return F("Citation","text","area")+F("Auteur","author","text","Ex. GYN 1957, client");
+    case"projects":return items(function(j){return thumb(b.items[j].media,'data-picki="'+i+'.'+j+'"')+IF(j,"Nom du projet","title")+IF(j,"Courte description","text")+IF(j,"Lien (facultatif)","url","","YouTube, Instagram, /p/une-page…")+IF(j,"Description de l’image","alt")},"ce projet");
     case"text":return F("Texte","text","area","Une ligne vide sépare les paragraphes. **gras**, [texte du lien](https://…). Les lignes qui commencent par « - » forment une liste.");
     case"image":{var m=S.media.filter(function(x){return x.id===b.media})[0];
       return'<div class="row">'+(m?'<img class="fav" style="width:110px;height:80px;object-fit:cover" src="/api/media?id='+esc(m.id)+'" alt="">':'<div class="fav" style="width:110px;height:80px;display:grid;place-items:center;color:#666;font-size:.75rem">aucune</div>')+'<button class="btn ghost sm" data-pick="'+i+'" type="button">'+(m?"Changer l’image":"Choisir une image")+'</button></div>'
@@ -455,9 +477,10 @@ function editPage(slug){
     $$("[data-mv]").forEach(function(b){b.onclick=function(){var a=b.dataset.mv.split("."),i=+a[0],d=+a[1];var t=E.blocks[i];E.blocks[i]=E.blocks[i+d];E.blocks[i+d]=t;setDirty(true);draw()}});
     $$("[data-dup]").forEach(function(b){b.onclick=function(){var i=+b.dataset.dup;E.blocks.splice(i+1,0,JSON.parse(JSON.stringify(E.blocks[i])));setDirty(true);draw()}});
     $$("[data-rm]").forEach(function(b){b.onclick=function(){if(!confirm("Supprimer ce bloc ?"))return;E.blocks.splice(+b.dataset.rm,1);setDirty(true);draw()}});
-    $$("[data-addi]").forEach(function(b){b.onclick=function(){var bk=E.blocks[+b.dataset.addi];bk.items.push(bk.t==="faq"?{q:"",a:""}:{title:"",text:"",price:"",lines:"",link:"",linkLabel:""});setDirty(true);draw()}});
+    $$("[data-addi]").forEach(function(b){b.onclick=function(){var bk=E.blocks[+b.dataset.addi];if(bk.items.length>=BT[bk.t].max)return;bk.items.push(BT[bk.t].item());setDirty(true);draw()}});
     $$("[data-rmi]").forEach(function(b){b.onclick=function(){var a=b.dataset.rmi.split(".");E.blocks[+a[0]].items.splice(+a[1],1);setDirty(true);draw()}});
     $$("[data-pick]").forEach(function(b){b.onclick=function(){pickMedia(function(id){E.blocks[+b.dataset.pick].media=id;setDirty(true);draw()})}});
+    $$("[data-picki]").forEach(function(b){b.onclick=function(){var a=b.dataset.picki.split(".");pickMedia(function(id){E.blocks[+a[0]].items[+a[1]].media=id;setDirty(true);draw()})}});
     setDirty(S.dirty);
   }
   function save(){
