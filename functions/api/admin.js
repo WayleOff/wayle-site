@@ -5,7 +5,7 @@ import { validate, diffFromDefaults } from "../../theme/tokens/validate.js";
 
 const COLLS = ["g_clients", "g_projets", "g_docs", "g_prospects", "g_config", "g_notes", "g_taches", "s_home", "s_svc",
   "s_config", "s_content", "s_pages", "s_media", "c_portal", "c_activity",
-  "s_versions", // versions des pages (historique) et copies de sécurité de l'éditeur
+  "s_videos", "s_versions", // versions des pages (historique) et copies de sécurité de l'éditeur
   "t_themes"]; // thèmes : { theme:{écarts}, label } ; « published » est servi par /theme.css
 const MAX_BODY = 200000;
 const MAX_FONT_B64 = 1400000; // police .woff2 : ≈ 1 Mo

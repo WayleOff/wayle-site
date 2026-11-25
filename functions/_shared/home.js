@@ -11,14 +11,14 @@ const rich = (s) => inline(fr(s));        // texte avec **gras** et [liens](…)
 
 /* image : envoyée depuis l'admin (media) ou fichier du site (img) */
 const FILE = /^\/?[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(jpe?g|png|webp|gif|avif)$/i;
-const VIDEO = /^(\/?[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(mp4|webm)|https:\/\/[^\s"'<>]+\.(mp4|webm)(\?[^\s"'<>]*)?)$/i;
+const VIDEO = /^(\/?[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(mp4|webm)|https:\/\/[^\s"'<>]+\.(mp4|webm)(\?[^\s"'<>]*)?|\/api\/video\?id=[A-Za-z0-9_-]{6,64})$/i;
 export function imgSrc(o) {
   if (o && mediaId(o.media)) return "/api/media?id=" + o.media;
   if (o && FILE.test(String(o.img || ""))) return o.img;
   return "";
 }
 const vid = (s) => (VIDEO.test(String(s || "")) ? s : "");
-const poster = (s) => (FILE.test(String(s || "")) ? s : "");
+const poster = (s) => (FILE.test(String(s || "")) || /^\/api\/media\?id=[A-Za-z0-9_-]{1,64}$/.test(String(s || "")) ? s : "");
 const pos = (s) => (/^[0-9.]{1,5}% [0-9.]{1,5}%$/.test(String(s || "")) ? s : "");
 const CATS = ["artistes", "entreprises", "commerces"];
 const RCATS = { artistes: "Artistes", commerces: "Commerces", marques: "Marques", entreprises: "Entreprises" };
