@@ -44,6 +44,10 @@ const fontNames = FONTS.map((f) => f.name);
 add("typography.fontHeading", "Police des titres", "Typographie", "font", "Bricolage Grotesque", { options: fontNames, wired: true });
 add("typography.fontBody", "Police du texte", "Typographie", "font", "Figtree", { options: fontNames, wired: true });
 add("typography.fontMono", "Police monospace", "Typographie", "font", "Monospace système", { options: fontNames, wired: true });
+add("typography.custom1.file", "Police importée 1 : fichier", "Typographie", "asset", "", { wired: true });
+add("typography.custom1.name", "Police importée 1 : nom", "Typographie", "text", "", { max: 60, wired: true });
+add("typography.custom2.file", "Police importée 2 : fichier", "Typographie", "asset", "", { wired: true });
+add("typography.custom2.name", "Police importée 2 : nom", "Typographie", "text", "", { max: 60, wired: true });
 add("typography.baseSize", "Taille de base", "Typographie", "number", 1.0625, { min: 0.875, max: 1.375, step: 0.0625, unit: "rem", wired: true });
 add("typography.lineHeight", "Hauteur de ligne du texte", "Typographie", "number", 1.65, { min: 1.2, max: 2, step: 0.05, wired: true });
 add("typography.headingLineHeight", "Hauteur de ligne des titres", "Typographie", "number", 1.08, { min: 0.9, max: 1.5, step: 0.02 });
@@ -69,20 +73,20 @@ add("shape.glassBlur", "Flou d'arrière-plan", "Formes", "number", 16, { min: 0,
 add("shape.shadow", "Ombres", "Formes", "enum", "soft", { options: ["none", "soft", "medium", "strong"] });
 
 /* ---------- Composants (étape 3) ---------- */
-add("components.button.style", "Boutons : style", "Composants", "enum", "solid", { options: ["solid", "outline", "ghost"] });
-add("components.button.case", "Boutons : casse", "Composants", "enum", "normal", { options: ["normal", "upper"] });
+add("components.button.style", "Boutons : style", "Composants", "enum", "solid", { options: ["solid", "outline", "ghost"], wired: true });
+add("components.button.case", "Boutons : casse", "Composants", "enum", "normal", { options: ["normal", "upper"], wired: true });
 add("components.header.position", "En-tête : position", "Composants", "enum", "fixed", { options: ["fixed", "sticky", "static"] });
-add("components.card.hover", "Cartes : survol", "Composants", "enum", "zoom", { options: ["none", "lift", "zoom"] });
-add("components.field.style", "Champs : style", "Composants", "enum", "boxed", { options: ["underlined", "boxed", "filled"] });
-add("components.image.filter", "Images : filtre", "Composants", "enum", "none", { options: ["none", "grayscale", "sepia"] });
-add("components.hero.overlay", "Hero : voile sur la vidéo", "Composants", "number", 0.5, { min: 0, max: 0.9, step: 0.05 });
+add("components.card.hover", "Cartes : survol", "Composants", "enum", "zoom", { options: ["none", "lift", "zoom"], wired: true });
+add("components.field.style", "Champs : style", "Composants", "enum", "boxed", { options: ["underlined", "boxed", "filled"], wired: true });
+add("components.image.filter", "Images : filtre", "Composants", "enum", "none", { options: ["none", "grayscale", "sepia"], wired: true });
+add("components.hero.overlay", "Voile sur la vidéo d'accueil", "Composants", "number", 0, { min: 0, max: 0.9, step: 0.05, wired: true });
 
 /* ---------- Animations ---------- */
-add("motion.enabled", "Animations", "Animations", "bool", true);
-add("motion.duration", "Durée", "Animations", "number", 0.35, { min: 0.1, max: 1.2, step: 0.05, unit: "s" });
+add("motion.enabled", "Animations", "Animations", "bool", true, { wired: true });
+add("motion.duration", "Durée", "Animations", "number", 0.35, { min: 0.1, max: 1.2, step: 0.05, unit: "s", wired: true });
 add("motion.easing", "Courbe", "Animations", "enum", "smooth", { options: ["smooth", "ease", "ease-in-out", "spring"], wired: true });
-add("motion.reveal", "Apparition au défilement", "Animations", "enum", "slide", { options: ["none", "fade", "slide", "zoom"] });
-add("motion.smoothScroll", "Défilement doux", "Animations", "bool", true);
+add("motion.reveal", "Apparition au défilement", "Animations", "enum", "slide", { options: ["none", "fade", "slide", "zoom"], wired: true });
+add("motion.smoothScroll", "Défilement doux", "Animations", "bool", true, { wired: true });
 
 /* ---------- Identité (gérée pour l'instant par l'Apparence existante) ---------- */
 add("identity.siteName", "Nom du site", "Identité", "text", "Wayle Production", { max: 80 });
@@ -90,6 +94,10 @@ add("identity.logoLight", "Logo (fond clair)", "Identité", "asset", "");
 add("identity.logoDark", "Logo (fond sombre)", "Identité", "asset", "");
 add("identity.favicon", "Favicon", "Identité", "asset", "");
 add("identity.ogImage", "Image de partage", "Identité", "asset", "");
+
+/* ---------- Avancé (étape 4) ---------- */
+add("advanced.customCssOn", "CSS personnalisé actif", "Avancé", "bool", true, { wired: true });
+add("advanced.customCss", "CSS personnalisé", "Avancé", "css", "", { max: 8000, wired: true });
 
 /* ---------- Méta du thème ---------- */
 add("name", "Nom du thème", "Thème", "text", "Wayle", { max: 60, wired: true });

@@ -1,7 +1,7 @@
-/* Thèmes prêts à l'emploi. Chaque thème n'indique que ses écarts avec le thème Wayle (défauts du schéma).
-   Variantes sombres uniquement pour l'instant : les thèmes clairs arrivent avec les composants (étape 3). */
+/* Thèmes prêts à l'emploi. Chaque thème n'indique que ses écarts avec le thème Wayle (défauts du schéma). */
 const R = (pill, xl, card, md, img, field) => ({ pill, xl, card, md, img, field });
 const dark = (o) => ({ colors: { dark: o } });
+const light = (o) => ({ mode: "light", colors: { light: o } });
 const merge = (...a) => a.reduce((m, x) => { for (const k of Object.keys(x)) m[k] = typeof x[k] === "object" && !Array.isArray(x[k]) && m[k] ? merge(m[k], x[k]) : x[k]; return m; }, {});
 
 export const PRESETS = [
@@ -21,6 +21,15 @@ export const PRESETS = [
   { id: "luxe", name: "Luxe", description: "Noir et or, titres Playfair Display, angles quasi droits.",
     theme: merge(dark({ bg: "#0B0B0C", surface: "rgba(255,255,255,.05)", ink: "#F4EFE6", mid: "rgba(244,239,230,.8)", line: "rgba(212,175,55,.35)", primary: "#D4AF37", secondary: "#E8D9A8", btn: "#D4AF37", btnInk: "#0B0B0C" }),
       { background: { style: "flat" }, typography: { fontHeading: "Playfair Display", fontBody: "Inter" }, shape: { radius: R(2, 4, 2, 2, 2, 2) } }) },
+  { id: "minimal-clair", name: "Minimal clair", description: "Fond blanc, une couleur d'accent bleue, angles discrets.",
+    theme: merge(light({ bg: "#FFFFFF", surface: "#F4F5F7", surfaceRaised: "#FFFFFF", ink: "#111418", mid: "#4A5260", line: "#E1E4EA", primary: "#2563EB", secondary: "#4B5563", btn: "#111418", btnInk: "#FFFFFF" }),
+      { background: { style: "flat" }, typography: { fontHeading: "Inter", fontBody: "Inter" }, shape: { radius: R(10, 16, 14, 12, 10, 8) } }) },
+  { id: "editorial", name: "Éditorial", description: "Papier crème, brique et bleu pétrole, titres Playfair Display.",
+    theme: merge(light({ bg: "#FAF6EF", surface: "#F1EADD", surfaceRaised: "#FFFDF8", ink: "#1B1A17", mid: "#5A554B", line: "#D9CFBC", primary: "#B4381F", secondary: "#1F4E5F", btn: "#1B1A17", btnInk: "#FAF6EF" }),
+      { background: { style: "flat" }, typography: { fontHeading: "Playfair Display", fontBody: "Inter" }, shape: { radius: R(4, 8, 6, 4, 2, 4) }, components: { field: { style: "underlined" } } }) },
+  { id: "corporate", name: "Corporate", description: "Bleu nuit et bleu franc, sobre, les cartes se soulèvent au survol.",
+    theme: merge(light({ bg: "#F6F8FB", surface: "#EAF0F7", surfaceRaised: "#FFFFFF", ink: "#0F2338", mid: "#46586B", line: "#D3DCE7", primary: "#0B6EDB", secondary: "#14808A", btn: "#0F2338", btnInk: "#FFFFFF" }),
+      { background: { style: "flat" }, typography: { fontHeading: "Inter", fontBody: "Inter" }, shape: { radius: R(8, 14, 12, 10, 8, 8) }, components: { card: { hover: "lift" } } }) },
 ];
 for (const p of PRESETS) p.theme.name = p.name, p.theme.description = p.description;
 export const presetById = (id) => PRESETS.find((p) => p.id === id) || null;

@@ -2,17 +2,20 @@
    Contexte : { api(method, qs, body), toast(msg, err), fail(e), setDirty(bool), legacy:{ get(), clear() } } */
 import { SCHEMA, defaultTheme, getPath, setPath } from "../tokens/schema.js";
 import { FONTS } from "../tokens/fonts.js";
-import { validate, checkValue, diffFromDefaults } from "../tokens/validate.js";
+import { validate, checkValue, diffFromDefaults, checkCustomCss } from "../tokens/validate.js";
 import { compile } from "../engine/compile.js";
 import { parse, toHex, toCss, withAlpha, mix, suggestText } from "../engine/color.js";
 import { contrastReport } from "../engine/contrast.js";
 import { PRESETS } from "../themes/presets.js";
+import { HARMONIES, fromBase, dominantColors, randomPatch, applyPatch, paletteToPatch } from "../engine/palette.js";
+import { cssFromStored } from "../engine/index.js";
 
 const BYPATH = new Map(SCHEMA.map((t) => [t.path, t]));
-const D = "colors.dark.";
+const D = "@"; /* « @bg » = couleur « bg » de la palette en cours d'édition (sombre ou claire) */
 const EASE_LABELS = { smooth: "Douce (d'origine)", ease: "Standard", "ease-in-out": "Lente au début et à la fin", spring: "Rebond léger" };
 /* tab, chemin, libellé, aide, options */
 const CTRL = [
+  ["colors", "mode", "Mode d'affichage", "Le site suit ce mode pour tous les visiteurs", { labels: { dark: "Sombre", light: "Clair", auto: "Automatique (selon l'appareil)" } }],
   ["colors", D + "bg", "Fond du site", "Couleur derrière le dégradé"],
   ["colors", D + "surface", "Cartes et zones", "Fond translucide des cartes et formulaires", { alpha: true }],
   ["colors", D + "line", "Bordures et filets", "", { alpha: true }],
@@ -29,6 +32,10 @@ const CTRL = [
   ["type", "typography.fontHeading", "Police des titres", "Les polices s'affichent dans l'aperçu à droite"],
   ["type", "typography.fontBody", "Police du texte", ""],
   ["type", "typography.fontMono", "Police monospace", ""],
+  ["type", "typography.custom1.file", "Police importée 1", "Fichier .woff2 (1 Mo max). Vous devez en avoir les droits. Choisissez-la ensuite dans la liste des polices ci-dessus.", { font: true }],
+  ["type", "typography.custom1.name", "Nom de la police importée 1", "", { hidden: true }],
+  ["type", "typography.custom2.file", "Police importée 2", "Un second fichier .woff2, par exemple pour le texte courant.", { font: true }],
+  ["type", "typography.custom2.name", "Nom de la police importée 2", "", { hidden: true }],
   ["type", "typography.baseSize", "Taille du texte", "1 rem = 16 px"],
   ["type", "typography.lineHeight", "Interligne du texte", ""],
   ["shape", "shape.radius.pill", "Boutons et pastilles", "", { choices: [[0, "Carré"], [8, "Léger"], [16, "Arrondi"], [999, "Pilule"]] }],
@@ -38,12 +45,32 @@ const CTRL = [
   ["shape", "shape.radius.img", "Images", ""],
   ["shape", "shape.radius.field", "Champs de formulaire", ""],
   ["shape", "layout.container", "Largeur du site", "Au-dessous de 1000 px le menu ne tient plus sur une ligne"],
-  ["shape", "motion.easing", "Courbe des animations", "", { labels: EASE_LABELS }],
+  ["comp", "components.button.style", "Style des boutons", "", { labels: { solid: "Plein", outline: "Contour", ghost: "Discret" } }],
+  ["comp", "components.button.case", "Casse des boutons", "", { labels: { normal: "Normale", upper: "Majuscules" } }],
+  ["comp", "components.card.hover", "Cartes et photos au survol", "", { labels: { none: "Aucun effet", lift: "Se soulèvent", zoom: "Zoom sur la photo (d'origine)" } }],
+  ["comp", "components.field.style", "Champs de formulaire", "", { labels: { boxed: "Encadrés (d'origine)", underlined: "Soulignés", filled: "Remplis" } }],
+  ["comp", "components.image.filter", "Filtre sur les photos", "Les logos ne sont pas touchés", { labels: { none: "Aucun", grayscale: "Noir et blanc", sepia: "Sépia" } }],
+  ["comp", "components.hero.overlay", "Voile sur la vidéo d'accueil", "Assombrit la vidéo pour mieux lire le titre"],
+  ["anim", "motion.enabled", "Animations", "Désactivez pour un site sans aucun mouvement"],
+  ["anim", "motion.duration", "Durée des animations", "0,35 s = vitesse d'origine"],
+  ["anim", "motion.easing", "Courbe des animations", "", { labels: EASE_LABELS }],
+  ["anim", "motion.reveal", "Apparition au défilement", "", { labels: { slide: "Glisse (d'origine)", fade: "Fondu", zoom: "Zoom léger", none: "Aucune" } }],
+  ["anim", "motion.smoothScroll", "Défilement doux", "Quand on clique sur un lien du menu"],
+  ["ident", "identity.siteName", "Nom du site", "Utilisé pour le partage sur les réseaux"],
+  ["ident", "identity.logoLight", "Logo sur fond clair", "Image PNG, JPG ou SVG. Vide = logo d'origine", { asset: true }],
+  ["ident", "identity.logoDark", "Logo sur fond sombre", "Vide = logo d'origine", { asset: true }],
+  ["ident", "identity.ogImage", "Image de partage", "Aperçu sur WhatsApp, LinkedIn… (1200 × 630 idéal)", { asset: true }],
+  ["adv", "advanced.customCssOn", "Activer le CSS personnalisé", "Décochez pour le désactiver sans effacer votre code"],
+  ["adv", "advanced.customCss", "CSS personnalisé", "S'applique en dernier, sur tout le site public. Refusés : @import, url() hors de vos médias, expressions, caractères « < » et « \\ »."],
 ];
-const TABS = [["themes", "Thèmes"], ["colors", "Couleurs"], ["type", "Typographie"], ["shape", "Formes"]];
-const SECTIONS = { colors: [["Fond et surfaces", [D + "bg", D + "surface", D + "line", "background.style", "background.mesh"]], ["Texte", [D + "ink", D + "mid"]], ["Accents", [D + "primary", D + "secondary"]], ["Boutons", [D + "btn", D + "btnInk"]], ["Messages", [D + "success", D + "error"]]],
-  type: [["Polices", ["typography.fontHeading", "typography.fontBody", "typography.fontMono"]], ["Tailles", ["typography.baseSize", "typography.lineHeight"]]],
-  shape: [["Arrondis", ["shape.radius.pill", "shape.radius.xl", "shape.radius.card", "shape.radius.md", "shape.radius.img", "shape.radius.field"]], ["Mise en page", ["layout.container"]], ["Mouvement", ["motion.easing"]]] };
+const TABS = [["themes", "Thèmes"], ["gen", "Générer"], ["colors", "Couleurs"], ["type", "Typographie"], ["shape", "Formes"], ["comp", "Composants"], ["anim", "Animations"], ["ident", "Identité"], ["adv", "Avancé"], ["share", "Partage"]];
+const SECTIONS = { colors: [["Affichage", ["mode"]], ["Fond et surfaces", [D + "bg", D + "surface", D + "line", "background.style", "background.mesh"]], ["Texte", [D + "ink", D + "mid"]], ["Accents", [D + "primary", D + "secondary"]], ["Boutons", [D + "btn", D + "btnInk"]], ["Messages", [D + "success", D + "error"]]],
+  type: [["Polices", ["typography.fontHeading", "typography.fontBody", "typography.fontMono"]], ["Polices importées (.woff2)", ["typography.custom1.file", "typography.custom1.name", "typography.custom2.file", "typography.custom2.name"]], ["Tailles", ["typography.baseSize", "typography.lineHeight"]]],
+  shape: [["Arrondis", ["shape.radius.pill", "shape.radius.xl", "shape.radius.card", "shape.radius.md", "shape.radius.img", "shape.radius.field"]], ["Mise en page", ["layout.container"]]],
+  comp: [["Boutons", ["components.button.style", "components.button.case"]], ["Cartes et images", ["components.card.hover", "components.image.filter"]], ["Formulaires", ["components.field.style"]], ["Accueil", ["components.hero.overlay"]]],
+  anim: [["Mouvement", ["motion.enabled", "motion.duration", "motion.easing"]], ["Défilement", ["motion.reveal", "motion.smoothScroll"]]],
+  ident: [["Site", ["identity.siteName"]], ["Images", ["identity.logoLight", "identity.logoDark", "identity.ogImage"]]],
+  adv: [["CSS personnalisé", ["advanced.customCssOn", "advanced.customCss"]]] };
 const DEVICES = [["desktop", "Ordinateur", 1440], ["tablet", "Tablette", 820], ["mobile", "Mobile", 390]];
 const PAGES = [["/", "Accueil"], ["/artistes", "Artistes"], ["/entreprises", "Entreprises"], ["/commerces", "Commerces"]];
 
@@ -61,8 +88,8 @@ const CSS = `
 .tc-top .nm{color:var(--mid);font-size:.85rem}
 .tc-body{display:grid;grid-template-columns:var(--tcw) minmax(0,1fr);min-height:0}
 .tc-side{border-right:1px solid var(--line);overflow:auto;padding:.9rem 1rem 3rem;min-height:0}
-.tc-tabs{display:flex;gap:.2rem;margin:.7rem 0 1rem;border-bottom:1px solid var(--line)}
-.tc-tabs button{background:none;border:0;border-bottom:2px solid transparent;color:var(--mid);padding:.5rem .65rem;cursor:pointer;font-weight:600;font-size:.9rem}
+.tc-tabs{display:flex;flex-wrap:wrap;gap:.1rem;margin:.7rem 0 1rem;border-bottom:1px solid var(--line)}
+.tc-tabs button{background:none;border:0;border-bottom:2px solid transparent;color:var(--mid);padding:.45rem .5rem;cursor:pointer;font-weight:600;font-size:.9rem}
 .tc-tabs button[aria-selected=true]{color:var(--ink);border-color:var(--accent)}
 .tc-search{width:100%;background:#150E22;border:1px solid var(--line);border-radius:10px;padding:.5rem .7rem}
 .tc h3{margin:1.3rem 0 .6rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mid)}
@@ -100,12 +127,22 @@ const CSS = `
 .tc-stage iframe{border:1px solid var(--line);border-radius:10px;background:#000;transform-origin:top left;position:absolute;top:.8rem}
 .tc-note{background:#2A1F42;border:1px solid var(--line);border-radius:12px;padding:.6rem .8rem;font-size:.82rem;color:var(--mid);margin-bottom:.9rem}
 .tc-note b{color:var(--ink)}
+.tc-ck{display:flex;gap:.6rem;align-items:center;font-weight:600;font-size:.88rem}.tc-ck input{width:1.1rem;height:1.1rem;accent-color:var(--accent)}
+.tc-as{display:flex;gap:.6rem;align-items:center}.tc-as img{width:64px;height:40px;object-fit:contain;background:#ffffff14;border:1px solid var(--line);border-radius:8px}
+.tc-as .none{width:64px;height:40px;display:grid;place-items:center;border:1px dashed var(--line);border-radius:8px;color:var(--mid);font-size:.7rem}
+.tc-sv{display:flex;gap:.5rem;align-items:center;padding:.45rem 0;border-bottom:1px solid var(--line)}.tc-sv span{flex:1;font-size:.88rem}
+.tc-cmp{position:absolute;top:.6rem;left:50%;transform:translateX(-50%);z-index:3;background:#2A1F42;border:1px solid var(--line);border-radius:999px;padding:.2rem .8rem;font-size:.8rem}
+.tc-ta{width:100%;min-height:110px;background:#150E22;border:1px solid var(--line);border-radius:8px;padding:.5rem;font:12px/1.4 ui-monospace,Menlo,monospace;color:var(--ink)}
+.tc-er{color:#FF8A75;font-size:.8rem;margin:.4rem 0}
 @media (max-width:1000px){.tc{height:auto}.tc-body{grid-template-columns:1fr}.tc-side{max-height:none}.tc-prev{height:70vh}}
 main.wide{max-width:none;padding:0}
 `;
 
+const res = (st, p) => (p[0] === "@" ? "colors." + curScheme(st) + "." + p.slice(1) : p);
+const curScheme = (st) => (st.T.mode === "light" ? "light" : st.T.mode === "dark" ? "dark" : st.scheme || "dark");
+
 export function mount(root, ctx) {
-  const st = { T: defaultTheme(), pub: null, hist: [], hi: -1, tab: "themes", q: "", page: "/", device: "desktop", dirty: false, lastKey: "", lastAt: 0, draftTimer: 0, ready: false, notes: [] };
+  const st = { scheme: "", compare: false, saved: [], T: defaultTheme(), pub: null, hist: [], hi: -1, tab: "themes", q: "", page: "/", device: "desktop", dirty: false, lastKey: "", lastAt: 0, draftTimer: 0, ready: false, notes: [], gen: { c: "#7C3AED", h: "analogue", info: "" }, cssDraft: null };
   const cleanup = [];
   const on = (t, ev, fn, o) => { t.addEventListener(ev, fn, o); cleanup.push(() => t.removeEventListener(ev, fn, o)); };
   if (!document.getElementById("tc-css")) { const s = document.createElement("style"); s.id = "tc-css"; s.textContent = CSS; document.head.appendChild(s); }
@@ -155,7 +192,7 @@ export function mount(root, ctx) {
   function changed(key) { commit(key); refreshDirty(); sendCss(); scheduleDraft(); }
   function sendCss() {
     const f = root.querySelector("#tc-frame"); if (!f || !f.contentWindow) return;
-    try { f.contentWindow.postMessage({ type: "wayle-theme", css: compile(validate(st.T).theme) }, location.origin); } catch (e) {}
+    try { f.contentWindow.postMessage({ type: "wayle-theme", css: compile(validate(st.compare ? st.pub : st.T).theme) }, location.origin); } catch (e) {}
   }
   function scheduleDraft() {
     clearTimeout(st.draftTimer);
@@ -184,8 +221,8 @@ export function mount(root, ctx) {
       <div class="tc-prev"><div class="tc-pt">
         <select id="tc-page" aria-label="Page à prévisualiser">${PAGES.map((p) => `<option value="${p[0]}">${p[1]}</option>`).join("")}</select>
         <span class="tc-seg" role="group" aria-label="Appareil">${DEVICES.map((d) => `<button type="button" data-dev="${d[0]}" aria-pressed="${d[0] === st.device}">${d[1]}</button>`).join("")}</span>
-        <span class="sp" style="flex:1"></span><a class="hint" href="/" target="_blank" rel="noopener" id="tc-open">Ouvrir le site ↗</a></div>
-        <div class="tc-stage" id="tc-stage"><iframe id="tc-frame" title="Aperçu du site" src="/"></iframe></div></div></div></div>`;
+        <button class="btn ghost sm" type="button" id="tc-cmp" aria-pressed="false" title="Afficher le thème publié pour comparer">Avant / après</button><span class="sp" style="flex:1"></span><a class="hint" href="/" target="_blank" rel="noopener" id="tc-open">Ouvrir le site ↗</a></div>
+        <div class="tc-stage" id="tc-stage"><div class="tc-cmp" id="tc-cmpb" hidden>Thème publié (avant)</div><iframe id="tc-frame" title="Aperçu du site" src="/"></iframe></div></div></div></div>`;
     st.notes = [];
     const $ = (s) => root.querySelector(s);
     const fr = $("#tc-frame");
@@ -196,12 +233,14 @@ export function mount(root, ctx) {
     $("#tc-undo").onclick = () => undo(-1); $("#tc-redo").onclick = () => undo(1);
     $("#tc-rev").onclick = () => { if (confirm("Abandonner vos modifications non publiées ?")) { st.T = clone(st.pub); commit(""); refreshDirty(); sendCss(); scheduleDraft(); renderTab(); } };
     $("#tc-pub").onclick = publish;
+    $("#tc-cmp").onclick = () => { st.compare = !st.compare; $("#tc-cmp").setAttribute("aria-pressed", st.compare); $("#tc-cmpb").hidden = !st.compare; sendCss(); };
     $("#tc-page").onchange = (e) => { st.page = e.target.value; fr.src = st.page; $("#tc-open").href = st.page; };
     root.querySelectorAll("[data-dev]").forEach((b) => (b.onclick = () => { st.device = b.dataset.dev; root.querySelectorAll("[data-dev]").forEach((x) => x.setAttribute("aria-pressed", x === b)); fit(); }));
     $("#tc-tabs").onclick = (e) => { const b = e.target.closest("[data-tab]"); if (b) { st.tab = b.dataset.tab; st.q = ""; $("#tc-q").value = ""; renderTab(); } };
     $("#tc-q").oninput = (e) => { st.q = e.target.value; renderTab(); };
     const side = $("#tc-content");
-    side.addEventListener("input", onInput); side.addEventListener("change", onInput); side.addEventListener("click", onClick);
+    side.addEventListener("input", onInput); side.addEventListener("change", (e) => { if (e.target.id === "tc-impf") { const f = e.target.files[0]; if (f) f.text().then(importText); } else onInput(e); }); side.addEventListener("click", onClick);
+    loadSaved();
     on(document, "keydown", (e) => {
       if (!(e.ctrlKey || e.metaKey)) return;
       const tg = e.target; if (tg && /^(INPUT|TEXTAREA)$/.test(tg.tagName) && tg.type !== "range" && tg.type !== "color") return;
@@ -219,18 +258,20 @@ export function mount(root, ctx) {
   }
 
   /* ---------- rendu des contrôles ---------- */
-  const keywords = (p) => { const c = meta(p), tab = TABS.find((t) => t[0] === c[0]); const sec = (SECTIONS[c[0]] || []).find((x) => x[1].includes(p)); return (tab ? tab[1] : "") + " " + (sec ? sec[0] : ""); };
-  const meta = (p) => CTRL.find((c) => c[1] === p);
+  const keywords = (p) => { const c = meta(p), tab = TABS.find((t) => t[0] === c[0]); const sec = (SECTIONS[c[0]] || []).find((x) => x[1].map(R_).includes(p)); return (tab ? tab[1] : "") + " " + (sec ? sec[0] : ""); };
+  const R_ = (p) => res(st, p);
+  const meta = (p) => CTRL.find((c) => R_(c[1]) === p);
   function valueOf(p) { return getPath(st.T, p); }
   function control(p) {
     const m = meta(p), t = BYPATH.get(p), v = valueOf(p), o = m[4] || {}, id = "c-" + p.replace(/\./g, "-");
+    if (o.hidden) return "";
     const head = `<label for="${id}">${esc(m[2])}</label>`, hint = m[3] ? `<span class="h">${esc(m[3])}</span>` : "";
     let body = "";
     if (t.type === "color") {
       const c = parse(v) || { r: 0, g: 0, b: 0, a: 1 };
       body = `<div class="tc-r">${o.alpha ? `<span class="tc-sw"><i data-sw="${p}" style="background:${esc(v)}"></i></span>` : ""}
         <input type="color" id="${id}" data-p="${p}" data-k="pick" value="${toHex({ ...c, a: 1 })}" aria-label="${esc(m[2])} : sélecteur">
-        <input type="text" data-p="${p}" data-k="text" value="${esc(v)}" spellcheck="false" aria-label="${esc(m[2])} : valeur"></div>`
+        <input type="text" data-p="${p}" data-k="ctext" value="${esc(v)}" spellcheck="false" aria-label="${esc(m[2])} : valeur"></div>`
         + (o.alpha ? `<div class="tc-r"><span class="h" style="min-width:5rem">Opacité</span><input type="range" min="0" max="100" step="1" data-p="${p}" data-k="alpha" value="${Math.round(c.a * 100)}" aria-label="${esc(m[2])} : opacité"><span class="px" data-av="${p}">${Math.round(c.a * 100)} %</span></div>` : "");
     } else if (t.type === "number" && o.choices) {
       const ch = o.choices.slice(); if (!ch.some((x) => x[0] === v)) ch.push([v, "Personnalisé (" + v + " px)"]);
@@ -238,17 +279,66 @@ export function mount(root, ctx) {
     } else if (t.type === "number") {
       body = `<div class="tc-r"><input type="range" id="${id}" min="${t.min}" max="${t.max}" step="${t.step || 1}" value="${v}" data-p="${p}" data-k="num"><input type="number" min="${t.min}" max="${t.max}" step="${t.step || 1}" value="${v}" data-p="${p}" data-k="numt" aria-label="${esc(m[2])} : valeur"><span class="px">${esc(t.unit || "")}</span></div>`;
     } else if (t.type === "font") {
-      body = `<select id="${id}" data-p="${p}" data-k="enum">${FONTS.map((f) => `<option${f.name === v ? " selected" : ""}>${esc(f.name)}</option>`).join("")}</select>`;
+      body = `<select id="${id}" data-p="${p}" data-k="enum">${FONTS.map((f) => `<option value="${esc(f.name)}"${f.name === v ? " selected" : ""}>${esc(fontLabel(f))}</option>`).join("")}</select>`;
+    } else if (t.type === "bool") {
+      return `<div class="tc-c" data-ctl="${p}"><label class="tc-ck"><input type="checkbox" id="${id}" data-p="${p}" data-k="bool"${v ? " checked" : ""}> ${esc(m[2])}</label>${hint}</div>`;
+    } else if (t.type === "text") {
+      body = `<input type="text" id="${id}" data-p="${p}" data-k="str" maxlength="${t.max || 80}" value="${esc(v)}" class="tc-str">`;
+    } else if (t.type === "css") {
+      const draft = st.cssDraft != null && checkCustomCss(st.cssDraft, t.max) ? st.cssDraft : v, err = checkCustomCss(draft, t.max);
+      body = `<textarea class="tc-ta" id="${id}" data-p="${p}" data-k="css" rows="14" spellcheck="false" autocapitalize="off" aria-describedby="${id}-e" style="min-height:260px" placeholder="/* Exemple : */\n.btn { letter-spacing: .02em; }">${esc(draft)}</textarea><div class="tc-er" id="${id}-e" role="alert">${err ? "Non appliqué : " + esc(err) : ""}</div><span class="h" data-csscount>${draft.length} / ${t.max} caractères</span>`;
+    } else if (t.type === "asset" && o.font) {
+      const nm = getPath(st.T, p.replace(/\.file$/, ".name"));
+      body = `<div class="tc-as">${v ? `<span style="flex:1;font-weight:600">${esc(nm || "Fichier envoyé")}</span>` : `<span class="none">aucun</span>`}<label class="btn ghost sm" style="cursor:pointer">Choisir un .woff2<input type="file" accept=".woff2,font/woff2" hidden data-p="${p}" data-k="fontfile"></label>${v ? `<button class="btn ghost sm" type="button" data-clearfont="${p}">Retirer</button>` : ""}</div>`;
+    } else if (t.type === "asset") {
+      body = `<div class="tc-as">${v ? `<img src="${esc(v)}" alt="">` : `<span class="none">d'origine</span>`}<label class="btn ghost sm" style="cursor:pointer">Choisir<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden data-p="${p}" data-k="file"></label>${v ? `<button class="btn ghost sm" type="button" data-clear="${p}">Retirer</button>` : ""}</div>`;
     } else if (t.type === "enum") {
       const lab = o.labels || {};
       body = `<select id="${id}" data-p="${p}" data-k="enum">${t.options.map((x) => `<option value="${esc(x)}"${x === v ? " selected" : ""}>${esc(lab[x] || x)}</option>`).join("")}</select>`;
     }
     return `<div class="tc-c" data-ctl="${p}">${head}${body}${hint}</div>`;
   }
+  function fontLabel(f) {
+    if (!f.slot) return f.name;
+    const file = getPath(st.T, "typography.custom" + f.slot + ".file"), nm = getPath(st.T, "typography.custom" + f.slot + ".name");
+    return f.name + (file ? (nm ? " — " + nm : "") : " — aucun fichier envoyé");
+  }
+  function genHtml() {
+    const g = st.gen, B = (a, l, cls) => `<button type="button" class="btn ${cls || "ghost"} sm" data-gen="${a}">${l}</button>`;
+    return `<div class="tc-note"><b>Rien n'est publié</b> tant que vous ne cliquez pas sur « Publier ». Chaque action se défait avec ↶ Annuler.</div>
+      <h3>À partir d'une couleur</h3>
+      <div class="tc-c"><label for="g-col">Couleur de départ</label><div class="tc-r"><input type="color" id="g-col" value="${esc(g.c)}"><input type="text" id="g-colt" value="${esc(g.c)}" spellcheck="false" aria-label="Couleur de départ : valeur"></div></div>
+      <div class="tc-c"><label for="g-har">Harmonie</label><select id="g-har">${Object.entries(HARMONIES).map(([k, v]) => `<option value="${k}"${g.h === k ? " selected" : ""}>${esc(v)}</option>`).join("")}</select><span class="h">Détermine la couleur secondaire. Les palettes claire et sombre sont toutes deux générées, avec un contraste lisible.</span></div>
+      <p>${B("color", "Générer la palette", "")}</p>
+      <h3>À partir d'une image</h3>
+      <div class="tc-c"><span class="h">L'image est analysée dans votre navigateur : elle n'est pas envoyée sur le site.</span><label class="btn ghost sm" style="cursor:pointer;justify-self:start">Choisir une image<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden id="g-img"></label>${g.info}</div>
+      <h3>Au hasard</h3>
+      <p class="tc-r" style="flex-wrap:wrap">${B("rnd-all", "🎲 Tout", "")}${B("rnd-colors", "Couleurs")}${B("rnd-fonts", "Polices")}${B("rnd-shapes", "Formes")}</p>
+      <span class="h">« Tout » change aussi le mode (sombre ou clair). Les couleurs aléatoires respectent toujours un contraste lisible.</span>`;
+  }
+  const chip = (c) => `<span style="display:inline-block;width:1.4rem;height:1.4rem;border-radius:6px;border:1px solid var(--line);background:${esc(c)};vertical-align:middle"></span>`;
+  function applyPalette(p, info) {
+    const t = clone(st.T); applyPatch(t, paletteToPatch(p), setPath);
+    st.gen.info = info || "";
+    setTheme(t); ctx.toast("Palette appliquée. Annulez avec ↶ si elle ne vous plaît pas.");
+  }
+  function fromImage(file) {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 64 / Math.max(im.naturalWidth, im.naturalHeight, 1)), w = Math.max(1, Math.round(im.naturalWidth * k)), h = Math.max(1, Math.round(im.naturalHeight * k));
+      const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+      const x = cv.getContext("2d", { willReadFrequently: true }); x.drawImage(im, 0, 0, w, h); URL.revokeObjectURL(u);
+      let data; try { data = x.getImageData(0, 0, w, h).data; } catch (e) { ctx.toast("Image non analysable", true); return; }
+      const d = dominantColors(data), p = fromBase(d.primary, "analogue", d.secondary);
+      applyPalette(p, `<div class="tc-r" style="margin-top:.4rem"><span class="h">Couleurs détectées :</span>${chip(d.primary)}${d.secondary ? chip(d.secondary) : ""}${d.secondary ? "" : '<span class="h">(image presque grise : secondaire déduite)</span>'}</div>`);
+    };
+    im.onerror = () => { URL.revokeObjectURL(u); ctx.toast("Image illisible", true); };
+    im.src = u;
+  }
   function contrastHtml() {
-    const rep = contrastReport(validate(st.T).theme).filter((r) => r.mode === "dark");
+    const rep = contrastReport(validate(st.T).theme).filter((r) => r.mode === curScheme(st));
     return `<h3>Lisibilité (WCAG)</h3><p class="hint" style="margin:0 0 .5rem">Indicatif : vous restez libre de vos choix.</p><table class="tc-ct">` + rep.map((r) => {
-      const c = st.T.colors.dark, bgc = r.bg === "bg" ? c.bg : c[r.bg];
+      const c = st.T.colors[curScheme(st)], bgc = r.bg === "bg" ? c.bg : c[r.bg];
       const fix = !r.ok && ["ink", "mid", "btnInk", "primary", "secondary", "error", "success"].includes(r.fg) ? `<button type="button" data-fix="${r.fg}|${r.bg}|${/large/.test(r.label) ? 3 : 4.5}">Corriger</button>` : "";
       return `<tr><td>${esc(r.label)}</td><td><span class="aa" style="color:${esc(c[r.fg])};background:${esc(bgc)}">Aa</span></td><td>${r.ratio}</td><td><span class="tc-g ${GRADE[r.grade]}">${esc(r.grade)}</span></td><td>${fix}</td></tr>`;
     }).join("") + `</table>`;
@@ -256,20 +346,57 @@ export function mount(root, ctx) {
   function themesHtml() {
     const cur = core(st.T);
     return `<div class="tc-pre">` + PRESETS.map((p) => {
-      const v = validate(p.theme).theme, c = v.colors.dark, on = core(v) === cur;
+      const v = validate(p.theme).theme, c = v.colors[v.mode === "light" ? "light" : "dark"], on = core(v) === cur;
       return `<button type="button" class="tc-pc" data-preset="${p.id}" aria-pressed="${on}"><span class="sw" style="background:${esc(c.bg)}"><span style="background:${esc(c.primary)}"></span><span style="background:${esc(c.secondary)}"></span><span style="background:${esc(c.ink)}"></span></span><b>${esc(p.name)}</b><small>${esc(p.description)}</small></button>`;
-    }).join("") + `</div><p class="hint" style="margin-top:1rem">Les thèmes clairs (Minimal clair, Éditorial, Corporate) arrivent à la prochaine étape : le verre du menu et des cartes doit d'abord devenir réglable.</p>`;
+    }).join("") + `</div>`;
+  }
+  function shareHtml() {
+    const saved = st.saved.length ? st.saved.map((x) => `<div class="tc-sv"><span>${esc((x.data && x.data.label) || x.id)}</span><button class="btn ghost sm" type="button" data-act="load" data-id="${esc(x.id)}">Charger</button><button class="btn ghost sm" type="button" data-act="del" data-id="${esc(x.id)}" aria-label="Supprimer ${esc((x.data && x.data.label) || x.id)}">Supprimer</button></div>`).join("") : `<p class="hint">Aucun thème enregistré pour l'instant.</p>`;
+    return `<h3>Mes thèmes</h3>
+      <div class="tc-c"><label for="tc-sn">Enregistrer le thème actuel sous le nom</label><div class="tc-r"><input type="text" id="tc-sn" maxlength="40" placeholder="Ex. : Thème de Noël"><button class="btn sm" type="button" data-act="save">Enregistrer</button></div><span class="h">Un thème enregistré n'est pas publié : il sert de réserve.</span></div>
+      ${saved}
+      <h3>Exporter</h3>
+      <p class="tc-r" style="flex-wrap:wrap"><button class="btn ghost sm" type="button" data-act="exp-json">Télécharger (JSON)</button><button class="btn ghost sm" type="button" data-act="exp-css">Télécharger le CSS</button><button class="btn ghost sm" type="button" data-act="copy-css">Copier le CSS</button></p>
+      <h3>Importer</h3>
+      <div class="tc-c"><label for="tc-imp">Collez un thème (JSON) ou choisissez un fichier</label><textarea class="tc-ta" id="tc-imp" spellcheck="false" placeholder='{"name":"…","colors":{…}}'></textarea>
+      <div class="tc-r"><button class="btn sm" type="button" data-act="import">Importer</button><label class="btn ghost sm" style="cursor:pointer">Choisir un fichier<input type="file" accept="application/json,.json" hidden id="tc-impf"></label></div><div id="tc-imperr" class="tc-er" role="alert"></div><span class="h">Le thème importé remplace le thème en cours ; vous pouvez annuler.</span></div>`;
+  }
+  const download = (name, text, type) => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); };
+  const slug = () => (displayName() || "theme").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "theme";
+  function loadSaved() { return ctx.api("GET", "c=t_themes").then((l) => { st.saved = (l || []).filter((x) => /^u_/.test(x.id)).sort((a, b) => (b.id > a.id ? 1 : -1)); }).catch(() => {}); }
+  function importText(txt) {
+    const err = root.querySelector("#tc-imperr");
+    let o; try { o = JSON.parse(txt); } catch (e) { err.textContent = "Ce texte n'est pas un JSON valide."; return; }
+    if (o && o.theme && typeof o.theme === "object" && !o.colors) o = o.theme; /* accepte aussi l'enveloppe { theme } */
+    const v = validate(o);
+    if (!v.ok) { err.textContent = "Thème refusé : " + v.errors.slice(0, 4).map((e) => (e.path || "racine") + " (" + e.message + ")").join(" ; "); return; }
+    err.textContent = ""; setTheme(v.theme, "import"); ctx.toast("Thème importé. Publiez pour le mettre en ligne.");
+  }
+  function act(a, id) {
+    if (a === "exp-json") download(slug() + ".json", JSON.stringify({ ...diffFromDefaults(validate(st.T).theme), name: displayName() }, null, 2), "application/json");
+    else if (a === "exp-css") download(slug() + ".css", compile(validate(st.T).theme), "text/css");
+    else if (a === "copy-css") { const css = compile(validate(st.T).theme); (navigator.clipboard ? navigator.clipboard.writeText(css) : Promise.reject()).then(() => ctx.toast("CSS copié"), () => ctx.toast("Copie impossible : utilisez « Télécharger le CSS »", true)); }
+    else if (a === "import") importText(root.querySelector("#tc-imp").value);
+    else if (a === "save") {
+      const n = root.querySelector("#tc-sn").value.trim(); if (!n) { ctx.toast("Donnez un nom au thème", true); return; }
+      const v = validate(st.T); v.theme.name = n;
+      ctx.api("PUT", "c=t_themes&id=u_" + Date.now().toString(36), { theme: v.theme, label: n }).then(loadSaved).then(() => { renderTab(); ctx.toast("Thème enregistré"); }).catch(ctx.fail);
+    } else if (a === "load") { const x = st.saved.find((y) => y.id === id); if (x && x.data) { setTheme(x.data.theme, "load"); ctx.toast("Thème chargé. Publiez pour le mettre en ligne."); } }
+    else if (a === "del") { const x = st.saved.find((y) => y.id === id); if (x && confirm("Supprimer « " + ((x.data && x.data.label) || id) + " » ?")) ctx.api("DELETE", "c=t_themes&id=" + id).then(loadSaved).then(renderTab).catch(ctx.fail); }
   }
   function renderTab() {
     const box = root.querySelector("#tc-content"); if (!box) return;
     root.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-selected", !st.q && b.dataset.tab === st.tab));
     let h = "";
     if (st.q.trim()) {
-      const q = fold(st.q.trim()), hits = CTRL.filter((c) => fold(c[2] + " " + c[3] + " " + keywords(c[1])).includes(q));
-      h = hits.length ? hits.map((c) => control(c[1])).join("") : `<p class="hint">Aucun réglage ne correspond à « ${esc(st.q)} ».</p>`;
+      const q = fold(st.q.trim()), hits = CTRL.filter((c) => fold(c[2] + " " + c[3] + " " + keywords(R_(c[1]))).includes(q));
+      h = hits.length ? hits.map((c) => control(R_(c[1]))).join("") : `<p class="hint">Aucun réglage ne correspond à « ${esc(st.q)} ».</p>`;
     } else if (st.tab === "themes") h = themesHtml();
+    else if (st.tab === "gen") h = genHtml();
+    else if (st.tab === "share") h = shareHtml();
     else {
-      h = (SECTIONS[st.tab] || []).map((s) => `<h3>${esc(s[0])}</h3>` + s[1].filter((p) => !(p === "background.mesh" && st.T.background.style === "flat")).map(control).join("")).join("");
+      if (st.tab === "colors" && st.T.mode === "auto") h += `<div class="tc-c"><span class="l">Palette modifiée</span><span class="tc-seg" role="group">${["dark", "light"].map((x) => `<button type="button" data-scheme="${x}" aria-pressed="${curScheme(st) === x}">${x === "dark" ? "Sombre" : "Claire"}</button>`).join("")}</span></div>`;
+      h += (SECTIONS[st.tab] || []).map((s) => `<h3>${esc(s[0])}</h3>` + s[1].filter((p) => !(p === "background.mesh" && st.T.background.style === "flat")).map((p) => control(R_(p))).join("")).join("");
       if (st.tab === "colors") h += contrastHtml();
       h += `<p style="margin-top:1.2rem"><button class="btn ghost sm" type="button" data-reset-tab="${st.tab}">Remettre les valeurs Wayle pour cet onglet</button></p>`;
     }
@@ -281,7 +408,7 @@ export function mount(root, ctx) {
     const t = BYPATH.get(p); if (!t) return false;
     if (checkValue(t, v)) return false;
     setPath(st.T, p, v);
-    if ((p === D + "primary" || p === D + "secondary") && st.T.background.mesh === "wayle" && st.T.background.style === "mesh") { st.T.background.mesh = "auto"; const s = root.querySelector('[data-p="background.mesh"]'); if (s) s.value = "auto"; }
+    if ((p === "colors.dark.primary" || p === "colors.dark.secondary") && st.T.background.mesh === "wayle" && st.T.background.style === "mesh") { st.T.background.mesh = "auto"; const s = root.querySelector('[data-p="background.mesh"]'); if (s) s.value = "auto"; }
     changed(key || p);
     return true;
   }
@@ -290,7 +417,7 @@ export function mount(root, ctx) {
     const sw = box.querySelector("[data-sw]"); if (sw) sw.style.background = v;
     const pk = box.querySelector('[data-k="pick"]'); if (pk) pk.value = toHex({ ...c, a: 1 });
     const al = box.querySelector('[data-k="alpha"]'); if (al) { al.value = Math.round(c.a * 100); const av = box.querySelector("[data-av]"); if (av) av.textContent = Math.round(c.a * 100) + " %"; }
-    const tx = box.querySelector('[data-k="text"]'); if (tx && document.activeElement !== tx) tx.value = v;
+    const tx = box.querySelector('[data-k="ctext"]'); if (tx && document.activeElement !== tx) tx.value = v;
   }
   function refreshContrast() {
     if (st.tab !== "colors" || st.q) return;
@@ -299,25 +426,64 @@ export function mount(root, ctx) {
     old.replaceWith(tmp.querySelector(".tc-ct"));
   }
   function onInput(e) {
-    const el = e.target, p = el.dataset.p; if (!p) return;
+    const el = e.target;
+    if (el.type === "file" && e.type === "input") return; /* un champ fichier émet « input » puis « change » : on ne traite que « change » (sinon double envoi) */
+    if (el.id === "g-col") { st.gen.c = el.value.toUpperCase(); const t = root.querySelector("#g-colt"); if (t) t.value = st.gen.c; return; }
+    if (el.id === "g-colt") { const c = parse(el.value); el.setAttribute("aria-invalid", !c); if (c) { st.gen.c = toHex({ ...c, a: 1 }); const k = root.querySelector("#g-col"); if (k) k.value = st.gen.c; } return; }
+    if (el.id === "g-har") { st.gen.h = el.value; return; }
+    if (el.id === "g-img") { const f = el.files && el.files[0]; if (f) fromImage(f); el.value = ""; return; }
+    const p = el.dataset.p; if (!p) return;
     const k = el.dataset.k, t = BYPATH.get(p), cur = valueOf(p);
     if (k === "pick") { const c = parse(cur) || { a: 1 }; const n = parse(el.value); if (setValue(p, n.a < 1 || c.a < 1 ? toCss(withAlpha(n, c.a)) : el.value.toUpperCase(), p)) { syncColor(p); refreshContrast(); } }
     else if (k === "alpha") { const c = parse(cur); if (setValue(p, toCss(withAlpha(c, el.value / 100)), p)) { syncColor(p); refreshContrast(); } }
-    else if (k === "text") { const ok = parse(el.value) && setValue(p, el.value.trim(), p); el.setAttribute("aria-invalid", !ok); if (ok) { syncColor(p); refreshContrast(); } }
+    else if (k === "ctext") { const ok = parse(el.value) && setValue(p, el.value.trim(), p); el.setAttribute("aria-invalid", !ok); if (ok) { syncColor(p); refreshContrast(); } }
     else if (k === "num" || k === "numt") {
       const n = parseFloat(el.value); if (!Number.isFinite(n)) return;
       if (setValue(p, n, p)) { el.setAttribute("aria-invalid", false); const box = el.closest("[data-ctl]"); box.querySelectorAll("[data-p]").forEach((x) => { if (x !== el) x.value = n; }); } else el.setAttribute("aria-invalid", true);
     }
     else if (k === "choice") setValue(p, parseFloat(el.value), p);
-    else if (k === "enum") { if (setValue(p, el.value, p) && (p === "background.style" || p === "background.mesh")) renderTab(); }
+    else if (k === "bool") setValue(p, el.checked, p);
+    else if (k === "str") { const ok = setValue(p, el.value, p); el.setAttribute("aria-invalid", !ok); }
+    else if (k === "file") { const f = el.files && el.files[0]; if (f && ctx.upload) ctx.upload(f, p === "identity.ogImage" ? 1600 : 800).then((id) => { setValue(p, "/api/media?id=" + id, "file"); renderTab(); }).catch((e) => ctx.fail(e)); }
+    else if (k === "css") {
+      st.cssDraft = el.value;
+      const err = checkCustomCss(el.value, t.max), box = el.closest("[data-ctl]");
+      box.querySelector(".tc-er").textContent = err ? "Non appliqué : " + err : ""; el.setAttribute("aria-invalid", !!err);
+      box.querySelector("[data-csscount]").textContent = el.value.length + " / " + t.max + " caractères";
+      if (!err) setValue(p, el.value, p);
+    }
+    else if (k === "fontfile") {
+      const f = el.files && el.files[0]; if (!f || !ctx.uploadFont) return;
+      ctx.uploadFont(f).then((id) => {
+        const base = p.replace(/\.file$/, ""), nm = f.name.replace(/\.woff2$/i, "").replace(/[^\p{L}\p{N} ._'-]/gu, " ").replace(/\s+/g, " ").trim().slice(0, 60);
+        setValue(p, "/api/media?id=" + id, "font"); setValue(base + ".name", nm, "font"); renderTab();
+        ctx.toast("Police envoyée. Choisissez-la dans « Police des titres » ou « Police du texte ».");
+      }).catch((err) => ctx.fail(err));
+    }
+    else if (k === "enum") { if (setValue(p, el.value, p) && (p === "background.style" || p === "background.mesh" || p === "mode")) renderTab(); }
   }
   function onClick(e) {
     const pr = e.target.closest("[data-preset]");
     if (pr) { const p = PRESETS.find((x) => x.id === pr.dataset.preset); if (p) setTheme(p.theme, "preset"); return; }
     const fx = e.target.closest("[data-fix]");
-    if (fx) { const [fg, bg, tg] = fx.dataset.fix.split("|"), c = st.T.colors.dark; const bgc = bg === "bg" ? c.bg : c[bg]; setValue(D + fg, suggestText(c[fg], parse(bgc) ? toCss({ ...parse(bgc), a: 1 }) : "#000", +tg).toUpperCase(), "fix" + fg); renderTab(); return; }
+    if (fx) { const [fg, bg, tg] = fx.dataset.fix.split("|"), c = st.T.colors[curScheme(st)]; const bgc = bg === "bg" ? c.bg : c[bg]; setValue(R_("@" + fg), suggestText(c[fg], parse(bgc) ? toCss({ ...parse(bgc), a: 1 }) : "#000", +tg).toUpperCase(), "fix" + fg); renderTab(); return; }
+    const gn = e.target.closest("[data-gen]");
+    if (gn) {
+      const a = gn.dataset.gen;
+      if (a === "color") { const pal = fromBase(st.gen.c, st.gen.h); if (pal) applyPalette(pal, ""); else ctx.toast("Couleur invalide", true); }
+      else if (/^rnd-/.test(a)) { const t = clone(st.T); applyPatch(t, randomPatch(a.slice(4), Math.random, st.T), setPath); st.gen.info = ""; setTheme(t); ctx.toast("Thème aléatoire appliqué. Cliquez à nouveau pour un autre, ou ↶ pour revenir."); }
+      return;
+    }
+    const cf = e.target.closest("[data-clearfont]");
+    if (cf) { const base = cf.dataset.clearfont.replace(/\.file$/, ""); setValue(cf.dataset.clearfont, "", "clear"); setValue(base + ".name", "", "clear"); renderTab(); return; }
+    const cl = e.target.closest("[data-clear]");
+    if (cl) { setValue(cl.dataset.clear, "", "clear"); renderTab(); return; }
+    const sc = e.target.closest("[data-scheme]");
+    if (sc) { st.scheme = sc.dataset.scheme; renderTab(); return; }
+    const ac = e.target.closest("[data-act]");
+    if (ac) { act(ac.dataset.act, ac.dataset.id); return; }
     const rs = e.target.closest("[data-reset-tab]");
-    if (rs) { const def = defaultTheme(); for (const s of SECTIONS[rs.dataset.resetTab] || []) for (const p of s[1]) setPath(st.T, p, getPath(def, p)); changed("reset"); renderTab(); }
+    if (rs) { const def = defaultTheme(); for (const s of SECTIONS[rs.dataset.resetTab] || []) for (const p0 of s[1]) { const p = R_(p0); setPath(st.T, p, getPath(def, p)); } changed("reset"); renderTab(); }
   }
 
   /* ---------- publication ---------- */
