@@ -406,7 +406,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 .blk .offers .price{font:800 1.8rem var(--font-heading);margin:.2rem 0 1rem}
 
 /* blocs des pages créées depuis l'admin */
-.blk>.skills,.blk>.values,.blk>.steps,.blk>.band,.blk>.ref-grid,.blk>.refs{margin-top:2rem}
+.blk>*+.skills,.blk>*+.values,.blk>*+.steps,.blk>*+.band,.blk>*+.ref-grid,.blk>*+.refs{margin-top:2rem}
 .blk>.blk-t+.lead{margin-top:.9rem}
 .blk .values{margin-top:2rem}
 @media (min-width:901px){.values.blk-c2{grid-template-columns:repeat(2,1fr)}.values.blk-c1{grid-template-columns:1fr}}
