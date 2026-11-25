@@ -43,6 +43,19 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--viol)}
 .badge{display:inline-block;font-size:.72rem;font-weight:700;padding:.12rem .5rem;border-radius:999px;background:var(--panel2);color:var(--mid)}
 .badge.on{background:#1d4a33;color:var(--ok)}.badge.mod{background:#4a3a1d;color:#FFC36B}
 .bar{position:sticky;top:0;z-index:5;display:flex;gap:.7rem;align-items:center;justify-content:space-between;background:rgba(21,14,34,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:.7rem 0;margin:0 0 1rem}
+body.lv-open{overflow:hidden}
+#live{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;background:#0e0818;color:#fff}
+#live .lv-bar{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;padding:.6rem 1rem;background:#1a1030;border-bottom:1px solid rgba(255,255,255,.18)}
+#live .lv-f{display:flex;align-items:center;gap:.4rem;font-size:.9rem}
+#live .lv-f select{font:inherit;color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:.3rem .5rem}
+#live .lv-f select option{color:#150E22}
+#live .lv-sw{display:flex;gap:.3rem}
+#live .lv-sw button[aria-pressed=true]{background:#fff;color:#150E22}
+#live .lv-m{flex:1;min-width:12rem;font-size:.9rem;opacity:.9}
+#live .btn[disabled]{opacity:.45;cursor:default}
+#live .lv-w{flex:1;min-height:0;display:flex;justify-content:center;background:#0e0818}
+#live iframe{width:100%;height:100%;border:0;background:#fff}
+#live.lv-mob iframe{width:390px;max-width:100%;border-left:1px solid rgba(255,255,255,.2);border-right:1px solid rgba(255,255,255,.2)}
 .toast{position:fixed;left:50%;bottom:1.4rem;transform:translateX(-50%);z-index:50;background:#fff;color:#150E22;padding:.7rem 1.2rem;border-radius:999px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .toast.err{background:var(--err)}
 .colors{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem}
@@ -257,8 +270,10 @@ var TP=[["Accueil","/"],["Artistes","/artistes"],["Entreprises","/entreprises"],
 function vTexts(){
   main(head("Textes du site","Modifiez n’importe quel texte des pages existantes. Laissez un champ tel quel pour garder le texte d’origine.",true)
    +'<div class="row" style="margin-bottom:1rem"><label class="f" style="min-width:220px">Page<select id="tp">'+TP.map(function(p){return'<option value="'+p[1]+'"'+(p[1]===S.textPage?" selected":"")+'>'+p[0]+'</option>'}).join("")+'</select></label>'
+   +'<button class="btn" type="button" id="live-open" style="align-self:flex-end">Modifier en direct</button>'
    +'<label class="f" style="flex:1;min-width:220px">Rechercher<input type="text" id="ts" placeholder="Un mot du texte…" value="'+esc(S.tSearch)+'"></label></div><div id="tl"><p class="sub">Chargement des textes…</p></div>');
   $("#tp").onchange=function(){S.textPage=this.value;loadTexts()};
+  $("#live-open").onclick=function(){startLive(S.textPage)};
   $("#ts").oninput=function(){S.tSearch=this.value;renderTexts()};
   $("#savebtn").onclick=saveTexts;
   loadTexts();
@@ -292,6 +307,88 @@ function renderTexts(){
 }
 function saveTexts(){
   api("PUT","c=s_content&id=main",{items:S.content.items,v:1}).then(function(){setDirty(false);toast("Textes enregistrés. Visibles dans quelques secondes.");renderTexts()}).catch(fail);
+}
+
+/* ---------- Modification en direct ---------- */
+var L=null;
+function startLive(path){
+  if(L)return;
+  var D={},fr,ov,msg,sv,okLoad=false;
+  L={dirty:false,els:[]};
+  ov=document.createElement("div");ov.id="live";ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Modification en direct du site");
+  ov.innerHTML='<div class="lv-bar"><strong>Modifier en direct</strong>'
+    +'<label class="lv-f">Page <select id="lv-p">'+TP.map(function(p){return'<option value="'+p[1]+'"'+(p[1]===path?" selected":"")+'>'+p[0]+'</option>'}).join("")+'</select></label>'
+    +'<span class="lv-sw" role="group" aria-label="Affichage"><button type="button" class="btn ghost sm" data-w="0" aria-pressed="true">Ordinateur</button><button type="button" class="btn ghost sm" data-w="1" aria-pressed="false">Mobile</button></span>'
+    +'<span class="lv-m" id="lv-m" aria-live="polite">Chargement de la page…</span>'
+    +'<button type="button" class="btn ghost sm" id="lv-q">Quitter</button><button type="button" class="btn sm" id="lv-s" disabled>Enregistrer</button></div>'
+    +'<div class="lv-w"><iframe id="lv-f" title="Aperçu du site modifiable"></iframe></div>';
+  document.body.appendChild(ov);
+  document.body.classList.add("lv-open");
+  fr=$("#lv-f",ov);msg=$("#lv-m",ov);sv=$("#lv-s",ov);
+  function say(t){msg.textContent=t||""}
+  function dirty(v){L.dirty=!!v;sv.disabled=!v;say(v?"Modifications non enregistrées":"Cliquez sur un texte pour le modifier.")}
+  function leaf(el){return el.children.length===0}
+  function load(p){
+    okLoad=false;L.els=[];D={};sv.disabled=true;say("Chargement de la page…");
+    /* textes d'origine : lus dans le HTML brut, avant toute modification */
+    fetch(p,{credentials:"same-origin"}).then(function(r){return r.text()}).then(function(t){
+      var d=new DOMParser().parseFromString(t,"text/html");
+      $$("[data-k]",d).forEach(function(el){var k=el.getAttribute("data-k");if(!(k in D))D[k]=norm(el.textContent)});
+      fr.src=p;
+    }).catch(function(){say("Impossible de charger cette page.")});
+  }
+  fr.addEventListener("load",function(){
+    var d,w;try{d=fr.contentDocument;w=fr.contentWindow}catch(e){d=null}
+    if(!d||!d.body||!Object.keys(D).length)return;
+    setTimeout(function(){
+      var st=d.createElement("style");st.textContent='[data-k][contenteditable]{outline:1.5px dashed rgba(255,122,77,.95);outline-offset:3px;cursor:text;border-radius:3px;-webkit-user-select:text;user-select:text}[data-k][contenteditable]:focus{outline:2px solid #FF7A4D;background:rgba(255,122,77,.14)}html{scroll-behavior:auto!important}.cta-bar,#wt{display:none!important}[data-rv]{opacity:1!important;transform:none!important}';
+      d.head.appendChild(st);
+      L.els=[].slice.call(d.querySelectorAll("[data-k]")).filter(function(el){return leaf(el)&&(el.getAttribute("data-k") in D)&&!el.closest("dialog,#wt")});
+      L.els.forEach(function(el){
+        var k=el.getAttribute("data-k"),e=S.content.items[k],tgt=e&&e.d===D[k]?e.v:D[k];
+        if(norm(el.textContent)!==tgt)el.textContent=tgt;
+        el.setAttribute("contenteditable","plaintext-only");if(el.contentEditable!=="plaintext-only")el.setAttribute("contenteditable","true");
+        el.spellcheck=true;
+      });
+      d.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("a,button,summary,label,[role=button]");if(t){e.preventDefault();e.stopPropagation()}},true);
+      d.addEventListener("submit",function(e){e.preventDefault()},true);
+      d.addEventListener("input",function(e){if(e.target.closest&&e.target.closest("[data-k]"))dirty(true)},true);
+      d.addEventListener("keydown",function(e){var el=e.target.closest&&e.target.closest("[data-k]");if(!el)return;
+        if(e.key==="Enter"){e.preventDefault();el.blur();return}
+        if(e.key===" "&&el.tagName==="SUMMARY"){e.preventDefault();d.execCommand("insertText",false," ")}},true);
+      d.addEventListener("paste",function(e){var el=e.target.closest&&e.target.closest("[data-k]");if(!el)return;
+        e.preventDefault();var t=((e.clipboardData||w.clipboardData).getData("text")||"").replace(/\s+/g," ");d.execCommand("insertText",false,t)},true);
+      okLoad=true;
+      dirty(false);
+      say(L.els.length?"Cliquez sur un texte entouré de pointillés pour le modifier.":"Aucun texte modifiable sur cette page.");
+    },900);
+  });
+  function collect(){
+    var items=JSON.parse(JSON.stringify(S.content.items));
+    L.els.forEach(function(el){var k=el.getAttribute("data-k"),v=norm(el.textContent),d=D[k];
+      if(v===d||v===""){delete items[k]}else{items[k]={v:v,d:d}}});
+    return items;
+  }
+  function save(){
+    if(!okLoad)return;
+    var items=collect();sv.disabled=true;say("Enregistrement…");
+    api("PUT","c=s_content&id=main",{items:items,v:1}).then(function(){
+      S.content.items=items;dirty(false);toast("Textes enregistrés. Visibles dans quelques secondes.");
+      if(S.texts&&typeof renderTexts==="function"&&$("#tl"))renderTexts();
+    }).catch(function(e){sv.disabled=false;say("L’enregistrement a échoué. Vos textes sont conservés, réessayez.");fail(e)});
+  }
+  function quit(){
+    if(L.dirty&&!confirm("Quitter sans enregistrer vos modifications ?"))return;
+    document.removeEventListener("keydown",onKey);
+    ov.remove();document.body.classList.remove("lv-open");L=null;
+    if(location.hash==="#textes"&&typeof route==="function")route();
+  }
+  function onKey(e){if((e.ctrlKey||e.metaKey)&&e.key==="s"){e.preventDefault();save()}else if(e.key==="Escape"&&!e.target.closest("[contenteditable]")){}}
+  document.addEventListener("keydown",onKey);
+  sv.onclick=save;$("#lv-q",ov).onclick=quit;
+  $("#lv-p",ov).onchange=function(){var p=this.value;if(L.dirty&&!confirm("Changer de page sans enregistrer ?")){this.value=path;return}path=p;S.textPage=p;load(p)};
+  $$(".lv-sw button",ov).forEach(function(b){b.onclick=function(){$$(".lv-sw button",ov).forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});ov.classList.toggle("lv-mob",b.dataset.w==="1")}});
+  load(path);
 }
 
 /* ---------- Pages ---------- */
