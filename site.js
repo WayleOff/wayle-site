@@ -66,3 +66,22 @@
   });
 })();
 ;(function(){if(window.parent===window)return;window.addEventListener("message",function(e){if(e.origin!==location.origin)return;var d=e.data;if(!d||d.type!=="wayle-theme"||typeof d.css!=="string"||d.css.length>60000)return;window.__tcPreview=true;var o=document.getElementById("site-theme");if(o)o.remove();var s=document.getElementById("theme-preview");if(!s){s=document.createElement("style");s.id="theme-preview";document.head.appendChild(s)}s.textContent=d.css;if(window.__wayleMode)window.__wayleMode()})})();
+
+/* Barre d'édition : visible uniquement pour l'administrateur connecté (aucun effet pour les visiteurs). */
+;(function(){
+  if(window.parent!==window)return;
+  var flag=false;try{flag=localStorage.getItem("wayle-admin")==="1"}catch(e){}
+  if(!flag)return;
+  fetch("/api/admin?c=s_config&id=main",{credentials:"same-origin",headers:{"X-Wayle":"1"},redirect:"error",cache:"no-store"})
+    .then(function(r){if(r.status===401||r.status===403){try{localStorage.removeItem("wayle-admin")}catch(e){}}return r.ok}).catch(function(){return false})
+    .then(function(ok){if(ok)mount()});
+  function mount(){
+    var path=location.pathname.replace(/\.html$/,"").replace(/\/+$/,"")||"/";
+    if(/^\/(admin|gestion|espace-client|api)/.test(path))return;
+    var st=document.createElement("style");
+    st.textContent="#wadm-edit{position:fixed;right:1rem;bottom:1.25rem;z-index:2147483000;display:inline-flex;align-items:center;gap:.5rem;min-height:44px;padding:.55rem 1.1rem;border-radius:999px;background:#FF7A4D;color:#150E22;font:700 .95rem/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.35)}#wadm-edit:hover{background:#ff8f68}#wadm-edit:focus-visible{outline:3px solid #fff;outline-offset:3px}@media (max-width:700px){#wadm-edit{bottom:5.5rem}}@media print{#wadm-edit{display:none}}";
+    document.head.appendChild(st);
+    var a=document.createElement("a");a.id="wadm-edit";a.href="/admin#modifier/"+encodeURIComponent(path)+"/retour";a.textContent="✎ Modifier cette page";
+    document.body.appendChild(a);
+  }
+})();
