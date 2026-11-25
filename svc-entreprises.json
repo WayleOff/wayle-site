@@ -1,0 +1,332 @@
+{
+ "v": 1,
+ "page": "entreprises",
+ "hero": {
+  "title": "Une vidéo qui présente votre activité, à l’image de votre marque.",
+  "text": "Nous réalisons des vidéos pour présenter votre entreprise, un produit ou un service, avec votre identité visuelle.",
+  "b1l": "Demander un devis",
+  "b1u": "./#contact",
+  "b2l": "Voir les formules",
+  "b2u": "#formules"
+ },
+ "sections": [
+  {
+   "t": "v_offers",
+   "anchor": "formules",
+   "join": false,
+   "sub": false,
+   "title": "Les formules",
+   "lead": "Un tarif de départ pour chaque formule. Le prix final dépend de votre projet.",
+   "layout": "",
+   "items": [
+    {
+     "kind": "",
+     "id": "",
+     "title": "Business",
+     "text": "Pour présenter votre activité ou un produit.",
+     "img": "",
+     "media": "",
+     "pos": "",
+     "w": "",
+     "h": "",
+     "from": "dès",
+     "price": "550 €",
+     "unit": "TTC",
+     "lines": "Rendez-vous : Sur place possible avant le tournage\nTournage : 2 h chez vous\nVidéo : 1 vidéo de 1 min, horizontale ou verticale (les deux : +50 €)\nMontage : Logo, sous-titres, musique libre de droits\nRévisions : 2\nLivraison : Sous 7 jours",
+     "after": "",
+     "v": "",
+     "vp": "",
+     "vt": "",
+     "vs": "",
+     "play": "",
+     "photos": [],
+     "photosCap": ""
+    },
+    {
+     "kind": "",
+     "id": "",
+     "title": "Business +",
+     "text": "Une version plus complète, pour aller plus loin.",
+     "img": "",
+     "media": "",
+     "pos": "",
+     "w": "",
+     "h": "",
+     "from": "dès",
+     "price": "750 €",
+     "unit": "TTC",
+     "lines": "Brief : 30 min par téléphone\nRendez-vous : Sur place avant le tournage, si besoin\nTournage : 3 h chez vous\nVidéo : Jusqu’à 2 min, format au choix\nRéseaux : 2 contenus verticaux de 30 s\nMontage : Identité visuelle, sous-titres, musique libre de droits\nVoix off : En option : +150 €\nRévisions : 3\nLivraison : Sous 10 jours",
+     "after": "",
+     "v": "",
+     "vp": "",
+     "vt": "",
+     "vs": "",
+     "play": "",
+     "photos": [],
+     "photosCap": ""
+    },
+    {
+     "kind": "",
+     "id": "",
+     "title": "Business 360",
+     "text": "La formule premium : une communication vidéo complète autour de votre activité.",
+     "img": "",
+     "media": "",
+     "pos": "",
+     "w": "",
+     "h": "",
+     "from": "dès",
+     "price": "1 250 €",
+     "unit": "TTC",
+     "lines": "Brief : 1 h de cadrage de votre stratégie\nRepérage : Visite sur place avant le tournage\nTournage : Une demi-journée (jusqu’à 5 h)\nVidéo : Film principal jusqu’à 3 min, format au choix\nRéseaux : 4 contenus verticaux de 30 s\nPhoto : 15 photos retouchées de votre activité\nMontage : Identité visuelle, sous-titres, musique libre de droits\nVoix off : Incluse\nRévisions : 4\nLivraison : Sous 14 jours",
+     "after": "",
+     "v": "",
+     "vp": "",
+     "vt": "",
+     "vs": "",
+     "play": "",
+     "photos": [],
+     "photosCap": ""
+    },
+    {
+     "kind": "custom",
+     "title": "Sur mesure",
+     "text": "Un projet qui sort du cadre : plusieurs lieux, une série de vidéos, un événement, une campagne complète. Nous construisons la formule avec vous.",
+     "price": "Sur devis",
+     "b1l": "Composer ma formule",
+     "b1u": "#configurateur",
+     "b2l": "Parler de mon projet",
+     "b2u": "./#contact"
+    }
+   ],
+   "perks": "",
+   "note": "Tarifs TTC, déplacement à Rouen et alentours compris. Options : voix off (+150 €), formats horizontal et vertical (+50 € sur Business), miniature, sous-titrage dynamique."
+  },
+  {
+   "t": "v_config",
+   "anchor": "configurateur",
+   "title": "Composez votre vidéo",
+   "lead": "Partez d’une formule, ajoutez ce dont vous avez besoin : l’estimation se met à jour en direct. Elle est indicative, nous confirmons le devis ensemble.",
+   "bases": [
+    {
+     "id": "biz",
+     "n": "Business",
+     "p": 550,
+     "d": "2 h de tournage · 1 min de vidéo · 2 révisions",
+     "voice": false
+    },
+    {
+     "id": "plus",
+     "n": "Business +",
+     "p": 750,
+     "d": "3 h · 2 min · 2 contenus verticaux · 3 révisions",
+     "voice": false
+    },
+    {
+     "id": "360",
+     "n": "Business 360",
+     "p": 1250,
+     "d": "5 h · 3 min · 4 contenus verticaux · 15 photos · voix off",
+     "voice": true
+    }
+   ],
+   "steps": [
+    {
+     "k": "h",
+     "l": "Heure de tournage supplémentaire",
+     "u": "heure",
+     "pu": 100,
+     "max": 6,
+     "sub": "Au-delà des heures incluses dans la formule"
+    },
+    {
+     "k": "m",
+     "l": "Minute de vidéo supplémentaire",
+     "u": "minute",
+     "pu": 50,
+     "max": 5,
+     "sub": "Pour la vidéo principale"
+    },
+    {
+     "k": "v",
+     "l": "Contenu vertical de 30 s",
+     "u": "contenu",
+     "pu": 25,
+     "max": 8,
+     "sub": "Pour vos réseaux, décliné de votre tournage"
+    },
+    {
+     "k": "r",
+     "l": "Révision supplémentaire",
+     "u": "révision",
+     "pu": 30,
+     "max": 3,
+     "sub": "Ajustements après le premier montage"
+    },
+    {
+     "k": "ph",
+     "l": "Pack de 10 photos retouchées",
+     "u": "pack",
+     "pu": 80,
+     "max": 3,
+     "sub": "Activité, équipe, lieux, produits"
+    }
+   ],
+   "opts": [
+    {
+     "k": "voice",
+     "l": "Voix off",
+     "pu": 150,
+     "sub": "Enregistrée et synchronisée sur votre vidéo"
+    },
+    {
+     "k": "both",
+     "l": "Vidéo principale en horizontal et en vertical",
+     "pu": 50,
+     "sub": "Pour le site et pour les réseaux"
+    },
+    {
+     "k": "itw",
+     "l": "Interview ou témoignage filmé",
+     "pu": 120,
+     "sub": "Une ou plusieurs personnes, questions préparées"
+    },
+    {
+     "k": "fast",
+     "l": "Livraison prioritaire (sous 5 jours)",
+     "pu": 100,
+     "sub": "Selon notre planning"
+    }
+   ]
+  },
+  {
+   "t": "v_steps",
+   "anchor": "",
+   "title": "Comment ça se passe",
+   "items": [
+    {
+     "title": "Le brief",
+     "text": "Nous définissons ensemble votre message, votre public et votre identité visuelle."
+    },
+    {
+     "title": "Le tournage",
+     "text": "Nous filmons chez vous ou en studio, en limitant l’impact sur votre activité."
+    },
+    {
+     "title": "Montage et livraison",
+     "text": "Montage, sous-titres et musique, avec une version à valider, puis les fichiers prêts à diffuser."
+    }
+   ]
+  },
+  {
+   "t": "v_ref",
+   "anchor": "",
+   "title": "Une référence",
+   "lead": "Découvrez la vidéo produit réalisée pour Slavery Parfums, parmi nos réalisations.",
+   "btnl": "Voir les références",
+   "btnu": "./#references",
+   "img": "video-slavery-poster.jpg",
+   "media": "",
+   "link": "./#references"
+  },
+  {
+   "t": "v_cta",
+   "anchor": "",
+   "title": "Parlons de votre entreprise",
+   "b1l": "Demander un devis",
+   "b1u": "./#contact",
+   "b2l": "07 86 85 81 14",
+   "b2u": "tel:+33786858114"
+  }
+ ],
+ "_k": {
+  "hero.title": "e.top.1",
+  "hero.text": "e.top.2",
+  "hero.b1l": "e.top.3",
+  "hero.b2l": "e.top.4",
+  "sections.0.title": "e.formules.1",
+  "sections.0.lead": "e.formules.2",
+  "sections.0.items.0.title": "e.formules.40",
+  "sections.0.items.0.text": "e.formules.41",
+  "sections.0.items.0.from": "e.formules.42",
+  "sections.0.items.0.unit": "e.formules.43",
+  "sections.0.items.0.lines#0#l": "e.formules.44",
+  "sections.0.items.0.lines#0#v": "e.formules.45",
+  "sections.0.items.0.lines#1#l": "e.formules.46",
+  "sections.0.items.0.lines#1#v": "e.formules.47",
+  "sections.0.items.0.lines#2#l": "e.formules.48",
+  "sections.0.items.0.lines#2#v": "e.formules.49",
+  "sections.0.items.0.lines#3#l": "e.formules.50",
+  "sections.0.items.0.lines#3#v": "e.formules.51",
+  "sections.0.items.0.lines#4#l": "e.formules.52",
+  "sections.0.items.0.lines#4#v": "e.formules.53",
+  "sections.0.items.0.lines#5#l": "e.formules.54",
+  "sections.0.items.0.lines#5#v": "e.formules.55",
+  "sections.0.items.1.title": "e.formules.56",
+  "sections.0.items.1.text": "e.formules.57",
+  "sections.0.items.1.from": "e.formules.58",
+  "sections.0.items.1.unit": "e.formules.59",
+  "sections.0.items.1.lines#0#l": "e.formules.60",
+  "sections.0.items.1.lines#0#v": "e.formules.61",
+  "sections.0.items.1.lines#1#l": "e.formules.62",
+  "sections.0.items.1.lines#1#v": "e.formules.63",
+  "sections.0.items.1.lines#2#l": "e.formules.64",
+  "sections.0.items.1.lines#2#v": "e.formules.65",
+  "sections.0.items.1.lines#3#l": "e.formules.66",
+  "sections.0.items.1.lines#3#v": "e.formules.67",
+  "sections.0.items.1.lines#4#l": "e.formules.68",
+  "sections.0.items.1.lines#4#v": "e.formules.69",
+  "sections.0.items.1.lines#5#l": "e.formules.70",
+  "sections.0.items.1.lines#5#v": "e.formules.71",
+  "sections.0.items.1.lines#6#l": "e.formules.72",
+  "sections.0.items.1.lines#6#v": "e.formules.73",
+  "sections.0.items.1.lines#7#l": "e.formules.74",
+  "sections.0.items.1.lines#7#v": "e.formules.75",
+  "sections.0.items.1.lines#8#l": "e.formules.76",
+  "sections.0.items.1.lines#8#v": "e.formules.77",
+  "sections.0.items.2.title": "e.formules.78",
+  "sections.0.items.2.text": "e.formules.79",
+  "sections.0.items.2.from": "e.formules.80",
+  "sections.0.items.2.unit": "e.formules.81",
+  "sections.0.items.2.lines#0#l": "e.formules.82",
+  "sections.0.items.2.lines#0#v": "e.formules.83",
+  "sections.0.items.2.lines#1#l": "e.formules.84",
+  "sections.0.items.2.lines#1#v": "e.formules.85",
+  "sections.0.items.2.lines#2#l": "e.formules.86",
+  "sections.0.items.2.lines#2#v": "e.formules.87",
+  "sections.0.items.2.lines#3#l": "e.formules.88",
+  "sections.0.items.2.lines#3#v": "e.formules.89",
+  "sections.0.items.2.lines#4#l": "e.formules.90",
+  "sections.0.items.2.lines#4#v": "e.formules.91",
+  "sections.0.items.2.lines#5#l": "e.formules.92",
+  "sections.0.items.2.lines#5#v": "e.formules.93",
+  "sections.0.items.2.lines#6#l": "e.formules.94",
+  "sections.0.items.2.lines#6#v": "e.formules.95",
+  "sections.0.items.2.lines#7#l": "e.formules.96",
+  "sections.0.items.2.lines#7#v": "e.formules.97",
+  "sections.0.items.2.lines#8#l": "e.formules.98",
+  "sections.0.items.2.lines#8#v": "e.formules.99",
+  "sections.0.items.2.lines#9#l": "e.formules.100",
+  "sections.0.items.2.lines#9#v": "e.formules.101",
+  "sections.0.items.3.title": "e.formules.110",
+  "sections.0.items.3.text": "e.formules.111",
+  "sections.0.items.3.b1l": "e.formules.113",
+  "sections.0.items.3.b2l": "e.formules.114",
+  "sections.0.note": "e.formules.13",
+  "sections.1.title": "e.conf.1",
+  "sections.1.lead": "e.conf.2",
+  "sections.2.title": "e.top.5",
+  "sections.2.items.0.title": "e.top.6",
+  "sections.2.items.0.text": "e.top.7",
+  "sections.2.items.1.title": "e.top.8",
+  "sections.2.items.1.text": "e.top.9",
+  "sections.2.items.2.title": "e.top.10",
+  "sections.2.items.2.text": "e.top.11",
+  "sections.3.title": "e.top.12",
+  "sections.3.lead": "e.top.13",
+  "sections.3.btnl": "e.top.14",
+  "sections.4.title": "e.top.15",
+  "sections.4.b1l": "e.top.16",
+  "sections.4.b2l": "e.top.17"
+ }
+}
