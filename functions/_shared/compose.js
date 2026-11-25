@@ -33,6 +33,7 @@ function seo(html, page) {
 export function composeHome(html, home, opts) {
   const r = renderHome(home, opts), c = renderCover(home.cover, opts);
   const data = jsonScript("cover-data", c.data) + (r.pj ? jsonScript("pj-data", r.pj) : "");
+  if (c.size) html = html.replace('<section class="cover" id="cover"', `<section class="cover" id="cover" data-size="${c.size}"`);
   return seo(fill(html, [["<!--HOME-->", "<!--/HOME-->", r.main], ["<!--COVER-PITCH-->", "<!--/COVER-PITCH-->", c.pitch], ["<!--CUE-->", "<!--/CUE-->", c.cue], ["<!--HOME-DATA-->", "<!--/HOME-DATA-->", data]]), home);
 }
 

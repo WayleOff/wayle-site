@@ -79,6 +79,7 @@ add("components.header.position", "En-tête : position", "Composants", "enum", "
 add("components.card.hover", "Cartes : survol", "Composants", "enum", "zoom", { options: ["none", "lift", "zoom"], wired: true });
 add("components.field.style", "Champs : style", "Composants", "enum", "boxed", { options: ["underlined", "boxed", "filled"], wired: true });
 add("components.image.filter", "Images : filtre", "Composants", "enum", "none", { options: ["none", "grayscale", "sepia"], wired: true });
+add("components.hero.size", "Bandeau vidéo d'accueil : taille", "Composants", "enum", "full", { options: ["full", "compact"], wired: true });
 add("components.hero.overlay", "Voile sur la vidéo d'accueil", "Composants", "number", 0, { min: 0, max: 0.9, step: 0.05, wired: true });
 
 /* ---------- Animations ---------- */

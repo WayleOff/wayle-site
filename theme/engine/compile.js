@@ -51,6 +51,29 @@ function scheme(t, c, dark) {
   return `${palette(c)};--bg-mesh:${mesh};--bg-cover:${cover};color-scheme:${dark ? "dark" : "light"}`;
 }
 
+/* bandeau vidéo « petit » : titre à gauche, vidéo cadrée à droite, commandes dessous. S = sélecteur du bandeau concerné. */
+export function compactCover(S) {
+  const c = (x) => x.split(",").map((y) => `${S}${y.startsWith(":") || y.startsWith("[") ? "" : " "}${y}`).join(",");
+  return [
+    `${S}{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);grid-template-areas:"p v" "p v" ". t" ". b";column-gap:clamp(2rem,5vw,4.5rem);row-gap:.9rem;align-items:center;width:min(calc(var(--container) - 3rem),calc(100% - 3rem));height:auto;min-height:0;margin:0 auto;padding:7rem 0 3rem;overflow:visible;background:none;color:var(--ink)}`,
+    `${S}::after,${S}::before{display:none}`,
+    `${c("video")}{grid-area:v;position:relative;inset:auto;width:100%;height:auto;aspect-ratio:4/3;max-height:34rem;object-fit:cover;border-radius:var(--radius-xl);background:var(--surface);transform:none}`,
+    `${c(".cover-pitch")}{grid-area:p;position:static;max-width:none;align-self:center;color:var(--ink);text-shadow:none}`,
+    `${c(".cover-pitch .cp1")}{font-size:clamp(2rem,4.2vw,3.5rem);line-height:1.04;letter-spacing:-.035em}`,
+    `${c(".cover-pitch .cp2")}{margin-top:1rem;font-size:1.15rem;color:var(--mid);opacity:1}`,
+    `${c(".cue:not(.cue-mini)")}{display:none}`,
+    `${c(".cue-mini")}{color:var(--ink);background:var(--surface-raised);border:1px solid var(--line);-webkit-backdrop-filter:none;backdrop-filter:none}`,
+    `${c(".cue-mini:hover")}{background:var(--surface)}`,
+    `${c(".cover-tag")}{grid-area:t;position:static;justify-self:start;max-width:none;color:var(--ink);font-size:1rem;letter-spacing:0}`,
+    `${c(".actions")}{grid-area:t;position:static;justify-self:end;flex-wrap:wrap}`,
+    `${c(".bars")}{grid-area:b;position:static}`,
+    `${c(".arrow,.sound")}{color:var(--ink);background:var(--surface-raised);border:1px solid var(--line);-webkit-backdrop-filter:none;backdrop-filter:none}`,
+    `${c(".arrow:hover,.sound:hover")}{background:var(--surface)}`,
+    `${c(".tr")}{background:var(--line)}${c(".tr b")}{background:var(--ink)}${c(".vol")}{accent-color:var(--ink)}`,
+    `@media (max-width:900px){${S}{grid-template-columns:1fr;grid-template-areas:"p" "v" "t" "a" "b";padding-top:6rem}${c(".actions")}{grid-area:a;justify-self:start}${c("video")}{max-height:none}}`,
+  ];
+}
+
 /* règles de composants et d'animation : émises uniquement quand elles diffèrent du thème Wayle, donc rien par défaut */
 const BTN = ".btn:not(.ghost),nav a.cta,html .cta-bar .p";
 const IMG = "img:not(.on-light):not(.on-dark)";
@@ -68,6 +91,9 @@ export function extras(t) {
   if (c.field.style === "underlined") out.push(`input,select,textarea{background:transparent;border-width:0 0 1.5px;border-radius:0;padding-left:.1rem;padding-right:.1rem}`);
   if (c.field.style === "filled") out.push(`input,select,textarea{background:var(--surface);border-color:transparent}`);
   if (c.image.filter !== "none") out.push(`${IMG}{filter:${c.image.filter === "grayscale" ? "grayscale(1)" : "sepia(.85)"}}`);
+  /* taille du bandeau : « petit » par défaut du thème, ou choisi page par page (data-size sur le bandeau) */
+  if (c.hero.size === "compact") out.push(...compactCover('.cover:not([data-size="full"])'));
+  else out.push(...compactCover('.cover[data-size="compact"]'));
   if (c.hero.overlay > 0) out.push(`.cover::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:rgba(20,8,40,${c.hero.overlay})}`);
   if (!m.smoothScroll || !m.enabled) out.push(`html,.refs{scroll-behavior:auto}`);
   if (m.reveal === "fade") out.push(`@keyframes rvIn{from{opacity:0}}html.rv [data-rv]:not(.in){translate:none}`);
