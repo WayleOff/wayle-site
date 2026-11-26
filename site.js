@@ -46,6 +46,40 @@
     var f=document.querySelector("footer");
     if(f&&!f.querySelector("[data-site-nav]")){items.forEach(function(p){f.appendChild(document.createTextNode(" · "));var a=document.createElement("a");a.href="/p/"+p.slug;a.textContent=p.navLabel||p.title;a.setAttribute("data-site-nav","1");f.appendChild(a)})}
   }
+  /* Menus (en-tête et pied de page) pilotés depuis l'espace admin : config.menus = {header:[{label,href,show}], footer:[…], cta:{label,href,show}} */
+  function okHref(h){return typeof h==="string"&&h.length<=300&&/^(\/(?!\/)|#|https:\/\/|mailto:|tel:)/.test(h)}
+  function pth(h){try{var u=new URL(h,location.origin);if(u.origin!==location.origin)return null;return{p:u.pathname.replace(/\/index\.html$/,"/").replace(/\.html$/,"").replace(/(.)\/+$/,"$1")||"/",h:u.hash}}catch(e){return null}}
+  function here(){return pth(location.pathname).p}
+  function mkLink(it,cls){
+    var a=document.createElement("a");a.href=it.href;a.textContent=String(it.label||"").slice(0,60);
+    if(cls)a.className=cls;if(/^https:/.test(it.href))a.rel="noopener";
+    return a}
+  function menus(m){
+    if(!m||typeof m!=="object")return;
+    var cur=here();
+    var ok=function(it){return it&&it.show!==false&&it.label&&okHref(it.href)};
+    var self=function(it){var q=pth(it.href);return q&&!q.h&&q.p===cur};
+    var n=document.querySelector("header nav");
+    if(n&&Array.isArray(m.header)){
+      while(n.firstChild)n.removeChild(n.firstChild);
+      m.header.filter(ok).slice(0,12).forEach(function(it){var a=mkLink(it);if(self(it))a.setAttribute("aria-current","page");n.appendChild(a)});
+      if(m.cta&&ok(m.cta))n.appendChild(mkLink(m.cta,"cta"));
+    }
+    var f=document.querySelector("footer [data-menu=footer]");
+    if(f&&Array.isArray(m.footer)){
+      while(f.firstChild)f.removeChild(f.firstChild);
+      m.footer.filter(ok).filter(function(it){return !self(it)}).slice(0,16).forEach(function(it){f.appendChild(document.createTextNode(" · "));f.appendChild(mkLink(it))});
+    }
+    window.__wayleMenus=true;
+  }
+  window.__wayleMenusPreview=menus;
+  function hideSelf(){
+    var cur=here();
+    [].forEach.call(document.querySelectorAll("footer [data-menu=footer] a"),function(a){
+      var q=pth(a.getAttribute("href"));
+      if(q&&!q.h&&q.p===cur){var p=a.previousSibling;if(p&&p.nodeType===3)p.parentNode.removeChild(p);a.parentNode.removeChild(a)}
+    });
+  }
   function norm(s){return String(s||"").replace(/\s+/g," ").trim()}
   function texts(content){
     if(!content)return;
@@ -56,16 +90,18 @@
   }
   /* 1. couleurs et favicon tout de suite (mémorisés), sans attendre le réseau */
   try{var c0=JSON.parse(localStorage.getItem(CK)||"null");if(c0){theme(c0.config);favicon(c0.config);identity(c0.identity)}}catch(e){}
+  var ready0=new Promise(function(r){if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",r);else r()});
+  try{if(c0&&c0.config&&c0.config.menus)ready0.then(function(){menus(c0.config.menus)})}catch(e){}
   /* 2. réglages à jour */
   var ready=new Promise(function(r){if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",r);else r()});
   fetch("/api/site",{credentials:"same-origin"}).then(function(r){return r.ok?r.json():null}).catch(function(){return null}).then(function(j){
     if(!j)return;
     try{localStorage.setItem(CK,JSON.stringify({config:j.config||{},identity:j.identity||null}))}catch(e){}
     theme(j.config);favicon(j.config);identity(j.identity);
-    ready.then(function(){nav(j.pages);texts(j.content)});
+    ready.then(function(){if(j.config&&j.config.menus){if(!window.__menusPreview)menus(j.config.menus)}else if(!window.__menusPreview){nav(j.pages);hideSelf()}texts(j.content)});
   });
 })();
-;(function(){if(window.parent===window)return;window.addEventListener("message",function(e){if(e.origin!==location.origin)return;var d=e.data;if(!d||d.type!=="wayle-theme"||typeof d.css!=="string"||d.css.length>60000)return;window.__tcPreview=true;var o=document.getElementById("site-theme");if(o)o.remove();var s=document.getElementById("theme-preview");if(!s){s=document.createElement("style");s.id="theme-preview";document.head.appendChild(s)}s.textContent=d.css;if(window.__wayleMode)window.__wayleMode()})})();
+;(function(){if(window.parent===window)return;window.addEventListener("message",function(e){if(e.origin!==location.origin)return;if(e.data&&e.data.type==="wayle-menus"&&e.data.menus&&typeof e.data.menus==="object"){window.__menusPreview=true;try{window.__wayleMenusPreview(e.data.menus)}catch(x){}return}var d=e.data;if(!d||d.type!=="wayle-theme"||typeof d.css!=="string"||d.css.length>60000)return;window.__tcPreview=true;var o=document.getElementById("site-theme");if(o)o.remove();var s=document.getElementById("theme-preview");if(!s){s=document.createElement("style");s.id="theme-preview";document.head.appendChild(s)}s.textContent=d.css;if(window.__wayleMode)window.__wayleMode()})})();
 
 /* Barre d'édition : visible uniquement pour l'administrateur connecté (aucun effet pour les visiteurs). */
 ;(function(){

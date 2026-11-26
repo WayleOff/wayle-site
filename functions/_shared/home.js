@@ -123,6 +123,8 @@ function refs(b, ctx) {
     return `    <figure${a ? ` data-a="${a}"` : ""}${cat ? ` data-c="${cat}"` : ""}>${pic}<h3${lf(ctx, `items.${n}.title`)}>${t(x.title)}</h3>${x.text ? `<p${lf(ctx, `items.${n}.text`)}>${rich(x.text)}</p>` : ""}</figure>`;
   });
   ctx.pj = { P, order };
+  const moreL = b.moreOff ? "" : String(b.moreL || "Voir toutes les réalisations").trim().slice(0, 60);
+  const more = moreL ? `\n  <p class="ref-more"><a class="rdv" href="${esc(safeUrl(b.moreU || "/realisations"))}"${lf(ctx, "moreL")}>${t(moreL)}</a></p>` : "";
   const quote = b.quote ? `\n  <figure class="quote"><blockquote style="margin:0"><p${lf(ctx, "quote")}>${rich(b.quote)}</p></blockquote>${b.author ? `<figcaption${lf(ctx, "author")}>${t(b.author)}</figcaption>` : ""}</figure>` : "";
   return `${open(b, "", ctx)}
   <h2${lf(ctx, "title")}>${t(b.title)}</h2>
@@ -137,6 +139,7 @@ ${Object.keys(RCATS).map((c) => `      <button class="rchip" type="button" data-
   <div class="refs" id="refs" role="region" aria-label="Projets récents" tabindex="0">
 ${figs.join("\n")}
   </div>
+${more}
   <p class="ref-empty" id="ref-empty" hidden>De nouveaux projets arrivent bientôt dans cette catégorie.</p>${quote}
 </div></section>`;
 }
