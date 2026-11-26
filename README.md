@@ -7,3 +7,10 @@ Site Wayle
 - `/realisations` et `/blog` : si une page `realisations` / `blog` est publiée dans Admin → Pages, elle est affichée ; sinon page par défaut (`functions/_shared/fixedpage.js`).
 - `/gestion` redirige vers `config.gestionUrl` (https, wayle.fr ou vercel.app) quand il est renseigné (`functions/gestion.js`).
 - Bouton « Voir toutes les réalisations » de l'accueil : champs `moreL` / `moreU` du bloc Références.
+
+## Blog (admin → Blog)
+- Articles dans D1, collection `s_blog` (un document par article, identifiant = adresse) : titre, description, date, catégorie, image de couverture, contenu, publié.
+- Pages publiques : `/blog` (liste), `/blog/<adresse>` (article, JSON-LD BlogPosting, Open Graph, canonical), `/blog/rss.xml`, `/sitemap.xml` (aussi référencé dans robots.txt).
+- Un article publié avec une date future est caché jusqu'à ce jour-là. Brouillons et programmés : visibles seulement avec `?preview=1` (admin connecté).
+- Contenu : paragraphes séparés par une ligne vide, `## Titre`, `### Sous-titre`, `- liste`, `**gras**`, `[texte](lien)`, `![description](id-image)`, adresse YouTube/Vimeo seule sur une ligne. Tout le reste est échappé (pas de HTML libre).
+- Sans article publié, `/blog` affiche la page d'attente (ou la page « blog » d'Admin → Pages si publiée).

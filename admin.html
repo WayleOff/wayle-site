@@ -142,6 +142,7 @@ details.bd>summary{margin:.2rem 0 .6rem}
     <a href="#apparence">Apparence</a>
     <a href="#menus">Menus (en-tête, pied de page)</a>
     <a href="#textes">Textes du site</a>
+    <a href="#blog">Blog</a>
     <a href="#pages">Pages</a>
     <a href="#medias">Images</a>
     <a href="#clients">Espaces clients <span id="nbadge" class="badge mod" hidden></span></a>
@@ -159,7 +160,7 @@ var $=function(s,r){return(r||document).querySelector(s)},$$=function(s,r){retur
 var esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")};
 var norm=function(s){return String(s||"").replace(/\s+/g," ").trim()};
 var DEF={primary:"#E8501E",secondary:"#6A2BD0",base:"#1E1038"};
-var S={portals:{},acts:{},cfg:{},content:{items:{}},pages:{},media:[],dirty:false,edit:null,texts:null,textPage:"/",tSearch:"",from:null};
+var S={blog:{},portals:{},acts:{},cfg:{},content:{items:{}},pages:{},media:[],dirty:false,edit:null,texts:null,textPage:"/",tSearch:"",from:null};
 /* repère local (aucune donnée) : le site affiche « Modifier cette page » seulement si ce navigateur a déjà ouvert l'admin */
 try{localStorage.setItem("wayle-admin","1")}catch(e){}
 
@@ -179,16 +180,17 @@ window.addEventListener("beforeunload",function(e){if(S.dirty||(L&&L.dirty)){e.p
 
 /* ---------- chargement ---------- */
 function loadAll(){
-  return Promise.all([api("GET","c=s_config&id=main"),api("GET","c=s_content&id=main"),api("GET","c=s_pages"),api("GET","c=s_media"),api("GET","c=c_portal"),api("GET","c=c_activity")]).then(function(r){
+  return Promise.all([api("GET","c=s_config&id=main"),api("GET","c=s_content&id=main"),api("GET","c=s_pages"),api("GET","c=s_media"),api("GET","c=c_portal"),api("GET","c=c_activity"),api("GET","c=s_blog").catch(function(){return[]})]).then(function(r){
     S.cfg=r[0].data||{};S.content=r[1].data||{items:{}};if(!S.content.items)S.content.items={};
     S.pages={};r[2].forEach(function(p){S.pages[p.id]=p.data});
     S.portals={};r[4].forEach(function(p){S.portals[p.id]=p.data});S.acts={};r[5].forEach(function(p){S.acts[p.id]=p.data});
+    S.blog={};(r[6]||[]).forEach(function(p){S.blog[p.id]=p.data});
     S.media=r[3].map(function(m){return{id:m.id,d:m.data}}).sort(function(a,b){return(b.d.at||0)-(a.d.at||0)});
   });
 }
 
 /* ---------- navigation ---------- */
-var VIEWS={modifier:vModifier,principales:vMainPages,"page-accueil":function(){location.replace("#principales/accueil")},accueil:vHome,theme:vTheme,apparence:vLook,menus:vMenus,textes:vTexts,pages:vPages,medias:vMedia,clients:vClients,sauvegarde:vBackup};
+var VIEWS={modifier:vModifier,principales:vMainPages,"page-accueil":function(){location.replace("#principales/accueil")},accueil:vHome,theme:vTheme,apparence:vLook,menus:vMenus,textes:vTexts,pages:vPages,blog:vBlog,medias:vMedia,clients:vClients,sauvegarde:vBackup};
 function route(){
   if(S.dirty&&!confirm("Vous avez des modifications non enregistrées. Quitter quand même ?")){history.replaceState(null,"",S.hash||"#accueil");return}
   if(S.unmount){S.unmount();S.unmount=null}
@@ -213,6 +215,7 @@ function vHome(){
    +'<div class="grid">'
    +'<a class="tile" href="#theme"><b>Thème</b><span>Couleurs, polices, formes, aperçu en direct</span></a>'
    +'<a class="tile" href="#apparence"><b>Apparence</b><span>Favicon</span></a>'
+   +'<a class="tile" href="#blog"><b>Blog</b><span>'+Object.keys(S.blog).length+' article'+(Object.keys(S.blog).length>1?"s":"")+'</span></a>'
    +'<a class="tile" href="#menus"><b>Menus</b><span>Boutons de l’en-tête et du pied de page</span></a>'
    +'<a class="tile" href="#principales"><b>Pages principales</b><span>Accueil, Artistes, Entreprises, Commerces</span></a>'
    +'<a class="tile" href="#textes"><b>Textes du site</b><span>'+nm+' texte'+(nm>1?"s":"")+' personnalisé'+(nm>1?"s":"")+'</span></a>'
@@ -238,6 +241,76 @@ function rgba(c,a){return"rgba("+c.join(",")+","+a+")"}
 function gradient(p,s,b){var W=[255,255,255],K=[0,0,0];
   return"radial-gradient(60% 50% at 80% 6%,"+rgba(mixc(s,K,.12),.9)+",transparent 70%),radial-gradient(75% 60% at 22% 30%,"+rgba(p,.72)+",transparent 68%),radial-gradient(55% 45% at 88% 48%,"+rgba(mixc(p,K,.08),.5)+",transparent 70%),radial-gradient(85% 55% at 45% 102%,"+rgba(s,.95)+",transparent 70%),radial-gradient(50% 40% at 4% 96%,"+rgba(mixc(p,W,.3),.55)+",transparent 70%),rgb("+b.join(",")+")"}
 var COLS=[["primary","Couleur principale","Accents orange du site, dégradé du fond"],["secondary","Couleur secondaire","Accents violets, dégradé du fond"],["base","Fond du site","Teinte sombre derrière le dégradé"]];
+/* ---------- Blog ---------- */
+function blogSlug(t){return String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60)}
+function blogState(p){var t=new Date().toLocaleDateString("sv-SE");return!p.published?["brouillon",""]:(p.date||"")>t?["programmé","mod"]:["publié","on"]}
+function vBlog(arg){
+  if(arg[0])return editBlog(arg[0]);
+  var ks=Object.keys(S.blog).sort(function(a,b){return String(S.blog[b].date||"").localeCompare(String(S.blog[a].date||""))});
+  main(head("Blog","Écrivez des articles : ils apparaissent sur /blog, dans le flux RSS et dans le plan du site pour Google.")
+   +'<div class="row" style="margin-bottom:1rem"><a class="btn" href="#blog/new">+ Nouvel article</a><a class="btn ghost" target="_blank" rel="noopener" href="/blog">Voir le blog ↗</a></div>'
+   +(ks.length?'<div class="card" style="padding:0;overflow:auto"><table class="tbl"><thead><tr><th>Titre</th><th>Date</th><th>État</th><th></th></tr></thead><tbody>'+ks.map(function(k){var p=S.blog[k],st=blogState(p);
+     return'<tr><td><b>'+esc(p.title)+'</b><div class="hint">/blog/'+esc(k)+'</div></td><td>'+esc(p.date||"")+'</td><td><span class="badge '+st[1]+'">'+st[0]+'</span></td><td><div class="row" style="justify-content:flex-end"><a class="btn ghost sm" href="#blog/'+esc(k)+'">Modifier</a><a class="btn ghost sm" target="_blank" rel="noopener" href="/blog/'+esc(k)+(st[0]==="publié"?"":"?preview=1")+'">Voir</a><button class="btn danger sm" data-del="'+esc(k)+'" type="button">Supprimer</button></div></td></tr>'}).join("")+'</tbody></table></div>'
+    :'<div class="card"><p>Aucun article pour l’instant. Cliquez sur « Nouvel article » pour écrire le premier.</p></div>'));
+  $$("[data-del]").forEach(function(b){b.onclick=function(){var k=b.getAttribute("data-del");if(!confirm("Supprimer définitivement l’article « "+S.blog[k].title+" » ?"))return;
+    api("DELETE","c=s_blog&id="+k).then(function(){delete S.blog[k];toast("Article supprimé");vBlog([])}).catch(fail)}});
+}
+function editBlog(slug){
+  var isNew=slug==="new",E;
+  if(isNew)E={title:"",desc:"",date:new Date().toLocaleDateString("sv-SE"),tag:"",cover:"",coverAlt:"",body:"",published:false};
+  else if(S.blog[slug])E=JSON.parse(JSON.stringify(S.blog[slug]));
+  else{main(head("Article introuvable")+'<p><a href="#blog">Retour au blog</a></p>');return}
+  var cur=isNew?"":slug,slugEdited=false;
+  main(head(isNew?"Nouvel article":esc(E.title||"Article"),'<a href="#blog">← Tous les articles</a>'+(isNew?"":' · Adresse : <b>/blog/'+esc(slug)+'</b>'),true)
+   +'<div class="card"><label class="f">Titre<input type="text" id="bt" maxlength="120" value="'+esc(E.title)+'"></label>'
+   +'<div class="row" style="margin-top:.8rem"><label class="f" style="flex:2;min-width:220px">Adresse (dans le lien)<input type="text" id="bs" maxlength="60" value="'+esc(isNew?"":slug)+'"'+(isNew?"":" readonly")+' placeholder="mon-article"><span class="hint">'+(isNew?"Créée à partir du titre ; lettres minuscules, chiffres et tirets.":"L’adresse ne change plus après la création, pour ne pas casser les liens.")+'</span></label>'
+   +'<label class="f" style="flex:1;min-width:150px">Date de publication<input type="date" id="bd" value="'+esc(E.date)+'"></label>'
+   +'<label class="f" style="flex:1;min-width:150px">Catégorie (facultatif)<input type="text" id="bg" maxlength="40" value="'+esc(E.tag)+'" placeholder="Conseils"></label></div>'
+   +'<label class="f" style="margin-top:.8rem">Description pour Google et les partages <span class="hint" id="bdc"></span><textarea id="bx" maxlength="170" rows="2">'+esc(E.desc)+'</textarea></label></div>'
+   +'<div class="card"><h2>Image de couverture</h2><div class="row"><div id="bcv"></div><button class="btn ghost sm" id="bcp" type="button">Choisir une image</button><button class="btn ghost sm" id="bcr" type="button">Retirer</button></div>'
+   +'<label class="f" style="margin-top:.6rem">Description de l’image (accessibilité)<input type="text" id="bca" maxlength="160" value="'+esc(E.coverAlt)+'"></label></div>'
+   +'<div class="card"><h2>Contenu</h2><div class="row" id="btb" style="margin-bottom:.5rem"><button class="btn ghost sm" type="button" data-t="h2">Titre</button><button class="btn ghost sm" type="button" data-t="h3">Sous-titre</button><button class="btn ghost sm" type="button" data-t="b"><b>Gras</b></button><button class="btn ghost sm" type="button" data-t="a">Lien</button><button class="btn ghost sm" type="button" data-t="ul">Liste</button><button class="btn ghost sm" type="button" data-t="img">Image…</button><button class="btn ghost sm" type="button" data-t="vid">Vidéo</button></div>'
+   +'<textarea id="bb" rows="20" style="min-height:22rem;font-family:inherit;line-height:1.6">'+esc(E.body)+'</textarea>'
+   +'<p class="hint">Séparez les paragraphes par une ligne vide. <b>Titre</b> : « ## Mon titre ». <b>Gras</b> : **mot**. <b>Lien</b> : [texte](adresse). <b>Liste</b> : une ligne par « - élément ». <b>Image</b> : bouton « Image… ». <b>Vidéo</b> : collez une adresse YouTube ou Vimeo seule sur sa ligne.</p></div>'
+   +'<div class="card"><label class="row"><input type="checkbox" id="bp"'+(E.published?" checked":"")+'> Publié</label><p class="hint">Un article publié avec une date future reste caché jusqu’à ce jour-là (programmation). Un brouillon n’est visible que par vous, via « Aperçu ».</p>'
+   +'<div class="row" style="margin-top:.6rem">'+(isNew?"":'<a class="btn ghost sm" id="bpv" target="_blank" rel="noopener" href="/blog/'+esc(slug)+'?preview=1">Aperçu (dernière version enregistrée) ↗</a>')+'</div></div>');
+  var B=$("#bb");
+  function dirty(){setDirty(true)}
+  function cover(){var c=$("#bcv");c.innerHTML=E.cover?'<img src="/api/media?id='+esc(E.cover)+'" alt="" style="width:160px;height:90px;object-fit:cover;border-radius:10px;display:block">':'<span class="hint">Aucune image</span>';$("#bcr").disabled=!E.cover}
+  function count(){var n=$("#bx").value.length;$("#bdc").textContent=n+"/170"}
+  cover();count();
+  $("#bt").oninput=function(){E.title=this.value;if(isNew&&!slugEdited)$("#bs").value=blogSlug(this.value);dirty()};
+  $("#bs").oninput=function(){slugEdited=true;dirty()};
+  $("#bd").oninput=function(){E.date=this.value;dirty()};
+  $("#bg").oninput=function(){E.tag=this.value;dirty()};
+  $("#bx").oninput=function(){E.desc=this.value;count();dirty()};
+  $("#bca").oninput=function(){E.coverAlt=this.value;dirty()};
+  B.oninput=function(){E.body=this.value;dirty()};
+  $("#bp").onchange=function(){E.published=this.checked;dirty()};
+  $("#bcp").onclick=function(){pickMedia(function(id){E.cover=id;cover();dirty()})};
+  $("#bcr").onclick=function(){E.cover="";cover();dirty()};
+  function gap(){var s=B.selectionStart,t=B.value.slice(0,s);return s===0||/\n\n$/.test(t)?"":/\n$/.test(t)?"\n":"\n\n"}
+  function ins(txt,sel){var s=B.selectionStart,e=B.selectionEnd,v=B.value;B.value=v.slice(0,s)+txt+v.slice(e);B.focus();B.selectionStart=s+(sel?sel[0]:txt.length);B.selectionEnd=s+(sel?sel[1]:txt.length);E.body=B.value;dirty()}
+  function wrap(a,b,ph){var s=B.selectionStart,e=B.selectionEnd,t=B.value.slice(s,e)||ph;ins(a+t+b,[a.length,a.length+t.length])}
+  function line(p,ph){var s=B.selectionStart,t=B.value.slice(s,B.selectionEnd)||ph,pre=gap();ins(pre+p+t+"\n\n",[pre.length+p.length,pre.length+p.length+t.length])}
+  $$("#btb [data-t]").forEach(function(b){b.onclick=function(){var t=b.getAttribute("data-t");
+    if(t==="h2")line("## ","Titre de la section");else if(t==="h3")line("### ","Sous-titre");else if(t==="b")wrap("**","**","texte en gras");
+    else if(t==="a"){var s=B.selectionStart,x=B.value.slice(s,B.selectionEnd)||"texte du lien";ins("["+x+"](https://)",[x.length+3,x.length+11])}
+    else if(t==="ul")line("- ","premier élément\n- deuxième élément");
+    else if(t==="img")pickMedia(function(id){var pre=gap();ins(pre+"![description de l’image]("+id+")\n\n")});
+    else if(t==="vid")line("","https://www.youtube.com/watch?v=")}});
+  $("#savebtn").onclick=function(){
+    var sl=isNew?$("#bs").value.trim():slug;
+    if(!E.title.trim()){toast("Ajoutez un titre.",true);return}
+    if(!/^[a-z0-9][a-z0-9-]{0,62}$/.test(sl)){toast("Adresse invalide : lettres minuscules, chiffres et tirets.",true);return}
+    if(isNew&&S.blog[sl]){toast("Cette adresse existe déjà.",true);return}
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(E.date||"")){toast("Choisissez une date.",true);return}
+    var d={title:E.title.trim(),desc:E.desc.trim(),date:E.date,tag:(E.tag||"").trim(),cover:E.cover||"",coverAlt:E.coverAlt||"",body:E.body,published:!!E.published,updated:Date.now()};
+    api("PUT","c=s_blog&id="+sl,d).then(function(){S.blog[sl]=d;setDirty(false);toast(d.published?(d.date>new Date().toLocaleDateString("sv-SE")?"Enregistré : programmé pour le "+d.date:"Article publié"):"Brouillon enregistré");
+      if(isNew)location.hash="#blog/"+sl}).catch(function(e){if(e&&e.status===400)toast("Le blog n’est pas encore activé sur le site : fusionnez la mise à jour, puis réessayez.",true);else fail(e)});
+  };
+}
+
 /* ---------- Menus (en-tête / pied de page) ---------- */
 var MENU_DEF={
   header:[["Services","/#savoir-faire"],["Offres","/#offres"],["Références","/#references"],["Blog","/blog"],["Espace client","/espace-client.html"]].map(function(x){return{label:x[0],href:x[1],show:true}}),
@@ -1576,7 +1649,7 @@ function vBackup(){
     var KS=Object.keys(PAGES);
     Promise.all(KS.map(function(k){var P=PAGES[k];return Promise.all([api("GET","c="+P.coll+"&id="+P.d),api("GET","c="+P.coll+"&id="+P.l)]).catch(function(){return[{},{}]})})).then(function(R){
     var hr=R[0],main={};KS.forEach(function(k,n){main[k]={draft:R[n][0].data||null,live:R[n][1].data||null}});
-    var o={v:1,at:new Date().toISOString(),config:S.cfg,content:S.content,pages:S.pages,home:{draft:hr[0].data||null,live:hr[1].data||null},main:main};
+    var o={v:1,at:new Date().toISOString(),config:S.cfg,content:S.content,pages:S.pages,blog:S.blog,home:{draft:hr[0].data||null,live:hr[1].data||null},main:main};
     var b=new Blob([JSON.stringify(o,null,1)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="wayle-site-sauvegarde-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();a.remove();
     });
   };
@@ -1585,6 +1658,7 @@ function vBackup(){
       if(!confirm("Remplacer les réglages, textes et pages actuels par ceux de cette sauvegarde ?"))return;
       var p=api("PUT","c=s_config&id=main",o.config||{}).then(function(){return api("PUT","c=s_content&id=main",o.content||{items:{}})});
       Object.keys(o.pages||{}).forEach(function(k){if(/^[a-z0-9][a-z0-9-]{0,62}$/.test(k))p=p.then(function(){return api("PUT","c=s_pages&id="+k,o.pages[k])})});
+      Object.keys(o.blog||{}).forEach(function(k){if(/^[a-z0-9][a-z0-9-]{0,62}$/.test(k))p=p.then(function(){return api("PUT","c=s_blog&id="+k,o.blog[k])})});
       var MP=o.main||(o.home?{accueil:o.home}:null);
       if(MP)Object.keys(MP).forEach(function(k){var P=PAGES[k];if(!P)return;p=p.then(function(){return MP[k].draft?api("PUT","c="+P.coll+"&id="+P.d,MP[k].draft):null}).then(function(){return MP[k].live?api("PUT","c="+P.coll+"&id="+P.l,MP[k].live):api("DELETE","c="+P.coll+"&id="+P.l)})});
       return p.then(loadAll).then(function(){toast("Sauvegarde restaurée");vBackup()});

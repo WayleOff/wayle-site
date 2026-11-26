@@ -26,7 +26,7 @@ export function paras(t) {
   }).join("");
 }
 
-function embed(url) {
+export function embed(url) {
   url = String(url || "").trim();
   let m = /(?:youtube\.com\/watch\?(?:[^#]*&)?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/.exec(url);
   if (m) return `<div class="blk-vid"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}" title="Vidéo" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`;

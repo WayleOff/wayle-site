@@ -117,7 +117,7 @@
     var st=document.createElement("style");
     st.textContent="#wadm-edit{position:fixed;right:1rem;bottom:1.25rem;z-index:2147483000;display:inline-flex;align-items:center;gap:.5rem;min-height:44px;padding:.55rem 1.1rem;border-radius:999px;background:#FF7A4D;color:#150E22;font:700 .95rem/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.35)}#wadm-edit:hover{background:#ff8f68}#wadm-edit:focus-visible{outline:3px solid #fff;outline-offset:3px}@media (max-width:700px){#wadm-edit{bottom:5.5rem}}@media print{#wadm-edit{display:none}}";
     document.head.appendChild(st);
-    var a=document.createElement("a");a.id="wadm-edit";a.href="/admin#modifier/"+encodeURIComponent(path)+"/retour";a.textContent="✎ Modifier cette page";
+    var a=document.createElement("a");a.id="wadm-edit";var bm=/^\/blog\/([a-z0-9-]+)$/.exec(path);a.href=bm?"/admin#blog/"+bm[1]:"/admin#modifier/"+encodeURIComponent(path)+"/retour";a.textContent=bm?"✎ Modifier cet article":"✎ Modifier cette page";
     document.body.appendChild(a);
   }
 })();
