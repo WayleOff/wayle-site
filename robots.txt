@@ -4,3 +4,4 @@ Disallow: /admin
 Disallow: /gestion
 Disallow: /espace-client
 Disallow: /api/
+Sitemap: https://wayle.fr/sitemap.xml

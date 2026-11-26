@@ -56,13 +56,13 @@ export function realisationsFallback() {
   const cards = PROJECTS.map(([t, k, d, f]) => `<li><article><video controls preload="none" playsinline poster="/${f}-poster.jpg" aria-label="${esc("Vidéo : " + t)}"><source src="/${f}.mp4" type="video/mp4"></video><div class="rl-t"><h2>${esc(t)}</h2><p class="rl-k">${esc(k)}</p>${d ? `<p class="rl-d">${esc(d)}</p>` : ""}</div></article></li>`).join("");
   return {
     title: "Réalisations", desc: "Clips, vidéos de marque et contenus réalisés par Wayle Production, studio vidéo à Rouen.",
-    body: `${STYLE}<div class="wrap"><ul class="rl">${cards}</ul><div class="rl-cta"><a class="rdv" href="/#contact">Parler de votre projet</a><a class="rdv" href="/#references">Retour aux références</a></div></div>`,
+    body: `${STYLE}<div><ul class="rl">${cards}</ul><div class="rl-cta"><a class="rdv" href="/#contact">Parler de votre projet</a><a class="rdv" href="/#references">Retour aux références</a></div></div>`,
   };
 }
 
 export function blogFallback() {
   return {
     title: "Blog", desc: "Le blog de Wayle Production : conseils et coulisses de la vidéo.", noindex: true,
-    body: `${STYLE}<div class="wrap"><p style="max-width:40rem;color:var(--mid)">Les premiers articles arrivent bientôt. En attendant, découvrez nos projets ou écrivez-nous pour parler du vôtre.</p><div class="rl-cta" style="margin-top:1.5rem"><a class="rdv" href="/realisations">Voir les réalisations</a><a class="rdv" href="/#contact">Nous contacter</a></div></div>`,
+    body: `${STYLE}<div><p style="max-width:40rem;color:var(--mid)">Les premiers articles arrivent bientôt. En attendant, découvrez nos projets ou écrivez-nous pour parler du vôtre.</p><div class="rl-cta" style="margin-top:1.5rem"><a class="rdv" href="/realisations">Voir les réalisations</a><a class="rdv" href="/#contact">Nous contacter</a></div></div>`,
   };
 }
