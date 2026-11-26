@@ -40,6 +40,7 @@ label.f{display:grid;gap:.3rem;font-weight:600;font-size:.88rem;color:var(--mid)
 input[type=text],input[type=url],select,textarea{width:100%;background:#150E22;border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem;color:var(--ink)}
 textarea{min-height:5.5rem;resize:vertical;line-height:1.45}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--viol)}
+.mn{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:1.2rem;align-items:start}.mn-pv{position:sticky;top:1rem}.mn-pv iframe{width:100%;height:70vh;min-height:420px;border:1px solid var(--line);border-radius:14px;background:#fff}.mn-row{display:grid;grid-template-columns:auto minmax(120px,1fr) minmax(130px,1fr) auto;gap:.5rem;align-items:center;margin:.45rem 0}.mn-sh{display:flex;flex-direction:column;align-items:center;gap:.1rem;min-width:56px}.mn-bt{display:flex;gap:.3rem}@media (max-width:1100px){.mn{grid-template-columns:1fr}.mn-pv{position:static}.mn-row{grid-template-columns:auto 1fr}.mn-row input[data-f=href],.mn-bt{grid-column:1/-1}}
 .hint{color:var(--mid);font-size:.82rem;font-weight:400}
 .badge{display:inline-block;font-size:.72rem;font-weight:700;padding:.12rem .5rem;border-radius:999px;background:var(--panel2);color:var(--mid)}
 .badge.on{background:#1d4a33;color:var(--ok)}.badge.mod{background:#4a3a1d;color:#FFC36B}
@@ -139,6 +140,7 @@ details.bd>summary{margin:.2rem 0 .6rem}
     <a href="#principales">Pages principales</a>
     <a href="#theme">Thème</a>
     <a href="#apparence">Apparence</a>
+    <a href="#menus">Menus (en-tête, pied de page)</a>
     <a href="#textes">Textes du site</a>
     <a href="#pages">Pages</a>
     <a href="#medias">Images</a>
@@ -186,7 +188,7 @@ function loadAll(){
 }
 
 /* ---------- navigation ---------- */
-var VIEWS={modifier:vModifier,principales:vMainPages,"page-accueil":function(){location.replace("#principales/accueil")},accueil:vHome,theme:vTheme,apparence:vLook,textes:vTexts,pages:vPages,medias:vMedia,clients:vClients,sauvegarde:vBackup};
+var VIEWS={modifier:vModifier,principales:vMainPages,"page-accueil":function(){location.replace("#principales/accueil")},accueil:vHome,theme:vTheme,apparence:vLook,menus:vMenus,textes:vTexts,pages:vPages,medias:vMedia,clients:vClients,sauvegarde:vBackup};
 function route(){
   if(S.dirty&&!confirm("Vous avez des modifications non enregistrées. Quitter quand même ?")){history.replaceState(null,"",S.hash||"#accueil");return}
   if(S.unmount){S.unmount();S.unmount=null}
@@ -211,6 +213,7 @@ function vHome(){
    +'<div class="grid">'
    +'<a class="tile" href="#theme"><b>Thème</b><span>Couleurs, polices, formes, aperçu en direct</span></a>'
    +'<a class="tile" href="#apparence"><b>Apparence</b><span>Favicon</span></a>'
+   +'<a class="tile" href="#menus"><b>Menus</b><span>Boutons de l’en-tête et du pied de page</span></a>'
    +'<a class="tile" href="#principales"><b>Pages principales</b><span>Accueil, Artistes, Entreprises, Commerces</span></a>'
    +'<a class="tile" href="#textes"><b>Textes du site</b><span>'+nm+' texte'+(nm>1?"s":"")+' personnalisé'+(nm>1?"s":"")+'</span></a>'
    +'<a class="tile" href="#pages"><b>Pages</b><span>'+np+' page'+(np>1?"s":"")+' créée'+(np>1?"s":"")+', '+pub+' publiée'+(pub>1?"s":"")+'</span></a>'
@@ -235,6 +238,76 @@ function rgba(c,a){return"rgba("+c.join(",")+","+a+")"}
 function gradient(p,s,b){var W=[255,255,255],K=[0,0,0];
   return"radial-gradient(60% 50% at 80% 6%,"+rgba(mixc(s,K,.12),.9)+",transparent 70%),radial-gradient(75% 60% at 22% 30%,"+rgba(p,.72)+",transparent 68%),radial-gradient(55% 45% at 88% 48%,"+rgba(mixc(p,K,.08),.5)+",transparent 70%),radial-gradient(85% 55% at 45% 102%,"+rgba(s,.95)+",transparent 70%),radial-gradient(50% 40% at 4% 96%,"+rgba(mixc(p,W,.3),.55)+",transparent 70%),rgb("+b.join(",")+")"}
 var COLS=[["primary","Couleur principale","Accents orange du site, dégradé du fond"],["secondary","Couleur secondaire","Accents violets, dégradé du fond"],["base","Fond du site","Teinte sombre derrière le dégradé"]];
+/* ---------- Menus (en-tête / pied de page) ---------- */
+var MENU_DEF={
+  header:[["Services","/#savoir-faire"],["Offres","/#offres"],["Références","/#references"],["Blog","/blog"],["Espace client","/espace-client.html"]].map(function(x){return{label:x[0],href:x[1],show:true}}),
+  cta:{label:"Contact",href:"/#contact",show:true},
+  footer:[["Accueil","/"],["Artistes","/artistes.html"],["Entreprises","/entreprises.html"],["Commerces","/commerces.html"],["Réalisations","/realisations"],["Mentions légales","/mentions-legales.html"],["Espace client","/espace-client.html"]].map(function(x){return{label:x[0],href:x[1],show:true}})
+};
+function menuDests(){
+  var d=[["Accueil","/"],["Services (section de l’accueil)","/#savoir-faire"],["Offres (section de l’accueil)","/#offres"],["Références (section de l’accueil)","/#references"],["Contact (section de l’accueil)","/#contact"],["Artistes","/artistes.html"],["Entreprises","/entreprises.html"],["Commerces","/commerces.html"],["Réalisations (toutes)","/realisations"],["Blog","/blog"],["Espace client","/espace-client.html"],["Mentions légales","/mentions-legales.html"]];
+  Object.keys(S.pages).sort(function(a,b){return(S.pages[a].order||0)-(S.pages[b].order||0)}).forEach(function(k){var p=S.pages[k];d.push([p.title+" (page créée"+(p.published?"":", brouillon")+")","/p/"+k])});
+  return d;
+}
+function vMenus(){
+  var M=JSON.parse(JSON.stringify(S.cfg.menus||MENU_DEF)),custom=!!S.cfg.menus,fr,pv="/";
+  M.header=M.header||[];M.footer=M.footer||[];M.cta=M.cta||{label:"Contact",href:"/#contact",show:false};
+  function okH(h){return typeof h==="string"&&/^(\/(?!\/)|#|https:\/\/|mailto:|tel:)/.test(h)}
+  function post(){try{if(fr&&fr.contentWindow)fr.contentWindow.postMessage({type:"wayle-menus",menus:M},location.origin)}catch(e){}}
+  function mark(){setDirty(true);post()}
+  function rowH(list,i,it){
+    return'<div class="mn-row" data-l="'+list+'" data-i="'+i+'">'
+     +'<label class="mn-sh"><input type="checkbox" data-f="show"'+(it.show!==false?" checked":"")+' aria-label="Afficher « '+esc(it.label)+' »"><span class="hint">'+(it.show!==false?"Affiché":"Masqué")+'</span></label>'
+     +'<input type="text" data-f="label" value="'+esc(it.label)+'" maxlength="60" aria-label="Nom du bouton" placeholder="Nom">'
+     +'<input type="text" data-f="href" value="'+esc(it.href)+'" maxlength="300" aria-label="Adresse du lien" placeholder="/page">'
+     +'<span class="mn-bt"><button type="button" class="btn ghost sm" data-a="up" aria-label="Monter"'+(i===0?" disabled":"")+'>↑</button><button type="button" class="btn ghost sm" data-a="dn" aria-label="Descendre"'+(i===M[list].length-1?" disabled":"")+'>↓</button><button type="button" class="btn danger sm" data-a="rm" aria-label="Supprimer ce lien" title="Supprimer ce lien">✕</button></span></div>';
+  }
+  function addH(list){
+    return'<div class="row mn-add"><select data-add="'+list+'" aria-label="Page à ajouter"><option value="">Ajouter une page ou un lien…</option>'+menuDests().map(function(d,j){return'<option value="'+j+'">'+esc(d[0])+'</option>'}).join("")+'<option value="custom">Lien personnalisé…</option></select></div>';
+  }
+  function draw(){
+    var h=head("Menus du site","Choisissez les boutons de l’en-tête et du pied de page. Aperçu en direct à droite ; rien n’est publié tant que vous n’avez pas enregistré.",true);
+    h+='<div class="mn"><div class="mn-ed">'
+     +'<div class="card"><h2>En-tête</h2><p class="hint">Le haut de chaque page. Sur mobile, seul le bouton d’action reste visible.</p>'+M.header.map(function(it,i){return rowH("header",i,it)}).join("")+addH("header")
+     +'<h3 style="margin:1rem 0 .3rem">Bouton d’action (le bouton en couleur)</h3><div class="mn-row" data-l="cta"><label class="mn-sh"><input type="checkbox" data-f="show"'+(M.cta.show!==false?" checked":"")+' aria-label="Afficher le bouton d’action"><span class="hint">'+(M.cta.show!==false?"Affiché":"Masqué")+'</span></label><input type="text" data-f="label" value="'+esc(M.cta.label)+'" maxlength="60" aria-label="Nom du bouton d’action"><input type="text" data-f="href" value="'+esc(M.cta.href)+'" maxlength="300" aria-label="Adresse du bouton d’action"></div></div>'
+     +'<div class="card"><h2>Pied de page</h2><p class="hint">Les liens du bas de page. Un lien qui pointe vers la page affichée disparaît automatiquement (pas de bouton « Espace client » dans l’espace client).</p>'+M.footer.map(function(it,i){return rowH("footer",i,it)}).join("")+addH("footer")+'</div>'
+     +'<div class="card"><h2>Outil de gestion (prospection)</h2><p class="hint">Quand une adresse est renseignée, « Gestion de l’entreprise » (/gestion) mène directement à l’outil de prospection. Laissez vide pour garder l’ancienne page de gestion. Exemple : https://prospection.wayle.fr</p><div class="row"><input type="text" id="mn-g" value="'+esc(S.cfg.gestionUrl||"")+'" maxlength="200" placeholder="https://prospection.wayle.fr" aria-label="Adresse de l’outil de gestion" style="flex:1;min-width:220px"><button type="button" class="btn sm" id="mn-gs">Enregistrer cette adresse</button></div></div>'
+     +'<div class="row"><button type="button" class="btn ghost sm" id="mn-reset"'+(custom?"":" disabled")+'>Rétablir les menus d’origine</button><span class="hint">Les pages créées se trouvent dans « Pages » ; ajoutez-les ici pour les rendre visibles.</span></div></div>'
+     +'<div class="mn-pv"><div class="row" style="margin-bottom:.5rem"><label class="row">Aperçu de la page <select id="mn-p" style="width:auto">'+[["Accueil","/"],["Artistes","/artistes.html"],["Espace client","/espace-client.html"],["Mentions légales","/mentions-legales.html"]].map(function(p){return'<option value="'+p[1]+'"'+(p[1]===pv?" selected":"")+'>'+p[0]+'</option>'}).join("")+'</select></label></div><iframe id="mn-f" title="Aperçu du site" src="'+pv+'"></iframe></div></div>';
+    main(h);fr=$("#mn-f");fr.onload=function(){post();setTimeout(post,500);setTimeout(post,1500)};
+    $("#mn-p").onchange=function(){pv=this.value;fr.src=pv};
+    $("#savebtn").onclick=save;setDirty(S.dirty);
+    $$(".mn-row").forEach(function(r){
+      var l=r.getAttribute("data-l"),i=+r.getAttribute("data-i"),it=l==="cta"?M.cta:M[l][i];
+      $$("input[type=text]",r).forEach(function(inp){inp.oninput=function(){it[inp.getAttribute("data-f")]=inp.value;mark()}});
+      var cb=$("input[type=checkbox]",r);cb.onchange=function(){it.show=cb.checked;$(".hint",r).textContent=cb.checked?"Affiché":"Masqué";mark()};
+      $$("[data-a]",r).forEach(function(b){b.onclick=function(){var a=b.getAttribute("data-a"),L=M[l];
+        if(a==="rm"){L.splice(i,1)}else if(a==="up"&&i>0){L.splice(i-1,0,L.splice(i,1)[0])}else if(a==="dn"&&i<L.length-1){L.splice(i+1,0,L.splice(i,1)[0])}
+        mark();draw()}});
+    });
+    $$("select[data-add]").forEach(function(s){s.onchange=function(){
+      var l=s.getAttribute("data-add"),v=s.value;if(!v)return;
+      var it;if(v==="custom")it={label:"Nouveau lien",href:"https://",show:true};else{var d=menuDests()[+v];it={label:d[0].replace(/ \(.*\)$/,""),href:d[1],show:true}}
+      M[l].push(it);mark();draw()}});
+    $("#mn-gs").onclick=function(){var v=$("#mn-g").value.trim(),p=S.cfg.gestionUrl;
+      if(v){var u;try{u=new URL(v)}catch(e){u=null}if(!u||u.protocol!=="https:"||!/^([a-z0-9-]+\.)*(wayle\.fr|vercel\.app)$/i.test(u.hostname)){toast("Adresse invalide : https://… sur wayle.fr ou vercel.app",true);return}v=u.href.replace(/\/$/,"")}
+      if(v)S.cfg.gestionUrl=v;else delete S.cfg.gestionUrl;
+      api("PUT","c=s_config&id=main",S.cfg).then(function(){toast(v?"Gestion → "+v:"Ancienne page de gestion rétablie")}).catch(function(e){if(p)S.cfg.gestionUrl=p;else delete S.cfg.gestionUrl;fail(e)})};
+    $("#mn-reset").onclick=function(){if(!confirm("Rétablir les menus d’origine ? Vos réglages de menus seront perdus."))return;
+      delete S.cfg.menus;api("PUT","c=s_config&id=main",S.cfg).then(function(){toast("Menus d’origine rétablis");setDirty(false);vMenus()}).catch(fail)};
+  }
+  function save(){
+    var bad=[];["header","footer"].forEach(function(l){M[l].forEach(function(it){if(!String(it.label||"").trim())bad.push("un bouton sans nom");else if(!okH(it.href))bad.push("« "+it.label+" » : adresse invalide (commence par / ou https://)")})});
+    if(M.cta.show!==false&&(!String(M.cta.label||"").trim()||!okH(M.cta.href)))bad.push("le bouton d’action");
+    if(bad.length){toast("À corriger : "+bad[0],true);return}
+    var clean=function(it){return{label:String(it.label).trim(),href:String(it.href).trim(),show:it.show!==false}};
+    var out={header:M.header.map(clean),footer:M.footer.map(clean),cta:clean(M.cta)};
+    var prev=S.cfg.menus;S.cfg.menus=out;
+    api("PUT","c=s_config&id=main",S.cfg).then(function(){M=JSON.parse(JSON.stringify(out));custom=true;setDirty(false);toast("Menus enregistrés");$("#mn-reset").disabled=false}).catch(function(e){S.cfg.menus=prev;fail(e)});
+  }
+  draw();
+}
+
 function vLook(){
   var fav=S.cfg.favicon,mig=S.cfg.colors&&Object.keys(S.cfg.colors).length;
   main(head("Apparence","Icône de l’onglet du navigateur (favicon).",false)
@@ -1081,6 +1154,7 @@ function blockForm(b,i){
     case"h_refs":return F("Titre","title")+F("Chapeau","lead","area")
       +items(function(j){var it=b.items[j];return'<div class="row"><label class="f" style="flex:1">Catégorie'+sel({artistes:"Artistes",commerces:"Commerces",marques:"Marques",entreprises:"Entreprises"},it.cat,'data-b="'+i+'" data-i="'+j+'" data-f="cat"')+'</label></div>'+hthumb(it,'data-picki="'+i+'.'+j+'"','data-clri="'+i+'.'+j+'"')+IF(j,"Description de l’image","alt")+IF(j,"Nom","title")+IF(j,"Courte description","text","area")
         +'<details class="sub"><summary>Fenêtre du projet (au clic)</summary>'+IF(j,"Titre dans la fenêtre","pt")+IF(j,"Type de projet","pk","","Artiste · Clip")+IF(j,"Texte","pd","area")+'<div class="row"><label class="f" style="flex:2">Vidéo<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="v" value="'+esc(it.v)+'" placeholder="video-kaane.mp4"></label><label class="f" style="flex:2">Image d’attente de la vidéo<input type="text" data-b="'+i+'" data-i="'+j+'" data-f="vp" value="'+esc(it.vp)+'" placeholder="video-kaane-poster.jpg"></label><label class="f" style="flex:1">Format'+sel({"":"Vertical/large","1":"Carré"},it.sq?"1":"",'data-b="'+i+'" data-i="'+j+'" data-f="sq"')+'</label></div><span class="hint">Vidéo : un fichier .mp4 déjà sur le site, ou un lien https vers un .mp4. Laissez la fenêtre vide pour ouvrir plutôt le lien ci-dessous.</span>'+vbtn('[data-b="'+i+'"][data-i="'+j+'"][data-f="v"]','[data-b="'+i+'"][data-i="'+j+'"][data-f="vp"]')+''+IF(j,"Lien (si pas de fenêtre)","url","","https://…")+'</details>'},"cette référence")
+      +'<div class="row"><label class="f" style="flex:1">Bouton « voir plus » (texte)<input type="text" data-b="'+i+'" data-f="moreL" value="'+esc(b.moreL||"")+'" placeholder="Voir toutes les réalisations"></label><label class="f" style="flex:1">Adresse du bouton<input type="text" data-b="'+i+'" data-f="moreU" value="'+esc(b.moreU||"")+'" placeholder="/realisations"></label></div>'
       +F("Témoignage","quote","area")+F("Auteur du témoignage","author");
     case"h_steps":return F("Titre","title")+F("Chapeau","lead","area")+items(function(j){return TT(j,"Étape "+(j+1),"Détail (visible au clic)")},"cette étape");
     case"h_about":return F("Titre","title")+F("Texte","text","area","Une ligne vide sépare les paragraphes.")+hthumb(b,'data-pick="'+i+'"','data-clr="'+i+'"')+F("Description de l’image","alt")+'<p class="hint" style="margin:.4rem 0">Valeurs (sous le texte)</p>'+items(function(j){return TT(j)},"cette valeur");
