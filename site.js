@@ -75,6 +75,7 @@
   window.__wayleMenusPreview=menus;
   function hideSelf(){
     var cur=here();
+    [].forEach.call(document.querySelectorAll("header nav a:not(.cta)"),function(a){var q=pth(a.getAttribute("href"));if(q&&!q.h&&q.p===cur)a.setAttribute("aria-current","page")});
     [].forEach.call(document.querySelectorAll("footer [data-menu=footer] a"),function(a){
       var q=pth(a.getAttribute("href"));
       if(q&&!q.h&&q.p===cur){var p=a.previousSibling;if(p&&p.nodeType===3)p.parentNode.removeChild(p);a.parentNode.removeChild(a)}
