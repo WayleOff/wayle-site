@@ -3,11 +3,11 @@ import { loadPosts } from "./_shared/blog.js";
 const x = (s) => String(s).replace(/[<>&"']/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" }[c]));
 export async function onRequestGet({ request, env }) {
   const o = new URL(request.url).origin;
-  const urls = ["/", "/artistes.html", "/entreprises.html", "/commerces.html", "/offre", "/realisations", "/blog", "/mentions-legales.html"].map((p) => ({ p }));
+  const urls = ["/", "/artistes.html", "/entreprises.html", "/commerces.html", "/offre", "/realisations", "/blog", "/mentions-legales.html", "/confidentialite", "/cookies", "/cgu", "/cgv"].map((p) => ({ p }));
   if (env.DB) {
     try {
       const { results } = await env.DB.prepare("SELECT id, data FROM docs WHERE coll='s_pages'").all();
-      results.forEach((r) => { const d = JSON.parse(r.data); if (d.published && !d.noindex && r.id !== "blog" && r.id !== "realisations" && r.id !== "offre") urls.push({ p: "/p/" + r.id }); });
+      results.forEach((r) => { const d = JSON.parse(r.data); if (d.published && !d.noindex && r.id !== "blog" && r.id !== "realisations" && !["offre", "confidentialite", "cookies", "cgu", "cgv"].includes(r.id)) urls.push({ p: "/p/" + r.id }); });
     } catch (e) { /* pages principales seulement */ }
   }
   (await loadPosts(env)).forEach((p) => urls.push({ p: "/blog/" + p.slug, d: p.date }));

@@ -9,8 +9,7 @@
 <meta property="og:type" content="website"><meta property="og:locale" content="fr_FR"><meta property="og:site_name" content="Wayle Production">
 <meta property="og:title" content="Wayle Production – Communication vidéo"><meta property="og:description" content="Stratégie, tournage, montage et photo pour les artistes, les entreprises et les commerces.">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"Wayle Production","description":"Studio de communication vidéo : stratégie, tournage, montage et photo pour les artistes, les entreprises et les commerces.","founder":{"@type":"Person","name":"Jonas Deschamps"},"email":"waylecorp@gmail.com","telephone":"+33786858114","sameAs":["https://www.instagram.com/wayleproduction","https://wayleproduction.myportfolio.com/"]}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap">
+<link rel="preload" href="/fonts/bricolage-grotesque-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/figtree-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 /* thème : Wayle actuel */
 :root{--mode:dark;--font-heading:"Bricolage Grotesque","Figtree",system-ui,sans-serif;--font-body:"Figtree",system-ui,sans-serif;--font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--text-base:1.0625rem;--leading:1.65;--container:1100px;--ease:cubic-bezier(.22,.7,.22,1);--dur-k:1;--radius-pill:999px;--radius-xl:28px;--radius-card:24px;--radius-md:20px;--radius-img:18px;--radius-field:14px;--color-primary:var(--orange);--color-secondary:var(--violet);--bg:#FAF8FB;--surface:#F0ECF4;--surface-raised:#FFFFFF;--ink:#1F1433;--mid:#5E5472;--muted:#8A809C;--line:#DCD5E6;--orange:#E8501E;--violet:#6A2BD0;--accent:#E8501E;--btn:#1F1433;--btn-ink:#FFFFFF;--link:#6A2BD0;--link-hover:#4F1FA3;--success:#1E7A46;--warning:#9A5B00;--error:#C0341D;--info:#1F5FBF;--bg-mesh:radial-gradient(60% 50% at 80% 6%,rgba(93,38,183,0.36),transparent 70%),radial-gradient(75% 60% at 22% 30%,rgba(232,80,30,0.288),transparent 68%),radial-gradient(55% 45% at 88% 48%,rgba(213,74,28,0.2),transparent 70%),radial-gradient(85% 55% at 45% 102%,rgba(106,43,208,0.38),transparent 70%),radial-gradient(50% 40% at 4% 96%,rgba(239,133,98,0.22),transparent 70%),var(--bg);--bg-cover:radial-gradient(60% 50% at 80% 6%,rgba(93,38,183,0.9),transparent 70%),radial-gradient(75% 60% at 22% 30%,rgba(232,80,30,0.72),transparent 68%),radial-gradient(85% 55% at 45% 102%,rgba(106,43,208,0.95),transparent 70%),#14082A;color-scheme:light}
@@ -158,6 +157,9 @@ form button[disabled]{opacity:.6;cursor:wait}
 @media (max-width:900px){.skills>div{grid-template-columns:1fr;gap:.6rem}nav a:not(.cta){display:none}nav a.cta{display:inline-block}}
 @media (prefers-reduced-motion:reduce){.faq summary::after{transition:none}}
 form .fine{margin:0;font-size:.85rem;color:var(--mid)}
+label.chk{display:flex;gap:.7rem;align-items:flex-start;font-weight:400;font-size:.92rem;color:var(--mid);min-height:44px;cursor:pointer}
+label.chk input{flex:none;width:1.25rem;height:1.25rem;margin:.1rem 0 0;padding:0;accent-color:var(--violet)}
+label.chk input:focus-visible{outline:2px solid var(--violet);outline-offset:2px;box-shadow:none}
 footer a{text-decoration:underline;text-underline-offset:3px}
 /* gradient identity */
 body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
@@ -481,6 +483,11 @@ html .cta-bar a:hover{transform:translateY(-2px)}
 .blk-img figcaption{font-size:.9rem;color:var(--mid);margin-top:.5rem}
 .blk-vid{position:relative;aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden;background:#000}
 .blk-vid iframe,.blk-vid video{position:absolute;inset:0;width:100%;height:100%;border:0}
+.blk-vid-ph{display:grid;place-items:center;align-content:center;gap:.9rem;background:#0b0b10;color:#fff;text-align:center;padding:1rem}
+.vid-play{display:inline-flex;align-items:center;gap:.6rem;min-height:44px;padding:.7rem 1.3rem;border:0;border-radius:999px;background:#fff;color:#111;font:inherit;font-weight:600;cursor:pointer}
+.vid-play:hover{transform:translateY(-2px)}.vid-play:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.vid-note{margin:0;max-width:34rem;font-size:.8rem;color:rgba(255,255,255,.75)}.vid-note a{color:inherit;text-decoration:underline}
+@media (prefers-reduced-motion:reduce){.vid-play:hover{transform:none}}
 .blk-btn{margin:0}
 .blk .offers{grid-template-columns:repeat(var(--cols,3),minmax(0,1fr))}
 @media (max-width:900px){.blk .offers{grid-template-columns:1fr}}
@@ -786,15 +793,16 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
       <label>Rappel téléphonique (facultatif)<select name="rappel"><option value="">Pas de rappel, répondez-moi par e-mail</option><option>Le matin</option><option>L’après-midi</option><option>En fin de journée</option></select></label>
       <div class="fld"><label>Votre message<textarea name="message" required aria-describedby="err-message" placeholder="Votre activité, ce que vous voulez filmer, la date souhaitée…"></textarea></label><small class="ferr" id="err-message" hidden></small></div>
       <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <label class="chk"><input type="checkbox" name="actualites" value="oui"><span>Je souhaite aussi recevoir par e-mail des nouvelles et des offres de Wayle Production (facultatif, désabonnement à tout moment).</span></label>
       <button class="btn" type="submit">Envoyer ma demande</button>
-      <p class="fine">Ces informations servent uniquement à répondre à votre demande. Voir les <a href="mentions-legales.html">mentions légales</a>.</p>
+      <p class="fine">Wayle Production utilise ces informations pour répondre à votre demande et les conserve au plus 3 ans après notre dernier échange. Elles sont transmises par e-mail via Web3Forms. Vous pouvez accéder à vos données, les corriger ou les faire effacer en écrivant à <a href="mailto:waylecorp@gmail.com">waylecorp@gmail.com</a>. Détails dans la <a href="/confidentialite">politique de confidentialité</a>.</p>
       <p id="status" role="status" aria-live="polite"></p>
     </form>
   </div>
 </div></section>
 <!--/HOME--></main>
 
-<footer>© 2026 <span translate="no">Wayle Production</span><span data-menu="footer"> · <a href="artistes.html">Artistes</a> · <a href="entreprises.html">Entreprises</a> · <a href="commerces.html">Commerces</a> · <a href="realisations">Réalisations</a> · <a href="mentions-legales.html">Mentions légales</a> · <a href="espace-client.html">Espace client</a></span></footer>
+<footer>© 2026 <span translate="no">Wayle Production</span><span data-menu="footer"> · <a href="artistes.html">Artistes</a> · <a href="entreprises.html">Entreprises</a> · <a href="commerces.html">Commerces</a> · <a href="realisations">Réalisations</a> · <a href="espace-client.html">Espace client</a></span><span class="legal-links"> · <a href="/mentions-legales.html">Mentions légales</a> · <a href="/confidentialite">Confidentialité</a> · <a href="/cookies">Cookies</a> · <a href="/cgu">CGU</a> · <a href="/cgv">CGV</a></span></footer>
 </div>
 <script>
 (function(){
@@ -804,6 +812,8 @@ var KEY="262495e2-6137-4c63-bd49-a92363053f4d";
 var TO="waylecorp@gmail.com";
 var f=document.getElementById("cf"),s=document.getElementById("status"),b=f.querySelector("button");
 function say(t,c){s.textContent=t;s.className=c||""}
+/* Consentement facultatif : tracé dans le message reçu (OUI + date) ; la case n'est jamais cochée d'office. */
+function optin(d){return d.actualites?"OUI, consentement donné le "+new Date().toLocaleString("fr-FR",{dateStyle:"short",timeStyle:"short"}):"non"}
 function clearErr(){[].slice.call(f.querySelectorAll(".ferr")).forEach(function(m){m.hidden=true;m.textContent=""});[].slice.call(f.querySelectorAll("[aria-invalid]")).forEach(function(el){el.removeAttribute("aria-invalid")})}
 f.addEventListener("input",function(e){var el=e.target,m=document.getElementById("err-"+el.name);if(m&&!m.hidden){m.hidden=true;m.textContent="";el.removeAttribute("aria-invalid")}});
 /* Pré-remplissage depuis le configurateur (page Entreprises) */
@@ -820,11 +830,11 @@ f.addEventListener("submit",function(e){
   clearErr();
   if(bad.length){bad.forEach(function(x){var el=f.elements[x[0]],m=document.getElementById("err-"+x[0]);el.setAttribute("aria-invalid","true");m.textContent=x[1];m.hidden=false});f.elements[bad[0][0]].focus();say(bad.length>1?"Corrigez les "+bad.length+" champs signalés.":"Corrigez le champ signalé.","err");return}
   if(!ENDPOINT){
-    var body="Nom : "+d.nom+"\nE-mail : "+d.email+(d.tel?"\nTéléphone : "+d.tel:"")+(d.rappel?"\nRappel souhaité : "+d.rappel:"")+"\nProjet : "+d.type+"\n\n"+d.message;
+    var body="Nom : "+d.nom+"\nE-mail : "+d.email+(d.tel?"\nTéléphone : "+d.tel:"")+(d.rappel?"\nRappel souhaité : "+d.rappel:"")+"\nProjet : "+d.type+"\nActualités par e-mail : "+optin(d)+"\n\n"+d.message;
     location.href="mailto:"+TO+"?subject="+encodeURIComponent("Demande de projet – "+d.type)+"&body="+encodeURIComponent(body);
     say("Votre application e-mail s’ouvre : il ne reste qu’à envoyer le message.","ok");return}
   b.disabled=true;say("Envoi en cours…");
-  var payload={access_key:KEY,subject:"Demande de projet – "+d.type+" ("+d.nom+")",from_name:"Site Wayle",name:d.nom,email:d.email,replyto:d.email,telephone:d.tel||"—",rappel:d.rappel||"—",type_de_projet:d.type,message:d.message};
+  var payload={access_key:KEY,subject:"Demande de projet – "+d.type+" ("+d.nom+")",from_name:"Site Wayle",name:d.nom,email:d.email,replyto:d.email,telephone:d.tel||"—",rappel:d.rappel||"—",type_de_projet:d.type,actualites_par_email:optin(d),message:d.message};
   fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload)})
   .then(function(r){return r.json().then(function(j){if(!r.ok||!j.success)throw 0;return j})})
   .then(function(){f.reset();clearErr();say("Merci ! Votre demande est bien envoyée. Nous vous répondons rapidement.","ok")})

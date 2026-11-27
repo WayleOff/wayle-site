@@ -65,13 +65,22 @@
       m.header.filter(ok).slice(0,12).forEach(function(it){var a=mkLink(it);if(self(it))a.setAttribute("aria-current","page");n.appendChild(a)});
       if(m.cta&&ok(m.cta))n.appendChild(mkLink(m.cta,"cta"));
     }
+    var LEGAL=/^(\.\/|\/)?(mentions-legales|confidentialite|cookies|cgu|cgv)(\.html)?\/?$/;/* ces liens sont fixes, dans footer .legal-links */
     var f=document.querySelector("footer [data-menu=footer]");
     if(f&&Array.isArray(m.footer)){
       while(f.firstChild)f.removeChild(f.firstChild);
-      m.footer.filter(ok).filter(function(it){return !self(it)}).slice(0,16).forEach(function(it){f.appendChild(document.createTextNode(" · "));f.appendChild(mkLink(it))});
+      m.footer.filter(ok).filter(function(it){return !self(it)&&!LEGAL.test(String(it.href||"").split(/[?#]/)[0])}).slice(0,16).forEach(function(it){f.appendChild(document.createTextNode(" · "));f.appendChild(mkLink(it))});
     }
     window.__wayleMenus=true;
   }
+  /* Vidéos YouTube/Vimeo au clic : le lecteur n'est chargé (et Google/Vimeo contactés) qu'après le clic du visiteur. */
+  document.addEventListener("click",function(e){
+    var b=e.target.closest&&e.target.closest(".vid-play");if(!b)return;
+    var box=b.closest(".blk-vid-ph"),src=box&&box.getAttribute("data-embed");
+    if(!src||!/^https:\/\/(www\.youtube-nocookie\.com\/embed\/[\w-]{11}|player\.vimeo\.com\/video\/\d{6,12})(\?autoplay=1)?$/.test(src))return;
+    var f=document.createElement("iframe");f.src=src;f.title="Vidéo";f.allow=box.getAttribute("data-allow")||"fullscreen";f.allowFullscreen=true;
+    box.className="blk-vid";while(box.firstChild)box.removeChild(box.firstChild);box.appendChild(f);f.focus();
+  });
   window.__wayleMenusPreview=menus;
   function hideSelf(){
     var cur=here();

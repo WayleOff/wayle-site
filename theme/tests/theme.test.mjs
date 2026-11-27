@@ -39,8 +39,7 @@ test("CSS compilé ne contient rien de dangereux", () => {
   const css = compile(validate({}).theme);
   assert.ok(!/@import|url\(|expression|<|javascript:/i.test(css));
   const custom = compile(validate({ typography: { fontHeading: "Playfair Display" } }).theme);
-  assert.match(custom, /^@import url\("https:\/\/fonts\.googleapis\.com\/css2\?family=Playfair\+Display:wght@400\.\.800&display=swap"\);/);
-  assert.ok(!/@import/.test(custom.split("\n").slice(1).join("\n")));
+  assert.ok(!/@import|googleapis|gstatic/.test(custom)); // polices hébergées sur le site (/fonts/fonts.css), rien chez Google
   assert.equal((css.match(/{/g) || []).length, (css.match(/}/g) || []).length);
 });
 test("modes", () => {
@@ -73,7 +72,7 @@ test("presets : valides, contraste lisible", () => {
     assert.ok(v.ok, p.id + " : " + JSON.stringify(v.errors));
     const rep = contrastReport(v.theme).filter((r) => r.mode === (v.theme.mode === "light" ? "light" : "dark"));
     for (const r of rep.filter((x) => ["Texte principal / fond", "Texte secondaire / fond", "Texte du bouton / bouton"].includes(x.label))) assert.ok(r.ratio >= 4.5, `${p.id} ${r.label} ${r.ratio}`);
-    assert.ok(!/@import(?!\s+url\("https:\/\/fonts\.googleapis\.com\/css2\?family=[A-Za-z0-9+:@.;=&]+&display=swap"\);)/.test(compile(v.theme)));
+    assert.ok(!/@import|googleapis|gstatic/.test(compile(v.theme)));
   }
 });
 

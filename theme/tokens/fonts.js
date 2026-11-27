@@ -1,4 +1,4 @@
-/* Catalogue de polices proposées. `google` = paramètre `family=` de Google Fonts (poids exacts de chaque famille).
+/* Catalogue de polices proposées. `google` = nom de famille d'origine (Google Fonts), conservé pour mémoire : les fichiers sont hébergés dans /fonts/.
    Les polices « système » n'ont rien à charger. `verified:false` = poids à contrôler visuellement dans le panneau (étape 2). */
 export const FONTS = [
   { name: "Bricolage Grotesque", kind: "display", fallback: '"Figtree",system-ui,sans-serif', google: "Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800", preloaded: true },
@@ -15,12 +15,9 @@ export const FONTS = [
   { name: "Georgia", kind: "serif", fallback: "", stack: "Georgia,'Times New Roman',serif", google: null },
   { name: "Monospace système", kind: "mono", fallback: "", stack: 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace', google: null },
 ];
-/* @import Google Fonts pour les polices du catalogue qui ne sont pas déjà chargées par les pages */
-export function fontImports(names) {
-  const out = [];
-  for (const n of new Set(names)) { const f = fontByName(n); if (f && f.google && !f.preloaded) out.push(`@import url("https://fonts.googleapis.com/css2?family=${f.google}&display=swap");`); }
-  return out;
-}
+/* Aucune police n'est plus chargée depuis Google : toutes celles du catalogue sont hébergées dans /fonts/fonts.css
+   (déjà inclus dans chaque page). Les polices « importées » par l'administrateur passent par customFaces. */
+export function fontImports() { return []; }
 export function fontByName(n) { return FONTS.find((f) => f.name === n) || null; }
 export function fontStack(name) {
   const f = fontByName(name);
