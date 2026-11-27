@@ -26,12 +26,17 @@ export function paras(t) {
   }).join("");
 }
 
+/* Vidéos YouTube / Vimeo : rien n'est chargé avant le clic (aucune requête vers Google ou Vimeo, donc aucun traceur à
+   consentir). Le script de site.js remplace le bouton par le lecteur au clic. Les vidéos du site (mp4) restent directes. */
+function facade(src, host, allow) {
+  return `<div class="blk-vid blk-vid-ph" data-embed="${esc(src)}" data-allow="${esc(allow)}"><button type="button" class="vid-play" aria-label="Lire la vidéo (${esc(host)})"><svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg><span>Lire la vidéo</span></button><p class="vid-note">En lisant la vidéo, vous la chargez depuis ${esc(host)}, qui peut déposer des cookies. <a href="/cookies">En savoir plus</a></p></div>`;
+}
 export function embed(url) {
   url = String(url || "").trim();
   let m = /(?:youtube\.com\/watch\?(?:[^#]*&)?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/.exec(url);
-  if (m) return `<div class="blk-vid"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}" title="Vidéo" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`;
+  if (m) return facade(`https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1`, "YouTube (Google)", "accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen");
   m = /vimeo\.com\/(?:video\/)?(\d{6,12})/.exec(url);
-  if (m) return `<div class="blk-vid"><iframe src="https://player.vimeo.com/video/${m[1]}" title="Vidéo" loading="lazy" allow="fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+  if (m) return facade(`https://player.vimeo.com/video/${m[1]}?autoplay=1`, "Vimeo", "autoplay; fullscreen; picture-in-picture");
   if (/^(https:\/\/[^\s"'<>]+\.(mp4|webm)(\?[^\s"'<>]*)?|\/api\/video\?id=[A-Za-z0-9_-]{6,64})$/i.test(url)) return `<div class="blk-vid"><video src="${esc(url)}" controls playsinline preload="metadata"></video></div>`;
   return "";
 }
