@@ -60,6 +60,16 @@ function offerLine(l) {
   const span = val ? (m ? `${esc(m[1])} <em>${t(m[2])}</em>` : `<em>${t(val)}</em>`) : "";
   return `        <li><b>${t(lab)}</b><span>${span}</span></li>`;
 }
+/* Offre phare en tête de la section Offres. Affichée par défaut ; masquable ou modifiable depuis l'admin (featOff, featTitle, featText, featLabel, featUrl). */
+function feature(b, ctx) {
+  if (b.featOff) return "";
+  const title = String(b.featTitle || "Présence locale clé en main").slice(0, 80);
+  const text = String(b.featText || "Un site, une fiche Google soignée avec de vraies photos et vidéos, et des publications régulières sur vos réseaux, au même endroit.").slice(0, 300);
+  const label = String(b.featLabel || "Découvrir l’offre").slice(0, 40);
+  return `
+  <div class="feat"><div><p class="feat-k">Offre phare</p><h3${lf(ctx, "featTitle")}>${t(title)}</h3><p${lf(ctx, "featText")}>${t(text)}</p></div><a class="rdv" href="${esc(safeUrl(b.featUrl || "/offre"))}">${t(label)}</a></div>`;
+}
+
 function offers(b, ctx) {
   const items = list(b.items, 6);
   const chips = b.chips ? `
@@ -71,7 +81,7 @@ function offers(b, ctx) {
   </div>` : "";
   return `${open(b, "", ctx)}
   <h2${lf(ctx, "title")}>${t(b.title)}</h2>
-  ${b.lead ? `<p class="lead"${lf(ctx, "lead")}>${rich(b.lead)}</p>` : ""}${chips}
+  ${b.lead ? `<p class="lead"${lf(ctx, "lead")}>${rich(b.lead)}</p>` : ""}${feature(b, ctx)}${chips}
   <div class="offers">
 ${items.map((x, n) => {
     const src = imgSrc(x), p = pos(x.pos);
