@@ -79,8 +79,8 @@ const BTN = ".btn:not(.ghost),nav a.cta,html .cta-bar .p";
 const IMG = "img:not(.on-light):not(.on-dark)";
 export function extras(t) {
   const c = t.components, m = t.motion, out = [];
-  /* thème clair : le menu garde du verre, mais assez opaque pour rester lisible au-dessus de la vidéo d'accueil */
-  if (t.mode !== "dark") out.push(`:root[data-theme="light"] header{background:color-mix(in srgb,var(--bg) 86%,transparent);border-color:var(--line);box-shadow:0 8px 24px -10px rgba(0,0,0,.25)}:root[data-theme="light"] header::before{display:none}:root[data-theme="light"] .logo .on-light{display:block}:root[data-theme="light"] .logo .on-dark{display:none}`);
+  /* thème clair : menu totalement opaque */
+  if (t.mode !== "dark") out.push(`:root[data-theme="light"] header{background:var(--bg);border-color:var(--line);box-shadow:0 8px 24px -10px rgba(0,0,0,.25)}:root[data-theme="light"] header::before{display:none}:root[data-theme="light"] .logo .on-light{display:block}:root[data-theme="light"] .logo .on-dark{display:none}`);
   if (c.button.style === "outline") out.push(`${BTN}{background:transparent;color:var(--ink);border:1.5px solid var(--btn)}`);
   if (c.button.style === "ghost") out.push(`${BTN}{background:var(--surface);color:var(--ink);box-shadow:none}`);
   if (c.button.case === "upper") out.push(`.btn,nav a.cta,html .cta-bar a{text-transform:uppercase;letter-spacing:.06em;font-size:.88em}`);
